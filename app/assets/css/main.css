@@ -1,0 +1,191 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+@theme {
+  --color-neutral-50: #f7f8fa;
+  --color-neutral-100: #f2f3f5;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #a8aab2;
+  --color-neutral-500: #8e8e93;
+  --color-neutral-600: #5f5f5f;
+  --color-neutral-700: #45515e;
+  --color-neutral-800: #222222;
+  --color-neutral-900: #0a0a0a;
+  --color-neutral-950: #000000;
+
+  --color-zinc-50: #f7f8fa;
+  --color-zinc-100: #f2f3f5;
+  --color-zinc-200: #e5e7eb;
+  --color-zinc-300: #d1d5db;
+  --color-zinc-400: #a8aab2;
+  --color-zinc-500: #8e8e93;
+  --color-zinc-600: #5f5f5f;
+  --color-zinc-700: #45515e;
+  --color-zinc-800: #222222;
+  --color-zinc-900: #0a0a0a;
+  --color-zinc-950: #000000;
+
+  --color-primary-50: #f7f8fa;
+  --color-primary-100: #f2f3f5;
+  --color-primary-200: #e5e7eb;
+  --color-primary-300: #d1d5db;
+  --color-primary-400: #a8aab2;
+  --color-primary-500: #0a0a0a;
+  --color-primary-600: #000000;
+  --color-primary-700: #000000;
+  --color-primary-800: #000000;
+  --color-primary-900: #000000;
+  --color-primary-950: #000000;
+}
+
+@layer theme {
+  :host,
+  :root,
+  .light {
+    --ui-radius: 0.25rem;
+    --ui-header-height: 3.75rem;
+    --ui-text-dimmed: var(--color-neutral-400);
+    --ui-text-muted: var(--color-neutral-500);
+    --ui-text-toned: var(--color-neutral-600);
+    --ui-text: var(--color-neutral-700);
+    --ui-text-highlighted: var(--color-neutral-900);
+    --ui-text-inverted: #ffffff;
+    --ui-bg: #ffffff;
+    --ui-bg-muted: var(--color-neutral-50);
+    --ui-bg-elevated: #ffffff;
+    --ui-bg-accented: var(--color-neutral-100);
+    --ui-bg-inverted: var(--color-neutral-900);
+    --ui-border: var(--color-neutral-200);
+    --ui-border-muted: var(--color-neutral-200);
+    --ui-border-accented: var(--color-neutral-300);
+    --ui-border-inverted: var(--color-neutral-900);
+  }
+
+  .dark {
+    --ui-text-dimmed: var(--color-neutral-500);
+    --ui-text-muted: var(--color-neutral-400);
+    --ui-text-toned: var(--color-neutral-300);
+    --ui-text: var(--color-neutral-200);
+    --ui-text-highlighted: #ffffff;
+    --ui-text-inverted: var(--color-neutral-950);
+    --ui-bg: var(--color-neutral-950);
+    --ui-bg-muted: var(--color-neutral-900);
+    --ui-bg-elevated: var(--color-neutral-900);
+    --ui-bg-accented: var(--color-neutral-800);
+    --ui-bg-inverted: #ffffff;
+    --ui-border: var(--color-neutral-800);
+    --ui-border-muted: var(--color-neutral-800);
+    --ui-border-accented: var(--color-neutral-700);
+    --ui-border-inverted: #ffffff;
+  }
+}
+
+:root {
+  color-scheme: light;
+  --ea-bg: #ffffff;
+  --ea-border: #e5e7eb;
+  --ea-text: #0a0a0a;
+  --ea-text-muted: #45515e;
+  --ea-brand: #0a0a0a;
+  --ea-brand-soft: rgba(10, 10, 10, 0.08);
+}
+
+html.dark {
+  color-scheme: dark;
+  --color-primary-50: #0a0a0a;
+  --color-primary-100: #222222;
+  --color-primary-200: #45515e;
+  --color-primary-300: #5f5f5f;
+  --color-primary-400: #a8aab2;
+  --color-primary-500: #e5e7eb;
+  --color-primary-600: #f2f3f5;
+  --color-primary-700: #f7f8fa;
+  --color-primary-800: #ffffff;
+  --color-primary-900: #ffffff;
+  --color-primary-950: #ffffff;
+
+  --ea-bg: #0a0a0a;
+  --ea-border: #2a2a2a;
+  --ea-text: #f7f8fa;
+  --ea-text-muted: #a8aab2;
+  --ea-brand: #f7f8fa;
+  --ea-brand-soft: rgba(247, 248, 250, 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--ea-bg);
+  color: var(--ea-text);
+  font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+  @apply antialiased;
+}
+
+.console-container {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 80rem;
+}
+
+@media (min-width: 1536px) {
+  .console-container {
+    max-width: 112rem;
+  }
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  input[type="button"]:not(:disabled),
+  input[type="submit"]:not(:disabled),
+  input[type="reset"]:not(:disabled),
+  label[for],
+  select:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  input[type="button"]:disabled,
+  input[type="submit"]:disabled,
+  input[type="reset"]:disabled {
+    cursor: not-allowed;
+  }
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--ea-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background-color: var(--ea-brand-soft);
+  color: var(--ea-text);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ea-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ea-border);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ea-text-muted);
+}

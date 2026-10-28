@@ -1,0 +1,40 @@
+{
+  "name": "easytv-manage",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=18.15.0"
+  },
+  "scripts": {
+    "dev": "nuxt dev --dotenv .env.development",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 nuxt build --dotenv .env.production",
+    "generate": "cross-env NODE_OPTIONS=--max-old-space-size=8192 nuxt generate --dotenv .env.production",
+    "preview": "pnpm run build && wrangler dev",
+    "start": "cross-env NODE_ENV=production nuxt start",
+    "deploy": "node scripts/deploy.mjs",
+    "cf-typegen": "wrangler types",
+    "typecheck": "nuxt typecheck",
+    "prepare": "simple-git-hooks"
+  },
+  "dependencies": {
+    "@nuxt/ui": "^4.9.0",
+    "@nuxtjs/i18n": "^10.4.0",
+    "nuxt": "4.4.8",
+    "tailwindcss": "^4.3.2",
+    "vue": "^3.5.39"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.20",
+    "@types/node": "^26.1.0",
+    "cross-env": "^10.1.0",
+    "nitro-cloudflare-dev": "^0.2.2",
+    "simple-git-hooks": "^2.14.0",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3",
+    "wrangler": "^4.118.0"
+  },
+  "simple-git-hooks": {
+    "pre-push": "npm run typecheck"
+  }
+}
