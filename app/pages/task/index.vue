@@ -209,38 +209,40 @@ async function copyPrompt(text: string) {
       <UEmpty v-else-if="pageRows.length === 0" icon="i-lucide-list-checks" :title="t('task.empty')" :description="t('task.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[72rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="px-4 py-3">单号</th>
-                <th class="w-28 px-4 py-3">用户</th>
-                <th class="whitespace-nowrap px-4 py-3">类型</th>
-                <th class="whitespace-nowrap px-4 py-3">状态</th>
-                <th class="px-4 py-3">模型</th>
-                <th class="px-4 py-3">提示词</th>
-                <th class="whitespace-nowrap px-4 py-3">积分</th>
-                <th class="whitespace-nowrap px-4 py-3">创建时间</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">单号</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">用户</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">类型</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">模型</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">提示词</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">积分</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">创建时间</th>
                 <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in pageRows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3 font-mono text-xs">{{ item.taskNo || item.id }}</td>
-                <td class="truncate px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.taskNo || item.id }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UButton type="button" size="sm" variant="link" class="-ml-2" @click="() => { void gotoUser(item.userId) }">
                     {{ item.userName }}
                   </UButton>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">{{ typeLabel(item.type) }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ typeLabel(item.type) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="statusColor(item.status)" variant="subtle">
                     {{ statusLabel(item.status) }}{{ item.status === 'running' && item.progress ? ` ${item.progress}%` : '' }}
                   </UBadge>
                 </td>
-                <td class="max-w-40 truncate px-4 py-3" :title="item.model">{{ item.model || '—' }}</td>
-                <td class="max-w-72 truncate px-4 py-3 text-zinc-600 dark:text-zinc-300" :title="item.prompt">{{ item.prompt || '（无提示词）' }}</td>
-                <td class="whitespace-nowrap px-4 py-3 tabular-nums">{{ pointsText(item) }}</td>
-                <td class="whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3" :title="item.model">{{ item.model || '—' }}</td>
+                <td class="max-w-0 w-full px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                  <div class="truncate" :title="item.prompt">{{ item.prompt || '（无提示词）' }}</div>
+                </td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ pointsText(item) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" @click="openDetail(item)">查看详情</UButton>

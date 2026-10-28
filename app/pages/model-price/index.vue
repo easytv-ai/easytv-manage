@@ -958,7 +958,7 @@ async function confirmImport() {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
           <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
             <tr>
-              <th class="px-4 py-3">
+              <th class="min-w-0 w-full px-4 py-3 text-left">
                 <button type="button" class="-mx-1 inline-flex w-full items-center gap-1 px-1 py-1 text-left" @click="toggleSort('model')">
                   {{ t('modelPrice.colModel') }}
                   <span class="inline-flex flex-col leading-none" aria-hidden="true">
@@ -967,9 +967,8 @@ async function confirmImport() {
                   </span>
                 </button>
               </th>
-              <th class="px-4 py-3">{{ t('modelPrice.colLabel') }}</th>
               <th class="w-[1%] whitespace-nowrap px-3 py-3">
-                <button type="button" class="-mx-1 inline-flex w-full items-center gap-1 px-1 py-1 text-left" @click="toggleSort('type')">
+                <button type="button" class="-mx-1 inline-flex w-full items-center justify-center gap-1 px-1 py-1" @click="toggleSort('type')">
                   {{ t('modelPrice.colType') }}
                   <span class="inline-flex flex-col leading-none" aria-hidden="true">
                     <UIcon name="i-lucide-chevron-up" class="h-3.5 w-3.5 shrink-0" :class="caretClass('type', 'asc')" />
@@ -978,7 +977,7 @@ async function confirmImport() {
                 </button>
               </th>
               <th class="w-[1%] whitespace-nowrap px-3 py-3">
-                <button type="button" class="-mx-1 inline-flex w-full items-center gap-1 px-1 py-1 text-left" @click="toggleSort('unit')">
+                <button type="button" class="-mx-1 inline-flex w-full items-center justify-center gap-1 px-1 py-1" @click="toggleSort('unit')">
                   {{ t('modelPrice.colUnit') }}
                   <span class="inline-flex flex-col leading-none" aria-hidden="true">
                     <UIcon name="i-lucide-chevron-up" class="h-3.5 w-3.5 shrink-0" :class="caretClass('unit', 'asc')" />
@@ -987,7 +986,7 @@ async function confirmImport() {
                 </button>
               </th>
               <th class="w-[1%] whitespace-nowrap px-3 py-3">
-                <button type="button" class="-mx-1 inline-flex w-full items-center gap-1 px-1 py-1 text-left" @click="toggleSort('points_per_unit')">
+                <button type="button" class="-mx-1 inline-flex w-full items-center justify-center gap-1 px-1 py-1" @click="toggleSort('points_per_unit')">
                   {{ t('modelPrice.colStd') }}
                   <span class="inline-flex flex-col leading-none" aria-hidden="true">
                     <UIcon name="i-lucide-chevron-up" class="h-3.5 w-3.5 shrink-0" :class="caretClass('points_per_unit', 'asc')" />
@@ -1010,9 +1009,16 @@ async function confirmImport() {
           </thead>
           <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
             <tr v-for="item in pageRows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-              <!-- max-width 写在 td 上会被表格自动布局忽略，截断要放在单元格内的块级元素上，否则长名字把整表撑出屏幕 -->
-              <td class="px-4 py-3 font-mono text-xs"><span class="block max-w-56 truncate" :title="item.model">{{ item.model }}</span></td>
-              <td class="px-4 py-3"><span class="block max-w-40 truncate" :title="item.label || undefined">{{ item.label || '—' }}</span></td>
+              <td class="max-w-0 w-full px-4 py-3">
+                <div class="truncate font-mono text-sm" :title="item.model">{{ item.model }}</div>
+                <div
+                  v-if="item.label && item.label !== item.model"
+                  class="mt-0.5 truncate text-xs text-zinc-400"
+                  :title="item.label"
+                >
+                  {{ item.label }}
+                </div>
+              </td>
               <td class="w-[1%] whitespace-nowrap px-3 py-3">{{ TYPE_LABEL[item.type] }}</td>
               <td class="w-[1%] whitespace-nowrap px-3 py-3">{{ UNIT_LABEL[item.unit] }}</td>
               <td class="w-[1%] whitespace-nowrap px-3 py-3 tabular-nums">{{ item.pointsPerUnit }} {{ t('modelPrice.points') }}</td>
@@ -1048,7 +1054,7 @@ async function confirmImport() {
                 <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? t('modelPrice.statusOn') : t('modelPrice.statusOff') }}</UBadge>
               </td>
               <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-3 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
-                <div class="flex flex-nowrap gap-1">
+                <div class="flex w-max flex-nowrap gap-1">
                   <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">{{ t('common.edit') }}</UButton>
                   <UButton v-if="isSuperAdmin" type="button" size="sm" variant="soft" color="neutral" :loading="syncingId === item.id" :disabled="syncingId === item.id" :title="t('modelPrice.syncGatewayHelp')" @click="syncGatewayOne(item)">{{ t('modelPrice.syncGateway') }}</UButton>
                   <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="requestConfirm(item, 'status')">
@@ -1104,29 +1110,21 @@ async function confirmImport() {
               {{ t('modelPrice.browseEmpty') }}
             </div>
             <div v-else class="h-full overflow-auto">
-              <table class="w-full min-w-[54rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
-                <colgroup>
-                  <col class="w-10">
-                  <col>
-                  <col class="w-20">
-                  <col class="w-28">
-                  <col class="w-28">
-                  <col class="w-24">
-                </colgroup>
+              <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
                 <thead class="sticky top-0 z-20 bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
                   <tr>
-                    <th class="px-3 py-2.5">
+                    <th class="w-[1%] whitespace-nowrap px-3 py-2.5">
                       <UCheckbox
                         :model-value="allFilteredSelected"
                         :indeterminate="someFilteredSelected"
                         @update:model-value="(value: boolean | 'indeterminate') => toggleSelectAll(value === true)"
                       />
                     </th>
-                    <th class="px-3 py-2.5">{{ t('modelPrice.colModel') }}</th>
-                    <th class="whitespace-nowrap px-3 py-2.5">{{ t('modelPrice.colType') }}</th>
-                    <th class="whitespace-nowrap px-3 py-2.5" :title="t('modelPrice.costHint')">{{ t('modelPrice.colCost') }}</th>
-                    <th class="whitespace-nowrap px-3 py-2.5">{{ t('modelPrice.suggestPoints') }}</th>
-                    <th class="sticky right-0 z-30 w-24 whitespace-nowrap bg-zinc-50 px-3 py-2.5 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
+                    <th class="min-w-0 w-full px-3 py-2.5 text-left">{{ t('modelPrice.colModel') }}</th>
+                    <th class="w-[1%] whitespace-nowrap px-3 py-2.5">{{ t('modelPrice.colType') }}</th>
+                    <th class="w-[1%] whitespace-nowrap px-3 py-2.5" :title="t('modelPrice.costHint')">{{ t('modelPrice.colCost') }}</th>
+                    <th class="w-[1%] whitespace-nowrap px-3 py-2.5">{{ t('modelPrice.suggestPoints') }}</th>
+                    <th class="sticky right-0 z-30 w-[1%] whitespace-nowrap bg-zinc-50 px-3 py-2.5 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -1136,21 +1134,23 @@ async function confirmImport() {
                     class="group cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/60"
                     @click="toggleSelect(item.model, !isSelected(item.model))"
                   >
-                    <td class="px-3 py-2.5" @click.stop>
+                    <td class="w-[1%] whitespace-nowrap px-3 py-2.5" @click.stop>
                       <UCheckbox
                         :model-value="isSelected(item.model)"
                         @update:model-value="(value: boolean | 'indeterminate') => toggleSelect(item.model, value === true)"
                       />
                     </td>
-                    <td class="px-3 py-2.5">
-                      <p class="break-all font-mono text-xs">{{ item.model }}</p>
-                      <p v-if="item.label && item.label !== item.model" class="mt-0.5 truncate text-xs text-zinc-500" :title="modelPickTip(item.label)">{{ item.label }}</p>
+                    <td class="max-w-0 w-full px-3 py-2.5">
+                      <p class="truncate font-mono text-xs" :title="item.model">{{ item.model }}</p>
+                      <p v-if="item.label && item.label !== item.model" class="mt-0.5 truncate text-xs text-zinc-400" :title="modelPickTip(item.label)">{{ item.label }}</p>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-2.5">{{ TYPE_LABEL[item.type] }}</td>
-                    <td class="whitespace-nowrap px-3 py-2.5 tabular-nums" :title="item.estimate || undefined">{{ fmtCost(item.priceYuan) }}</td>
-                    <td class="whitespace-nowrap px-3 py-2.5 tabular-nums">{{ item.suggestPoints || '—' }}</td>
-                    <td class="sticky right-0 z-10 w-24 whitespace-nowrap bg-white px-3 py-2.5 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
-                      <UButton type="button" size="sm" variant="soft" @click.stop="openCreate(item)">{{ t('modelPrice.priceOne') }}</UButton>
+                    <td class="w-[1%] whitespace-nowrap px-3 py-2.5">{{ TYPE_LABEL[item.type] }}</td>
+                    <td class="w-[1%] whitespace-nowrap px-3 py-2.5 tabular-nums" :title="item.estimate || undefined">{{ fmtCost(item.priceYuan) }}</td>
+                    <td class="w-[1%] whitespace-nowrap px-3 py-2.5 tabular-nums">{{ item.suggestPoints || '—' }}</td>
+                    <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-3 py-2.5 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                      <div class="flex w-max flex-nowrap gap-1">
+                        <UButton type="button" size="sm" variant="soft" @click.stop="openCreate(item)">{{ t('modelPrice.priceOne') }}</UButton>
+                      </div>
                     </td>
                   </tr>
                 </tbody>

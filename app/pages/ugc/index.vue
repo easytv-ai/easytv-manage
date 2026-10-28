@@ -216,51 +216,51 @@ const num = (v: unknown) => (Number(v) || 0).toLocaleString()
       <UEmpty v-else-if="rows.length === 0" icon="i-lucide-share-2" :title="t('ugc.empty')" :description="t('ugc.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[76rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="px-4 py-3">{{ t('ugc.colUser') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('ugc.platformLabel') }}</th>
-                <th class="px-4 py-3">{{ t('ugc.colUrl') }}</th>
-                <th class="px-4 py-3">{{ t('ugc.colWork') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('ugc.colSubmitted') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('ugc.colPoints') }}</th>
-                <th class="px-4 py-3">{{ t('ugc.colReview') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('ugc.colUser') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('ugc.platformLabel') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('ugc.colUrl') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('ugc.colWork') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('ugc.colSubmitted') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('ugc.colPoints') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('ugc.colReview') }}</th>
                 <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <span>{{ nickname(item) || '—' }}</span>
                   <span class="ml-1 font-mono text-xs text-zinc-400">#{{ item.user_id }}</span>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="platformColor(item.platform)" variant="subtle">{{ platformLabel(item.platform) }}</UBadge>
                 </td>
-                <td class="max-w-64 px-4 py-3">
+                <td class="max-w-0 w-full px-4 py-3">
                   <a :href="item.url" target="_blank" rel="noopener noreferrer" class="block truncate text-primary hover:underline" :title="item.url">{{ item.url }}</a>
                 </td>
-                <td class="px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <div v-if="hasWork(item)" class="flex items-center gap-2">
                     <img :src="workCover(item)" alt="" class="h-10 w-16 shrink-0 rounded object-cover">
                     <div class="min-w-0">
-                      <div class="max-w-40 truncate" :title="workTitle(item)">{{ workTitle(item) || `#${item.work_id}` }}</div>
+                      <div class="truncate" :title="workTitle(item)">{{ workTitle(item) || `#${item.work_id}` }}</div>
                       <div class="font-mono text-xs text-zinc-400">#{{ item.work_id }}</div>
                     </div>
                   </div>
                   <span v-else class="text-zinc-400">{{ t('ugc.noWork') }}</span>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="statusColor(item.status)" variant="subtle">{{ statusText(item.status) }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">
                   <span>{{ item.status === 1 ? num(item.points) : '—' }}</span>
                   <UBadge v-if="isViral(item)" color="error" variant="subtle" class="ml-1">{{ t('ugc.viral') }}</UBadge>
                 </td>
-                <td class="max-w-56 px-4 py-3 text-xs text-zinc-500">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">
                   <template v-if="item.status !== 0">
                     <div>{{ item.reviewed_by ? `#${item.reviewed_by}` : '—' }} · {{ formatUnix(item.reviewed_at) || '—' }}</div>
                     <div v-if="item.duration_tier" class="text-zinc-400">{{ t('ugc.tierShort', { tier: item.duration_tier }) }} · {{ t('ugc.likesShort', { n: num(item.likes) }) }}</div>
@@ -269,9 +269,11 @@ const num = (v: unknown) => (Number(v) || 0).toLocaleString()
                   <span v-else>—</span>
                 </td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
-                  <UButton type="button" size="sm" variant="soft" :color="item.status === 0 ? 'primary' : 'neutral'" @click="openReview(item)">
-                    {{ item.status === 0 ? t('ugc.review') : t('ugc.reReview') }}
-                  </UButton>
+                  <div class="flex w-max flex-nowrap gap-1">
+                    <UButton type="button" size="sm" variant="soft" :color="item.status === 0 ? 'primary' : 'neutral'" @click="openReview(item)">
+                      {{ item.status === 0 ? t('ugc.review') : t('ugc.reReview') }}
+                    </UButton>
+                  </div>
                 </td>
               </tr>
             </tbody>

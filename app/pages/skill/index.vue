@@ -395,52 +395,55 @@ async function confirm() {
       />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[64rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="w-32 px-4 py-3">封面</th>
-                <th class="px-4 py-3">Skill 名称</th>
-                <th class="whitespace-nowrap px-4 py-3">来源</th>
-                <th class="w-36 px-4 py-3">作者名称</th>
-                <th class="w-32 px-4 py-3">分类</th>
-                <th class="whitespace-nowrap px-4 py-3">使用量</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('skill.nodeCount') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">状态</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('skill.review.status') }}</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">操作</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">Skill 名称</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">来源</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">作者名称</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">分类</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">使用量</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('skill.nodeCount') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('skill.review.status') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              <tr v-for="item in pageRows" :key="item.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3">
-                  <img :src="item.cover || DEFAULT_WORK_COVER" alt="" class="h-12 w-20 rounded object-cover">
+              <tr v-for="item in pageRows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                <td class="max-w-0 w-full px-4 py-3 text-left">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <div class="h-16 w-28 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                      <img :src="item.cover || DEFAULT_WORK_COVER" alt="" class="h-full w-full object-cover">
+                    </div>
+                    <div class="min-w-0 truncate font-medium" :title="item.title">{{ item.title }}</div>
+                  </div>
                 </td>
-                <td class="truncate px-4 py-3 font-medium">{{ item.title }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="isPrivate(item) ? 'warning' : 'primary'" variant="subtle">{{ isPrivate(item) ? '用户私有' : '官方' }}</UBadge>
                 </td>
-                <td class="truncate px-4 py-3">{{ isPrivate(item) ? (item.authorName || `#${item.userId}`) : item.authorName }}</td>
-                <td class="px-4 py-3">{{ item.category }}</td>
-                <td class="px-4 py-3 tabular-nums">{{ item.uses.toLocaleString() }}</td>
-                <td class="whitespace-nowrap px-4 py-3 tabular-nums">{{ item.graphNodes > 0 ? item.graphNodes : '—' }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ isPrivate(item) ? (item.authorName || `#${item.userId}`) : item.authorName }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.category }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.uses.toLocaleString() }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.graphNodes > 0 ? item.graphNodes : '—' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '已上架' : '已下架' }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <template v-if="isPrivate(item)">
                     <UBadge :color="reviewBadgeColor(item.reviewStatus)" variant="subtle">{{ t(`skill.review.status${item.reviewStatus}`) }}</UBadge>
                     <div v-if="item.reviewStatus === 3 && item.reviewRemark" class="mt-0.5 max-w-40 truncate text-xs text-zinc-400" :title="item.reviewRemark">{{ item.reviewRemark }}</div>
                   </template>
                   <span v-else class="text-zinc-400">—</span>
                 </td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <div v-if="isPrivate(item)" class="flex flex-nowrap gap-1">
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div v-if="isPrivate(item)" class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" @click="openReview(item)">{{ t('common.detail') }}</UButton>
                     <UButton v-if="item.reviewStatus === 1 || item.reviewStatus === 3" type="button" size="sm" variant="soft" color="success" @click="quickApprove(item)">{{ t('skill.review.approve') }}</UButton>
                     <UButton v-if="item.reviewStatus === 1" type="button" size="sm" variant="soft" color="error" @click="openReject(item)">{{ t('skill.review.reject') }}</UButton>
                     <UButton v-if="item.reviewStatus === 2" type="button" size="sm" variant="soft" color="warning" @click="requestConfirm(item, 'unpublish')">{{ t('skill.review.unpublish') }}</UButton>
                   </div>
-                  <div v-else class="flex flex-nowrap gap-1">
+                  <div v-else class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
                     <UButton
                       type="button"

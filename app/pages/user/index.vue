@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DropdownMenuItem } from '@nuxt/ui'
 import type { AdminUser } from '~/types/easytv-admin'
 import userApi from '~/api/user'
 import {
@@ -307,6 +308,24 @@ function gotoNotification(user: AdminUser) {
 function gotoAudit(user: AdminUser) {
   return navigateTo(localePath({ path: '/audit', query: { userId: String(user.id) } }))
 }
+
+function moreItems(user: AdminUser): DropdownMenuItem[] {
+  const items: DropdownMenuItem[] = [
+    { label: '身份管理', onSelect: () => editIdentity(user) },
+    { label: '邀请', onSelect: () => openInvites(user) },
+    { label: '会员积分', onSelect: () => { void gotoWallet(user) } },
+    { label: '通知', onSelect: () => { void gotoNotification(user) } },
+    { label: '使用日志', onSelect: () => { void gotoAudit(user) } },
+  ]
+  if (isSuperAdmin.value) {
+    items.push({
+      label: t('user.rebindTitle'),
+      onSelect: () => openRebind(user),
+    })
+  }
+  items.push({ label: '注销', color: 'error', onSelect: () => confirmDelete(user) })
+  return items
+}
 </script>
 
 <template>
@@ -351,34 +370,24 @@ function gotoAudit(user: AdminUser) {
       />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[64rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
-            <colgroup>
-              <col class="w-16">
-              <col class="w-[15%]">
-              <col class="w-[15%]">
-              <col class="w-[15%]">
-              <col class="w-[15%]">
-              <col class="w-[15%]">
-              <col class="w-[15%]">
-              <col class="w-[1%]">
-            </colgroup>
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="px-4 py-3">头像</th>
-                <th class="px-4 py-3">用户名</th>
-                <th class="px-4 py-3">账号</th>
-                <th class="px-4 py-3">ID</th>
-                <th class="px-4 py-3">UUID</th>
-                <th class="whitespace-nowrap px-4 py-3">身份</th>
-                <th class="whitespace-nowrap px-4 py-3">邀请人</th>
-                <th class="whitespace-nowrap px-4 py-3">来源</th>
-                <th class="whitespace-nowrap px-4 py-3">状态</th>
-                <th class="whitespace-nowrap px-4 py-3">操作</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">头像</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">用户名</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">账号</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">ID</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">UUID</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">身份</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">邀请人</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">来源</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              <tr v-for="user in pageRows" :key="user.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3">
+              <tr v-for="user in pageRows" :key="user.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <img
                     v-if="isHttpAvatar(user.avatar)"
                     :src="user.avatar!"
@@ -393,24 +402,22 @@ function gotoAudit(user: AdminUser) {
                     {{ avatarLetter(user) }}
                   </span>
                 </td>
-                <td class="overflow-hidden px-4 py-3 font-medium">
+                <td class="max-w-0 w-full px-4 py-3 text-left font-medium">
                   <div class="truncate" :title="user.nickname || undefined">{{ user.nickname || '—' }}</div>
                 </td>
-                <td class="overflow-hidden px-4 py-3">
-                  <div class="truncate font-mono text-xs" :title="user.username || user.mobile || undefined">
-                    {{ user.username || user.mobile || '—' }}
-                  </div>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs text-zinc-400">
+                  {{ user.username || user.mobile || '—' }}
                 </td>
-                <td class="overflow-hidden px-4 py-3 font-mono text-xs">
-                  <div class="truncate">{{ user.id }}</div>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs text-zinc-400">
+                  {{ user.id }}
                 </td>
-                <td class="overflow-hidden px-4 py-3 font-mono text-xs">
-                  <div class="truncate" :title="user.uuid || undefined">{{ user.uuid || '—' }}</div>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs text-zinc-400">
+                  {{ user.uuid || '—' }}
                 </td>
-                <td class="overflow-hidden px-4 py-3">
-                  <div class="truncate" :title="identityText(user)">{{ identityText(user) }}</div>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
+                  {{ identityText(user) }}
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <button
                     v-if="user.inviterId > 0"
                     type="button"
@@ -418,26 +425,24 @@ function gotoAudit(user: AdminUser) {
                     :title="`按邀请人 #${user.inviterId} 筛选`"
                     @click="filterByInviter(user.inviterId)"
                   >
-                    <span class="max-w-32 truncate">{{ user.inviterNickname || `#${user.inviterId}` }}</span>
+                    <span>{{ user.inviterNickname || `#${user.inviterId}` }}</span>
                     <span v-if="user.inviterNickname" class="font-mono text-xs text-zinc-400">#{{ user.inviterId }}</span>
                   </button>
                   <span v-else class="text-zinc-400">—</span>
                   <UBadge v-if="user.inviteBlocked" color="warning" variant="subtle" class="ml-1">奖励已冻结</UBadge>
                 </td>
-                <td class="overflow-hidden px-4 py-3">
-                  <div class="truncate text-xs" :title="[user.source, user.bonusCode && `口令 ${user.bonusCode}`].filter(Boolean).join(' · ') || undefined">
-                    <span v-if="user.source">{{ user.source }}</span>
-                    <span v-if="user.bonusCode" class="ml-1 font-mono text-zinc-500">{{ user.bonusCode }}</span>
-                    <span v-if="!user.source && !user.bonusCode" class="text-zinc-400">—</span>
-                  </div>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
+                  <span v-if="user.source" class="text-xs">{{ user.source }}</span>
+                  <span v-if="user.bonusCode" class="ml-1 font-mono text-xs text-zinc-400">{{ user.bonusCode }}</span>
+                  <span v-if="!user.source && !user.bonusCode" class="text-xs text-zinc-400">—</span>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="user.deleted ? 'neutral' : user.status === 1 ? 'success' : 'error'" variant="subtle">
                     {{ user.deleted ? '已注销' : user.status === 1 ? '正常' : '禁用' }}
                   </UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
-                  <div v-if="!user.deleted" class="flex flex-nowrap gap-1">
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div v-if="!user.deleted" class="flex w-max flex-nowrap items-center gap-1">
                     <UButton
                       type="button"
                       size="sm"
@@ -450,11 +455,6 @@ function gotoAudit(user: AdminUser) {
                     >
                       控制台
                     </UButton>
-                    <UButton type="button" size="sm" variant="soft" @click="editIdentity(user)">身份管理</UButton>
-                    <UButton type="button" size="sm" variant="soft" @click="() => { void gotoWallet(user) }">会员积分</UButton>
-                    <UButton type="button" size="sm" variant="soft" @click="() => { void gotoNotification(user) }">通知</UButton>
-                    <UButton type="button" size="sm" variant="soft" @click="() => { void gotoAudit(user) }">使用日志</UButton>
-                    <UButton type="button" size="sm" variant="soft" @click="openInvites(user)">邀请</UButton>
                     <UButton
                       type="button"
                       size="sm"
@@ -465,21 +465,15 @@ function gotoAudit(user: AdminUser) {
                       {{ user.status === 1 ? '封禁' : '解封' }}
                     </UButton>
                     <UDropdownMenu
-                      :items="[[
-                        ...(isSuperAdmin
-                          ? [{
-                              label: t('user.rebindTitle'),
-                              onSelect: () => openRebind(user),
-                            }]
-                          : []),
-                        {
-                          label: '注销',
-                          color: 'error' as const,
-                          onSelect: () => confirmDelete(user),
-                        },
-                      ]]"
+                      :items="moreItems(user)"
+                      :content="{ align: 'end' }"
+                      :ui="{
+                        content: 'min-w-40 !p-0 gap-0',
+                        group: '!p-0',
+                        item: 'cursor-pointer rounded-none hover:bg-zinc-100 data-highlighted:bg-zinc-100 dark:hover:bg-zinc-800 dark:data-highlighted:bg-zinc-800',
+                      }"
                     >
-                      <UButton type="button" size="sm" variant="soft" color="neutral" icon="i-lucide-ellipsis" aria-label="更多操作" />
+                      <UButton type="button" size="sm" variant="soft" color="neutral" icon="i-lucide-ellipsis" square aria-label="更多操作" />
                     </UDropdownMenu>
                   </div>
                   <span v-else class="text-zinc-400">—</span>

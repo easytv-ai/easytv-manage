@@ -136,23 +136,25 @@ function openUser(id: number) {
       <UEmpty v-else-if="rows.length === 0" icon="i-lucide-wallet" :title="t('recharge.empty')" :description="t('recharge.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[72rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('recharge.colNo') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('recharge.colUser') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('recharge.colMoney') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('recharge.colMethod') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('recharge.colInvoice') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('recharge.colNo') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('recharge.colUser') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('recharge.colMoney') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('recharge.colMethod') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('recharge.colInvoice') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
                 <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.trade_no }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="max-w-0 w-full px-4 py-3">
+                  <div class="truncate font-mono text-xs" :title="item.trade_no">{{ item.trade_no }}</div>
+                </td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <button
                     type="button"
                     class="inline-flex min-h-8 items-center rounded-md px-2 font-mono text-xs text-primary hover:bg-primary/10"
@@ -162,17 +164,19 @@ function openUser(id: number) {
                   </button>
                   <div v-if="item.team_id" class="px-2 text-xs text-zinc-400">{{ t('recharge.team') }} #{{ item.team_id }}</div>
                 </td>
-                <td class="px-4 py-3 text-right tabular-nums">{{ money(item.money) }}</td>
-                <td class="whitespace-nowrap px-4 py-3">{{ methodText(item.payment_method) }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ money(item.money) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ methodText(item.payment_method) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="statusColor(item.status)" variant="subtle">{{ statusText(item.status) }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="item.invoiced ? 'success' : 'neutral'" variant="subtle">{{ item.invoiced ? t('recharge.invoiced') : t('recharge.notInvoiced') }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.create_time) }}</td>
-                <td class="sticky right-0 z-10 whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900">
-                  <UButton type="button" size="xs" variant="soft" @click="openDetail(item)">{{ t('recharge.view') }}</UButton>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.create_time) }}</td>
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div class="flex w-max flex-nowrap gap-1">
+                    <UButton type="button" size="xs" variant="soft" @click="openDetail(item)">{{ t('recharge.view') }}</UButton>
+                  </div>
                 </td>
               </tr>
             </tbody>

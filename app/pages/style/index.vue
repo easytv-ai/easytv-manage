@@ -404,47 +404,48 @@ async function doDelete() {
         <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
           <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
             <tr>
-              <th class="w-20 px-4 py-3">封面</th>
-              <th class="px-4 py-3">风格</th>
-              <th class="whitespace-nowrap px-4 py-3">分类</th>
-              <th class="px-4 py-3">标签</th>
-              <th class="whitespace-nowrap px-4 py-3">适用</th>
-              <th class="w-20 px-4 py-3">套用</th>
-              <th class="w-20 px-4 py-3">排序</th>
-              <th class="whitespace-nowrap px-4 py-3">状态</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">操作</th>
+              <th class="min-w-0 w-full px-4 py-3 text-left">风格</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">分类</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">标签</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">适用</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">套用</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">排序</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+              <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-            <tr v-for="item in rows" :key="item.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-              <td class="px-4 py-3">
-                <img v-if="item.coverUrl" :src="item.coverUrl" alt="" class="h-10 w-16 rounded object-cover">
-                <div v-else class="flex h-10 w-16 items-center justify-center rounded bg-zinc-100 text-zinc-400 dark:bg-zinc-900">
-                  <UIcon name="i-lucide-image-off" class="size-4" />
+            <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+              <td class="max-w-0 w-full px-4 py-3 text-left">
+                <div class="flex min-w-0 items-center gap-3">
+                  <div class="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                    <img v-if="item.coverUrl" :src="item.coverUrl" alt="" class="h-full w-full object-cover">
+                    <UIcon v-else name="i-lucide-image-off" class="size-5 text-zinc-400" />
+                  </div>
+                  <div class="min-w-0">
+                    <p class="truncate font-medium" :title="item.name">{{ item.name }}</p>
+                    <p class="truncate text-xs text-zinc-400" :title="item.prompt">{{ item.prompt }}</p>
+                    <p v-if="isUserStyle(item)" class="mt-0.5 truncate text-xs text-zinc-400">
+                      作者：{{ item.userNickname || `用户 #${item.userId}` }}
+                      <span v-if="item.sourceAssetId > 0"> · 来源图 #{{ item.sourceAssetId }}</span>
+                    </p>
+                  </div>
                 </div>
               </td>
-              <td class="max-w-sm px-4 py-3">
-                <p class="truncate font-medium">{{ item.name }}</p>
-                <p class="truncate text-xs text-zinc-500">{{ item.prompt }}</p>
-                <p v-if="isUserStyle(item)" class="mt-0.5 truncate text-xs text-zinc-400">
-                  作者：{{ item.userNickname || `用户 #${item.userId}` }}
-                  <span v-if="item.sourceAssetId > 0"> · 来源图 #{{ item.sourceAssetId }}</span>
-                </p>
-              </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ item.category || '—' }}</td>
-              <td class="px-4 py-3">
-                <div class="flex flex-wrap gap-1">
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ item.category || '—' }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3">
+                <div class="flex flex-nowrap gap-1">
                   <UBadge v-for="tag in item.tags" :key="tag" color="neutral" variant="subtle">{{ tag }}</UBadge>
                 </div>
               </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs">{{ kindsLabel(item.kinds) }}</td>
-              <td class="px-4 py-3 tabular-nums">{{ item.uses }}</td>
-              <td class="px-4 py-3 tabular-nums">{{ item.sortOrder }}</td>
-              <td class="whitespace-nowrap px-4 py-3">
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs">{{ kindsLabel(item.kinds) }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.uses }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.sortOrder }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3">
                 <UBadge :color="STATUS_COLOR[item.status]" variant="subtle">{{ statusLabel(item) }}</UBadge>
               </td>
-              <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                <div class="flex flex-nowrap gap-1">
+              <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                <div class="flex w-max flex-nowrap gap-1">
                   <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
                   <template v-if="isUserStyle(item)">
                     <template v-if="item.status === 3">

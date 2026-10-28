@@ -263,34 +263,37 @@ async function confirm() {
       <UEmpty v-else-if="pageRows.length === 0" icon="i-lucide-film" :title="t('showcase.empty')" :description="t('showcase.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[60rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="whitespace-nowrap px-4 py-3">排序</th>
-                <th class="w-32 px-4 py-3">封面</th>
-                <th class="px-4 py-3">成片标题</th>
-                <th class="w-36 px-4 py-3">作者名称</th>
-                <th class="w-32 px-4 py-3">分类</th>
-                <th class="whitespace-nowrap px-4 py-3">点赞数</th>
-                <th class="whitespace-nowrap px-4 py-3">状态</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">操作</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">排序</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">成片标题</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">作者名称</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">分类</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">点赞数</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              <tr v-for="item in pageRows" :key="item.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3 tabular-nums">{{ item.sortOrder }}</td>
-                <td class="px-4 py-3">
-                  <img :src="item.cover || DEFAULT_WORK_COVER" alt="" class="h-12 w-20 rounded object-cover">
+              <tr v-for="item in pageRows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.sortOrder }}</td>
+                <td class="max-w-0 w-full px-4 py-3 text-left">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <div class="h-16 w-28 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                      <img :src="item.cover || DEFAULT_WORK_COVER" alt="" class="h-full w-full object-cover">
+                    </div>
+                    <div class="min-w-0 truncate font-medium" :title="item.title">{{ item.title }}</div>
+                  </div>
                 </td>
-                <td class="truncate px-4 py-3 font-medium">{{ item.title }}</td>
-                <td class="truncate px-4 py-3">{{ item.authorName }}</td>
-                <td class="px-4 py-3">{{ item.category || '—' }}</td>
-                <td class="px-4 py-3 tabular-nums">{{ item.likes.toLocaleString() }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.authorName }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.category || '—' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.likes.toLocaleString() }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '已上架' : '已下架' }}</UBadge>
                 </td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <div class="flex flex-nowrap gap-1">
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
                     <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="requestConfirm(item, 'status')">
                       {{ item.status === 1 ? '下架' : '上架' }}
@@ -314,7 +317,9 @@ async function confirm() {
           <UEmpty v-else-if="pickRows.length === 0" icon="i-lucide-film" title="没有可加入的作品" description="已发布且未精选的作品会显示在这里。" class="min-h-40" />
           <ul v-else class="max-h-[50vh] divide-y divide-zinc-200 overflow-y-auto dark:divide-zinc-800">
             <li v-for="item in pickRows" :key="item.id" class="flex items-center gap-3 py-2">
-              <img :src="item.cover" alt="" class="h-10 w-16 shrink-0 rounded object-cover">
+              <div class="h-12 w-20 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                <img :src="item.cover" alt="" class="h-full w-full object-cover">
+              </div>
               <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-medium">{{ item.title }}</p>
                 <p class="truncate text-xs text-zinc-500">{{ item.authorName }} · {{ item.category || '未分类' }} · {{ item.likes }} 赞</p>

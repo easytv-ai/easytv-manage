@@ -299,44 +299,44 @@ function watchUrl(audit: AdminAudit) {
       />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[68rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="px-4 py-3">{{ isReport ? '举报说明' : isComment ? '评论内容' : '作品简介' }}</th>
-                <th class="w-36 px-4 py-3">{{ isReport ? '举报人' : isComment ? '评论人' : '作者' }}</th>
-                <th class="w-44 px-4 py-3">{{ isReport ? '举报对象' : isComment ? '所属作品' : '作品' }}</th>
-                <th class="whitespace-nowrap px-4 py-3">类型</th>
-                <th class="w-28 px-4 py-3">{{ isReport ? '原因' : isComment ? '层级' : '分类' }}</th>
-                <th class="whitespace-nowrap px-4 py-3">状态</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ isReport || isComment ? '提交时间' : '发布时间' }}</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">操作</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ isReport ? '举报说明' : isComment ? '评论内容' : '作品简介' }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport ? '举报人' : isComment ? '评论人' : '作者' }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport ? '举报对象' : isComment ? '所属作品' : '作品' }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">类型</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport ? '原因' : isComment ? '层级' : '分类' }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport || isComment ? '提交时间' : '发布时间' }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              <tr v-for="audit in pageRows" :key="`${audit.type}-${audit.id}`" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3">
-                  <p class="line-clamp-2">{{ audit.content }}</p>
-                  <p v-if="audit.remark" class="mt-1 line-clamp-1 text-xs text-zinc-400">备注：{{ audit.remark }}</p>
+              <tr v-for="audit in pageRows" :key="`${audit.type}-${audit.id}`" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                <td class="max-w-0 w-full px-4 py-3">
+                  <p class="truncate" :title="audit.content">{{ audit.content }}</p>
+                  <p v-if="audit.remark" class="mt-1 truncate text-xs text-zinc-400" :title="audit.remark">备注：{{ audit.remark }}</p>
                 </td>
-                <td class="truncate px-4 py-3">{{ audit.authorName }}</td>
-                <td class="truncate px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.authorName }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <a :href="watchUrl(audit)" target="_blank" rel="noopener" class="text-primary hover:underline">{{ audit.targetTitle }}</a>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">{{ audit.type === 'report' && audit.targetType === 'comment' ? '评论举报' : typeLabels[audit.type] }}</td>
-                <td class="truncate px-4 py-3">{{ audit.reason }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.type === 'report' && audit.targetType === 'comment' ? '评论举报' : typeLabels[audit.type] }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.reason }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="statusColor(audit.status)" variant="subtle">
                     {{ statusLabel(audit) }}
                   </UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-zinc-500">{{ audit.createdAt }}</td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <div v-if="audit.type === 'comment'" class="flex flex-nowrap gap-1">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ audit.createdAt }}</td>
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div v-if="audit.type === 'comment'" class="flex w-max flex-nowrap gap-1">
                     <UButton v-if="audit.status !== 2" type="button" size="sm" variant="soft" color="warning" :disabled="confirming" @click="requestConfirm(audit, 'hide')">隐藏</UButton>
                     <UButton v-else type="button" size="sm" variant="soft" color="success" :disabled="confirming" @click="requestConfirm(audit, 'restore')">恢复</UButton>
                     <UButton type="button" size="sm" variant="soft" color="error" :disabled="confirming" @click="requestConfirm(audit, 'delete')">删除</UButton>
                   </div>
-                  <div v-else-if="audit.status === 0" class="flex flex-nowrap gap-1">
+                  <div v-else-if="audit.status === 0" class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" :color="isReport ? 'error' : 'success'" @click="requestConfirm(audit, 'pass')">
                       {{ passLabel(audit) }}
                     </UButton>

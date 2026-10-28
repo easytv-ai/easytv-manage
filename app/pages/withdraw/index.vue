@@ -341,43 +341,44 @@ async function submitFail() {
       <UEmpty v-else-if="rows.length === 0" icon="i-lucide-banknote" :title="t('withdraw.empty')" :description="t('withdraw.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[76rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('withdraw.colNo') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('withdraw.colOwner') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('withdraw.colAmount') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('withdraw.colWay') }}</th>
-                <th class="px-4 py-3">{{ t('withdraw.colAccount') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('withdraw.colApplied') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('withdraw.colNo') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('withdraw.colOwner') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('withdraw.colAmount') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('withdraw.colWay') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('withdraw.colAccount') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('withdraw.colApplied') }}</th>
                 <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.withdraw_no }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.withdraw_no }}</td>
+                <td class="max-w-0 w-full px-4 py-3">
                   <button
                     type="button"
-                    class="inline-flex min-h-8 items-center rounded-md px-2 text-primary hover:bg-primary/10"
+                    class="inline-flex min-h-8 max-w-full items-center truncate rounded-md px-2 text-primary hover:bg-primary/10"
+                    :title="ownerText(item)"
                     @click="openApplicant(item)"
                   >
                     {{ ownerText(item) }}
                   </button>
                 </td>
-                <td class="px-4 py-3 text-right tabular-nums">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">
                   <div>{{ money(item.amount) }}</div>
                   <div class="text-xs text-zinc-400">{{ t('withdraw.actual', { money: money(item.actual_amount) }) }}</div>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">{{ wayText(item.way) }}</td>
-                <td class="max-w-56 truncate px-4 py-3 text-xs" :title="accountText(item.account_info)">{{ accountText(item.account_info) }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ wayText(item.way) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs" :title="accountText(item.account_info)">{{ accountText(item.account_info) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="statusColor(item.status)" variant="subtle">{{ statusText(item.status) }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
-                <td class="sticky right-0 z-10 whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900">
-                  <div class="flex gap-2">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="xs" variant="soft" color="neutral" @click="openDetail(item)">{{ t('withdraw.view') }}</UButton>
                     <template v-if="isSuperAdmin && item.status === 0">
                       <UButton type="button" size="xs" color="success" variant="soft" @click="openReview(item, 'approve')">{{ t('withdraw.approve') }}</UButton>

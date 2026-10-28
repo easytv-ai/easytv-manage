@@ -281,34 +281,34 @@ const detailTiles = computed(() => {
       <UEmpty v-else-if="rows.length === 0" icon="i-lucide-handshake" :title="t('partner.empty')" :description="t('partner.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[82rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="px-4 py-3">{{ t('partner.colName') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('partner.colCode') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('partner.colRate') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('partner.colCustomersShort') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('partner.colAmount') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('partner.colRebate') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('partner.colApplied') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('partner.colName') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('partner.colCode') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('partner.colRate') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('partner.colCustomersShort') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('partner.colAmount') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('partner.colRebate') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('partner.colApplied') }}</th>
                 <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3">
-                  <div class="max-w-56 truncate font-medium" :title="item.name">{{ item.name || '—' }}</div>
-                  <div class="text-xs text-zinc-500">
+                <td class="max-w-0 w-full px-4 py-3">
+                  <div class="truncate font-medium" :title="item.name">{{ item.name || '—' }}</div>
+                  <div class="truncate text-xs text-zinc-400">
                     <span>{{ item.nickname || '—' }}</span>
-                    <span class="ml-1 font-mono text-zinc-400">#{{ item.user_id }}</span>
+                    <span class="ml-1 font-mono">#{{ item.user_id }}</span>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="kindColor(item.kind)" variant="subtle">{{ kindLabel(item.kind) }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <div v-if="item.code" class="flex items-center gap-1">
                     <span class="font-mono text-sm font-semibold">{{ item.code }}</span>
                     <UButton
@@ -323,18 +323,18 @@ const detailTiles = computed(() => {
                   </div>
                   <span v-else class="text-zinc-400">—</span>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 tabular-nums">{{ rateText(item.rebate_rate) }}</td>
-                <td class="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ rateText(item.rebate_rate) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">
                   {{ num(item.customers) }} / {{ num(item.paid_users) }}
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-right tabular-nums">{{ money(item.amount_total) }}</td>
-                <td class="whitespace-nowrap px-4 py-3 text-right tabular-nums">{{ money(item.rebate_total) }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ money(item.amount_total) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ money(item.rebate_total) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="statusColor(item.status)" variant="subtle">{{ statusText(item.status) }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.applied_at) || '—' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.applied_at) || '—' }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
-                  <div class="flex flex-nowrap gap-1">
+                  <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="xs" variant="soft" color="neutral" @click="openDetail(item)">{{ t('common.detail') }}</UButton>
                     <template v-if="isSuperAdmin">
                       <UButton v-if="item.status !== 1" type="button" size="xs" variant="soft" color="success" @click="openReview(item, 'approve')">{{ t('partner.approve') }}</UButton>
@@ -487,30 +487,32 @@ const detailTiles = computed(() => {
                 <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
                   <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
                     <tr>
-                      <th class="px-3 py-2">{{ t('partner.customerUser') }}</th>
-                      <th class="whitespace-nowrap px-3 py-2">{{ t('partner.customerSource') }}</th>
-                      <th class="whitespace-nowrap px-3 py-2 text-right">{{ t('partner.customerAmount') }}</th>
-                      <th class="whitespace-nowrap px-3 py-2 text-right">{{ t('partner.customerRebate') }}</th>
-                      <th class="whitespace-nowrap px-3 py-2">{{ t('partner.customerBoundAt') }}</th>
-                      <th class="whitespace-nowrap px-3 py-2">{{ t('partner.customerFirstPaidAt') }}</th>
+                      <th class="min-w-0 w-full px-3 py-2 text-left">{{ t('partner.customerUser') }}</th>
+                      <th class="w-[1%] whitespace-nowrap px-3 py-2">{{ t('partner.customerSource') }}</th>
+                      <th class="w-[1%] whitespace-nowrap px-3 py-2">{{ t('partner.customerAmount') }}</th>
+                      <th class="w-[1%] whitespace-nowrap px-3 py-2">{{ t('partner.customerRebate') }}</th>
+                      <th class="w-[1%] whitespace-nowrap px-3 py-2">{{ t('partner.customerBoundAt') }}</th>
+                      <th class="w-[1%] whitespace-nowrap px-3 py-2">{{ t('partner.customerFirstPaidAt') }}</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                     <tr v-if="!customers.length">
                       <td colspan="6" class="px-3 py-6 text-center text-zinc-400">{{ t('partner.customersEmpty') }}</td>
                     </tr>
-                    <tr v-for="c in customers" :key="c.id">
-                      <td class="px-3 py-2">
-                        <span>{{ c.nickname || '—' }}</span>
-                        <span class="ml-1 font-mono text-xs text-zinc-400">#{{ c.user_id }}</span>
+                    <tr v-for="c in customers" :key="c.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                      <td class="max-w-0 w-full px-3 py-2">
+                        <div class="truncate">
+                          <span>{{ c.nickname || '—' }}</span>
+                          <span class="ml-1 font-mono text-xs text-zinc-400">#{{ c.user_id }}</span>
+                        </div>
                       </td>
-                      <td class="whitespace-nowrap px-3 py-2">
+                      <td class="w-[1%] whitespace-nowrap px-3 py-2">
                         <UBadge :color="sourceColor(c.source)" variant="subtle">{{ sourceLabel(c.source) }}</UBadge>
                       </td>
-                      <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">{{ money(c.amount) }}</td>
-                      <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">{{ money(c.rebate) }}</td>
-                      <td class="whitespace-nowrap px-3 py-2 text-xs text-zinc-500">{{ formatUnix(c.created_at) || '—' }}</td>
-                      <td class="whitespace-nowrap px-3 py-2 text-xs text-zinc-500">{{ formatUnix(c.first_paid_at) || '—' }}</td>
+                      <td class="w-[1%] whitespace-nowrap px-3 py-2 tabular-nums">{{ money(c.amount) }}</td>
+                      <td class="w-[1%] whitespace-nowrap px-3 py-2 tabular-nums">{{ money(c.rebate) }}</td>
+                      <td class="w-[1%] whitespace-nowrap px-3 py-2 text-xs text-zinc-500">{{ formatUnix(c.created_at) || '—' }}</td>
+                      <td class="w-[1%] whitespace-nowrap px-3 py-2 text-xs text-zinc-500">{{ formatUnix(c.first_paid_at) || '—' }}</td>
                     </tr>
                   </tbody>
                 </table>

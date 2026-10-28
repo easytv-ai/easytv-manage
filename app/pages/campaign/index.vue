@@ -471,44 +471,46 @@ const num = (v: unknown) => (Number(v) || 0).toLocaleString()
       <UEmpty v-else-if="rows.length === 0" icon="i-lucide-trophy" :title="t('campaign.empty')" :description="t('campaign.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[72rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="px-4 py-3">{{ t('common.title') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">Slug</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('campaign.tag') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('campaign.colTime') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('campaign.colEntries') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.title') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">Slug</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('campaign.tag') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('campaign.colTime') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('campaign.colEntries') }}</th>
                 <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3">
-                  <div class="flex items-center gap-3">
-                    <img :src="resolveMediaUrl(item.banner_url) || DEFAULT_WORK_COVER" alt="" class="h-10 w-20 shrink-0 rounded object-cover">
+                <td class="max-w-0 w-full px-4 py-3">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <div class="h-14 w-36 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                      <img :src="resolveMediaUrl(item.banner_url) || DEFAULT_WORK_COVER" alt="" class="h-full w-full object-cover">
+                    </div>
                     <div class="min-w-0">
-                      <div class="max-w-56 truncate font-medium" :title="item.title">{{ item.title }}</div>
-                      <div class="font-mono text-xs text-zinc-400">#{{ item.id }}</div>
+                      <div class="truncate font-medium" :title="item.title">{{ item.title }}</div>
+                      <div class="mt-0.5 truncate font-mono text-xs text-zinc-400" :title="`#${item.id}`">#{{ item.id }}</div>
                     </div>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.slug }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.slug }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge v-if="item.tag" color="primary" variant="subtle">{{ item.tag }}</UBadge>
                   <span v-else class="text-zinc-400">—</span>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">
                   <div>{{ formatUnix(item.starts_at) || '—' }}</div>
                   <div>→ {{ formatUnix(item.ends_at) || '—' }}</div>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="STATUS_COLOR[item.status] ?? 'neutral'" variant="subtle">{{ statusText(item.status) }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-right tabular-nums">{{ num(item.entries_count) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ num(item.entries_count) }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
-                  <div class="flex flex-nowrap gap-1">
+                  <div class="flex w-max flex-nowrap gap-1">
                     <UButton v-if="isSuperAdmin" type="button" size="sm" variant="soft" @click="openEdit(item)">{{ t('common.edit') }}</UButton>
                     <UButton type="button" size="sm" variant="soft" @click="openEntries(item)">{{ t('campaign.entries') }}</UButton>
                     <UButton v-if="isSuperAdmin" type="button" size="sm" variant="soft" color="warning" :disabled="!canSettle(item)" :title="canSettle(item) ? undefined : t('campaign.settleHint')" @click="requestConfirm(item, 'settle')">
@@ -644,40 +646,42 @@ const num = (v: unknown) => (Number(v) || 0).toLocaleString()
               <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
                 <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
                   <tr>
-                    <th class="px-3 py-2">{{ t('campaign.entryWork') }}</th>
-                    <th class="px-3 py-2">{{ t('campaign.entryUser') }}</th>
-                    <th class="whitespace-nowrap px-3 py-2 text-right">{{ t('campaign.entryLikes') }}</th>
-                    <th class="whitespace-nowrap px-3 py-2">{{ t('common.status') }}</th>
-                    <th class="whitespace-nowrap px-3 py-2">{{ t('common.actions') }}</th>
+                    <th class="min-w-0 w-full px-3 py-2 text-left">{{ t('campaign.entryWork') }}</th>
+                    <th class="w-[1%] whitespace-nowrap px-3 py-2">{{ t('campaign.entryUser') }}</th>
+                    <th class="w-[1%] whitespace-nowrap px-3 py-2">{{ t('campaign.entryLikes') }}</th>
+                    <th class="w-[1%] whitespace-nowrap px-3 py-2">{{ t('common.status') }}</th>
+                    <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-3 py-2 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                   <tr v-if="!entries.length">
                     <td colspan="5" class="px-3 py-6 text-center text-zinc-400">{{ t('campaign.entriesEmpty') }}</td>
                   </tr>
-                  <tr v-for="e in entries" :key="e.id">
-                    <td class="px-3 py-2">
-                      <div class="flex items-center gap-2">
-                        <img :src="entryWorkCover(e)" alt="" class="h-10 w-16 shrink-0 rounded object-cover">
+                  <tr v-for="e in entries" :key="e.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                    <td class="max-w-0 w-full px-3 py-2">
+                      <div class="flex min-w-0 items-center gap-3">
+                        <div class="h-16 w-28 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                          <img :src="entryWorkCover(e)" alt="" class="h-full w-full object-cover">
+                        </div>
                         <div class="min-w-0">
-                          <div class="max-w-40 truncate" :title="entryWorkTitle(e)">{{ entryWorkTitle(e) || `#${e.work_id}` }}</div>
-                          <div class="font-mono text-xs text-zinc-400">#{{ e.work_id }}</div>
+                          <div class="truncate font-medium" :title="entryWorkTitle(e)">{{ entryWorkTitle(e) || `#${e.work_id}` }}</div>
+                          <div class="mt-0.5 truncate font-mono text-xs text-zinc-400" :title="`#${e.work_id}`">#{{ e.work_id }}</div>
                         </div>
                       </div>
                     </td>
-                    <td class="px-3 py-2">
+                    <td class="w-[1%] whitespace-nowrap px-3 py-2">
                       <span>{{ entryNickname(e) || '—' }}</span>
                       <span class="ml-1 font-mono text-xs text-zinc-400">#{{ e.user_id }}</span>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-2 text-right tabular-nums">
+                    <td class="w-[1%] whitespace-nowrap px-3 py-2 tabular-nums">
                       {{ num(e.likes_snapshot) }}
                       <div v-if="e.rank" class="text-xs text-zinc-400">{{ t('campaign.entryRank', { n: e.rank, points: num(e.prize_points) }) }}</div>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-2">
+                    <td class="w-[1%] whitespace-nowrap px-3 py-2">
                       <UBadge :color="entryStatusColor(e.status)" variant="subtle">{{ entryStatusText(e.status) }}</UBadge>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-2">
-                      <div class="flex flex-nowrap gap-1">
+                    <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-3 py-2 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                      <div class="flex w-max flex-nowrap gap-1">
                         <UButton v-if="e.status !== 1" type="button" size="xs" variant="soft" color="success" :loading="entryActing === e.id" :disabled="!!entryActing" @click="reviewEntry(e, 'approve')">{{ t('campaign.approve') }}</UButton>
                         <UButton v-if="e.status !== 2" type="button" size="xs" variant="soft" color="error" :loading="entryActing === e.id" :disabled="!!entryActing" @click="reviewEntry(e, 'reject')">{{ t('campaign.reject') }}</UButton>
                       </div>

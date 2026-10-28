@@ -219,42 +219,45 @@ function refUrl(url: string) {
       <UEmpty v-else-if="rows.length === 0" icon="i-lucide-person-standing" :title="t('subject.empty')" :description="t('subject.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[72rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="w-24 px-4 py-3">{{ t('subject.colCover') }}</th>
-                <th class="px-4 py-3">{{ t('subject.colName') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('subject.colOwner') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('subject.colShared') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('subject.colRefs') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('subject.colUses') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('subject.colName') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('subject.colOwner') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('subject.colShared') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('subject.colRefs') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('subject.colUses') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
                 <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3">
-                  <img :src="coverOf(item)" alt="" class="h-auto max-w-full w-16 rounded object-cover">
+                <td class="max-w-0 w-full px-4 py-3">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                      <img :src="coverOf(item)" alt="" class="h-full w-full object-cover">
+                    </div>
+                    <div class="min-w-0">
+                      <div class="truncate font-medium" :title="item.name || undefined">{{ item.name || '—' }}</div>
+                      <div class="truncate text-xs text-zinc-400" :title="item.look || undefined">{{ item.look || '—' }}</div>
+                    </div>
+                  </div>
                 </td>
-                <td class="px-4 py-3">
-                  <div class="font-medium">{{ item.name || '—' }}</div>
-                  <div class="line-clamp-1 text-xs text-zinc-400">{{ item.look || '—' }}</div>
-                </td>
-                <td class="whitespace-nowrap px-4 py-3">{{ kindLabel(item.kind) }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ kindLabel(item.kind) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <div>{{ item.owner_name || '—' }}</div>
                   <div class="font-mono text-xs text-zinc-400">#{{ item.user_id }}{{ item.team_id ? ` · ${t('subject.team')} #${item.team_id}` : '' }}</div>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="item.shared ? 'success' : 'neutral'" variant="subtle">{{ item.shared ? t('subject.shared1') : t('subject.shared0') }}</UBadge>
                 </td>
-                <td class="px-4 py-3 text-right tabular-nums">{{ item.refs_count || 0 }}</td>
-                <td class="px-4 py-3 text-right tabular-nums">{{ item.uses || 0 }}</td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
-                <td class="sticky right-0 z-10 whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900">
-                  <div class="flex gap-2">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.refs_count || 0 }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.uses || 0 }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="xs" variant="soft" @click="openDetail(item)">{{ t('subject.view') }}</UButton>
                     <UButton v-if="isSuperAdmin" type="button" size="xs" color="error" variant="soft" @click="openDelete(item)">{{ t('common.delete') }}</UButton>
                   </div>

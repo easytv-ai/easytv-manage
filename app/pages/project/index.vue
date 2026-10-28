@@ -140,30 +140,32 @@ async function confirm() {
       <UEmpty v-else-if="pageRows.length === 0" icon="i-lucide-folder" :title="t('project.empty')" :description="t('project.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[52rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="px-4 py-3">项目名称</th>
-                <th class="w-40 px-4 py-3">创建人</th>
-                <th class="whitespace-nowrap px-4 py-3">类型</th>
-                <th class="whitespace-nowrap px-4 py-3">状态</th>
-                <th class="whitespace-nowrap px-4 py-3">创建时间</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">操作</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">项目名称</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">创建人</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">类型</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">创建时间</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              <tr v-for="item in pageRows" :key="item.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="truncate px-4 py-3 font-medium">{{ item.title }}</td>
-                <td class="truncate px-4 py-3">{{ item.ownerName }}</td>
-                <td class="px-4 py-3">{{ item.type === 'video' ? '视频项目' : '画布项目' }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+              <tr v-for="item in pageRows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                <td class="max-w-0 w-full px-4 py-3 text-left font-medium">
+                  <div class="truncate" :title="item.title">{{ item.title }}</div>
+                </td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.ownerName }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.type === 'video' ? '视频项目' : '画布项目' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '正常' : '回收站' }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt }}</td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <div class="flex flex-nowrap gap-1">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt }}</td>
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="requestConfirm(item, 'status')">
-                      {{ item.status === 1 ? '移入回收站' : '恢复' }}
+                      {{ item.status === 1 ? '回收' : '恢复' }}
                     </UButton>
                     <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">删除</UButton>
                   </div>

@@ -235,36 +235,38 @@ async function submitLimit() {
       <UEmpty v-else-if="rows.length === 0" icon="i-lucide-users" :title="t('team.empty')" :description="t('team.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[64rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="px-4 py-3">{{ t('team.colName') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('team.colOwner') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('team.colSeats') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('team.colMembers') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('team.colLimit') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('team.colUsed') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('team.colName') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('team.colOwner') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('team.colSeats') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('team.colMembers') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('team.colLimit') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('team.colUsed') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
                 <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3">
-                  <div class="font-medium">{{ item.name || '—' }}</div>
+                <td class="max-w-0 w-full px-4 py-3">
+                  <div class="truncate font-medium" :title="item.name || undefined">{{ item.name || '—' }}</div>
                   <div class="font-mono text-xs text-zinc-400">#{{ item.id }}</div>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <div>{{ item.owner_name || '—' }}</div>
                   <div class="font-mono text-xs text-zinc-400">#{{ item.owner_id }}</div>
                 </td>
-                <td class="px-4 py-3 text-right tabular-nums">{{ num(item.seats) }}</td>
-                <td class="px-4 py-3 text-right tabular-nums">{{ num(item.member_count) }}</td>
-                <td class="px-4 py-3 text-right tabular-nums">{{ item.points_limit_total ? num(item.points_limit_total) : t('team.unlimited') }}</td>
-                <td class="px-4 py-3 text-right tabular-nums">{{ num(item.points_used_month) }}</td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
-                <td class="sticky right-0 z-10 whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900">
-                  <UButton type="button" size="xs" variant="soft" @click="openDetail(item)">{{ t('team.viewMembers') }}</UButton>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ num(item.seats) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ num(item.member_count) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.points_limit_total ? num(item.points_limit_total) : t('team.unlimited') }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ num(item.points_used_month) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div class="flex w-max flex-nowrap gap-1">
+                    <UButton type="button" size="xs" variant="soft" @click="openDetail(item)">{{ t('team.viewMembers') }}</UButton>
+                  </div>
                 </td>
               </tr>
             </tbody>

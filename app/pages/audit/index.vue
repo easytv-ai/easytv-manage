@@ -314,45 +314,49 @@ function gotoUser(userId: number) {
       <UEmpty v-else-if="pageRows.length === 0" icon="i-lucide-scroll-text" :title="t('audit.empty')" :description="t('audit.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[72rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="whitespace-nowrap px-4 py-3">操作时间</th>
-                <th class="px-4 py-3">用户名</th>
-                <th class="whitespace-nowrap px-4 py-3">日志分类</th>
-                <th class="whitespace-nowrap px-4 py-3">操作标识</th>
-                <th class="px-4 py-3">操作描述</th>
-                <th class="whitespace-nowrap px-4 py-3">结果</th>
-                <th class="whitespace-nowrap px-4 py-3">IP</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">操作</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">操作时间</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">用户名</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">日志分类</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">操作标识</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">操作描述</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">结果</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">IP</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              <tr v-for="item in pageRows" :key="item.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt || '—' }}</td>
-                <td class="px-4 py-3">
+              <tr v-for="item in pageRows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt || '—' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <button
                     v-if="item.userId"
                     type="button"
-                    class="inline-flex max-w-48 flex-col items-start rounded-md px-1 py-0.5 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    class="inline-flex flex-col items-start rounded-md px-1 py-0.5 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     @click="() => { void gotoUser(item.userId) }"
                   >
-                    <span class="max-w-48 truncate text-primary">{{ item.username }}</span>
+                    <span class="text-primary">{{ item.username }}</span>
                     <span class="font-mono text-xs text-zinc-400">#{{ item.userId }} · {{ roleLabel(item.actorRole) }}</span>
                   </button>
                   <span v-else class="text-zinc-400">{{ item.username }}</span>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="categoryColor(item.category)" variant="subtle">{{ categoryLabel(item.category) }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.action || '—' }}</td>
-                <td class="max-w-80 truncate px-4 py-3" :title="item.content">{{ item.content || '—' }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.action || '—' }}</td>
+                <td class="max-w-0 w-full px-4 py-3">
+                  <div class="truncate" :title="item.content">{{ item.content || '—' }}</div>
+                </td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="item.success ? 'success' : 'error'" variant="subtle">{{ item.success ? '成功' : '失败' }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 font-mono text-xs text-zinc-500">{{ item.ip || '—' }}</td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <UButton type="button" size="sm" variant="soft" @click="openDetail(item)">{{ t('common.detail') }}</UButton>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs text-zinc-500">{{ item.ip || '—' }}</td>
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div class="flex w-max flex-nowrap gap-1">
+                    <UButton type="button" size="sm" variant="soft" @click="openDetail(item)">{{ t('common.detail') }}</UButton>
+                  </div>
                 </td>
               </tr>
             </tbody>

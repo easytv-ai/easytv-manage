@@ -201,37 +201,30 @@ async function confirmAdjust() {
       <UEmpty v-else-if="pageRows.length === 0" icon="i-lucide-wallet" :title="t('wallet.empty')" :description="t('wallet.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[60rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
-            <colgroup>
-              <col class="w-[16%]">
-              <col class="w-[14%]">
-              <col class="w-[16%]">
-              <col class="w-[16%]">
-              <col class="w-[20%]">
-              <col class="w-[14%]">
-              <col class="w-[1%]">
-            </colgroup>
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="px-4 py-3">用户</th>
-                <th class="px-4 py-3">用户 ID</th>
-                <th class="px-4 py-3">手机号</th>
-                <th class="px-4 py-3">会员套餐</th>
-                <th class="whitespace-nowrap px-4 py-3">到期时间</th>
-                <th class="whitespace-nowrap px-4 py-3">积分余额</th>
-                <th class="whitespace-nowrap px-4 py-3">操作</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">用户</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">用户 ID</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">手机号</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">会员套餐</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">到期时间</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">积分余额</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              <tr v-for="item in pageRows" :key="item.userId" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3 font-medium">{{ item.userName }}</td>
-                <td class="px-4 py-3 font-mono text-xs">{{ item.userId }}</td>
-                <td class="px-4 py-3">{{ item.mobile || '—' }}</td>
-                <td class="px-4 py-3">{{ item.planName || '未开通' }}</td>
-                <td class="whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.expireAt || '—' }}</td>
-                <td class="px-4 py-3 font-medium">{{ item.points }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
-                  <div class="flex flex-nowrap gap-1">
+              <tr v-for="item in pageRows" :key="item.userId" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                <td class="max-w-0 w-full px-4 py-3">
+                  <div class="truncate font-medium" :title="item.userName">{{ item.userName }}</div>
+                </td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.userId }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.mobile || '—' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.planName || '未开通' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.expireAt || '—' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-medium">{{ item.points }}</td>
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" @click="openAdjust(item)">调整积分</UButton>
                     <UButton type="button" size="sm" variant="soft" @click="openLog(item)">流水</UButton>
                     <UButton type="button" size="sm" variant="soft" @click="() => { void gotoOrder(item.userId) }">订单</UButton>
@@ -295,20 +288,22 @@ async function confirmAdjust() {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="text-left text-xs text-zinc-500">
               <tr>
-                <th class="py-2">时间</th>
-                <th class="py-2">类型</th>
-                <th class="py-2">数量</th>
-                <th class="py-2">原因</th>
-                <th class="py-2">操作人</th>
+                <th class="w-[1%] whitespace-nowrap py-2">时间</th>
+                <th class="w-[1%] whitespace-nowrap py-2">类型</th>
+                <th class="w-[1%] whitespace-nowrap py-2">数量</th>
+                <th class="min-w-0 w-full py-2 text-left">原因</th>
+                <th class="w-[1%] whitespace-nowrap py-2">操作人</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in currentLogs" :key="item.id">
-                <td class="py-2 text-zinc-500">{{ item.createdAt }}</td>
-                <td class="py-2">{{ item.type === 'add' ? '补发' : '扣减' }}</td>
-                <td class="py-2">{{ item.type === 'add' ? '+' : '-' }}{{ item.amount }}</td>
-                <td class="py-2">{{ item.reason }}</td>
-                <td class="py-2">{{ item.operator }}</td>
+                <td class="w-[1%] whitespace-nowrap py-2 text-zinc-500">{{ item.createdAt }}</td>
+                <td class="w-[1%] whitespace-nowrap py-2">{{ item.type === 'add' ? '补发' : '扣减' }}</td>
+                <td class="w-[1%] whitespace-nowrap py-2">{{ item.type === 'add' ? '+' : '-' }}{{ item.amount }}</td>
+                <td class="max-w-0 w-full py-2">
+                  <div class="truncate" :title="item.reason">{{ item.reason }}</div>
+                </td>
+                <td class="w-[1%] whitespace-nowrap py-2">{{ item.operator }}</td>
               </tr>
             </tbody>
           </table>

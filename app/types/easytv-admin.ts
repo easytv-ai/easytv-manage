@@ -222,9 +222,12 @@ export interface AdminAssetItem {
   id: number
   title: string
   ownerName: string
+  userId: number
   type: AssetType
   status: PublishStatus
   createdAt: string
+  url: string
+  mime: string
 }
 
 export interface AdminCanvas {

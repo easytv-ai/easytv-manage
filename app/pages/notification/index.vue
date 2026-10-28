@@ -374,39 +374,34 @@ async function confirm() {
       />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[56rem] table-fixed divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
-            <colgroup>
-              <col class="w-40">
-              <col class="w-24">
-              <col>
-              <col>
-              <col class="w-20">
-              <col class="w-40">
-              <col class="w-20">
-            </colgroup>
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('notification.colUser') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
-                <th class="px-4 py-3">{{ t('common.title') }}</th>
-                <th class="px-4 py-3">{{ t('common.content') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('notification.colSentAt') }}</th>
-                <th class="sticky right-0 z-10 whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('notification.colUser') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.title') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.content') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('notification.colSentAt') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in pageRows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="truncate px-4 py-3" :title="`${item.userName} #${item.userId}`">{{ item.userName }}<span class="ml-1 text-xs text-zinc-400">#{{ item.userId }}</span></td>
-                <td class="whitespace-nowrap px-4 py-3">{{ TYPE_LABEL[item.type] }}</td>
-                <td class="px-4 py-3 font-medium break-words"><p class="line-clamp-2" :title="item.title">{{ item.title }}</p></td>
-                <td class="px-4 py-3 text-zinc-500 break-words"><p class="line-clamp-2" :title="item.content">{{ item.content || '—' }}</p></td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3" :title="`${item.userName} #${item.userId}`">{{ item.userName }}<span class="ml-1 text-xs text-zinc-400">#{{ item.userId }}</span></td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ TYPE_LABEL[item.type] }}</td>
+                <td class="max-w-0 w-full px-4 py-3 font-medium">
+                  <p class="truncate" :title="item.title">{{ item.title }}</p>
+                </td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500" :title="item.content">{{ item.content || '—' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="item.unread ? 'warning' : 'neutral'" variant="subtle">{{ item.unread ? t('common.unread') : t('common.read') }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt }}</td>
-                <td class="sticky right-0 z-10 whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
-                  <UButton type="button" size="sm" variant="soft" color="error" @click="requestDelete(item)">{{ t('common.delete') }}</UButton>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt }}</td>
+                <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                  <div class="flex w-max flex-nowrap gap-1">
+                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestDelete(item)">{{ t('common.delete') }}</UButton>
+                  </div>
                 </td>
               </tr>
             </tbody>

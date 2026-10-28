@@ -377,32 +377,34 @@ async function removeSource(item: SourceRow) {
         <table v-else class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
           <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
             <tr>
-              <th class="px-4 py-3">名称</th>
-              <th class="px-4 py-3">地址</th>
-              <th class="w-24 px-4 py-3">格式</th>
-              <th class="w-24 px-4 py-3">状态</th>
-              <th class="whitespace-nowrap px-4 py-3">上次同步</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">操作</th>
+              <th class="min-w-0 w-full px-4 py-3 text-left">名称</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">地址</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">格式</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">上次同步</th>
+              <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-            <tr v-for="item in sources" :key="item.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-              <td class="px-4 py-3 font-medium">
-                {{ item.name }}
-                <UBadge v-if="item.tag" color="neutral" variant="subtle" class="ml-1">{{ item.tag }}</UBadge>
+            <tr v-for="item in sources" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+              <td class="max-w-0 w-full px-4 py-3">
+                <div class="truncate font-medium" :title="item.name">
+                  {{ item.name }}
+                  <UBadge v-if="item.tag" color="neutral" variant="subtle" class="ml-1">{{ item.tag }}</UBadge>
+                </div>
               </td>
-              <td class="max-w-xs truncate px-4 py-3 text-xs text-zinc-500">{{ item.url }}</td>
-              <td class="px-4 py-3">{{ item.format }}</td>
-              <td class="px-4 py-3">
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500" :title="item.url">{{ item.url }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.format }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3">
                 <UBadge :color="item.enabled ? 'success' : 'neutral'" variant="subtle">{{ item.enabled ? '启用' : '停用' }}</UBadge>
               </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs">
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs">
                 <span v-if="item.lastError" class="text-red-500">{{ item.lastError }}</span>
                 <span v-else-if="item.lastSyncedAt" class="text-zinc-500">{{ item.lastSyncedAt }} · {{ item.count }} 条</span>
                 <span v-else class="text-zinc-400">未同步</span>
               </td>
-              <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                <div class="flex flex-nowrap gap-1">
+              <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                <div class="flex w-max flex-nowrap gap-1">
                   <UButton type="button" size="sm" variant="soft" :loading="syncingId === item.id" @click="syncSource(item)">同步</UButton>
                   <UButton type="button" size="sm" variant="soft" @click="openSourceEdit(item)">编辑</UButton>
                   <UButton type="button" size="sm" variant="soft" color="error" @click="removeSource(item)">删除</UButton>
@@ -445,34 +447,34 @@ async function removeSource(item: SourceRow) {
         <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
           <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
             <tr>
-              <th class="px-4 py-3">标题</th>
-              <th class="px-4 py-3">标签</th>
-              <th class="whitespace-nowrap px-4 py-3">来源</th>
-              <th class="w-20 px-4 py-3">复制</th>
-              <th class="w-20 px-4 py-3">排序</th>
-              <th class="whitespace-nowrap px-4 py-3">状态</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">操作</th>
+              <th class="min-w-0 w-full px-4 py-3 text-left">标题</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">标签</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">来源</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">复制</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">排序</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+              <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-            <tr v-for="item in rows" :key="item.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-              <td class="max-w-sm px-4 py-3">
-                <p class="truncate font-medium">{{ item.title }}</p>
-                <p class="truncate text-xs text-zinc-500">{{ item.content }}</p>
+            <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+              <td class="max-w-0 w-full px-4 py-3">
+                <p class="truncate font-medium" :title="item.title">{{ item.title }}</p>
+                <p class="truncate text-xs text-zinc-400" :title="item.content">{{ item.content }}</p>
               </td>
-              <td class="px-4 py-3">
+              <td class="w-[1%] whitespace-nowrap px-4 py-3">
                 <div class="flex flex-wrap gap-1">
                   <UBadge v-for="tag in item.tags" :key="tag" color="neutral" variant="subtle">{{ tag }}</UBadge>
                 </div>
               </td>
-              <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ item.sourceName || '后台录入' }}</td>
-              <td class="px-4 py-3 tabular-nums">{{ item.uses }}</td>
-              <td class="px-4 py-3 tabular-nums">{{ item.sortOrder }}</td>
-              <td class="whitespace-nowrap px-4 py-3">
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ item.sourceName || '后台录入' }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.uses }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.sortOrder }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3">
                 <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '已上架' : '已下架' }}</UBadge>
               </td>
-              <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                <div class="flex flex-nowrap gap-1">
+              <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
+                <div class="flex w-max flex-nowrap gap-1">
                   <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
                   <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="toggleStatus(item)">
                     {{ item.status === 1 ? '下架' : '上架' }}

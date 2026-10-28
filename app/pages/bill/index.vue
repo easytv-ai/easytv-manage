@@ -133,23 +133,23 @@ function openUser(id: number) {
       <UEmpty v-else-if="rows.length === 0" icon="i-lucide-scroll-text" :title="t('bill.empty')" :description="t('bill.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[72rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.userId') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('bill.colAmount') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('bill.colBalance') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('bill.colFrom') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('bill.colSource') }}</th>
-                <th class="px-4 py-3">{{ t('bill.colRemark') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.userId') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('bill.colAmount') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('bill.colBalance') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('bill.colFrom') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('bill.colSource') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('bill.colRemark') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-              <tr v-for="item in rows" :key="item.id" class="hover:bg-zinc-50 dark:hover:bg-zinc-900/60" :class="item.status === 3 ? 'text-zinc-400 line-through' : ''">
-                <td class="whitespace-nowrap px-4 py-3">
+              <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60" :class="item.status === 3 ? 'text-zinc-400 line-through' : ''">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <button
                     type="button"
                     class="inline-flex min-h-8 items-center rounded-md px-2 font-mono text-xs text-primary hover:bg-primary/10"
@@ -158,19 +158,21 @@ function openUser(id: number) {
                     #{{ item.user_id }}
                   </button>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">{{ bizText(item.biz_type) }}</td>
-                <td class="px-4 py-3 text-right tabular-nums" :class="Number(item.amount) < 0 ? 'text-rose-600' : ''">{{ amountText(item) }}</td>
-                <td class="px-4 py-3 text-right tabular-nums">{{ Number(item.balance) || 0 }}</td>
-                <td class="whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.from_user_id ? `#${item.from_user_id}` : '—' }}</td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ bizText(item.biz_type) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums" :class="Number(item.amount) < 0 ? 'text-rose-600' : ''">{{ amountText(item) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ Number(item.balance) || 0 }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.from_user_id ? `#${item.from_user_id}` : '—' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs">
                   <div class="font-mono">{{ item.source_no || '—' }}</div>
                   <div v-if="item.source_amount" class="text-zinc-400">{{ item.source_amount }} × {{ item.rate }}</div>
                 </td>
-                <td class="max-w-56 truncate px-4 py-3 text-xs" :title="item.remark || ''">{{ item.remark || '—' }}</td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="max-w-0 w-full px-4 py-3 text-xs">
+                  <div class="truncate" :title="item.remark || ''">{{ item.remark || '—' }}</div>
+                </td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="item.status === 3 ? 'neutral' : 'success'" variant="subtle">{{ item.status === 3 ? t('bill.revoked') : t('bill.valid') }}</UBadge>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ formatUnix(item.created_at) }}</td>
               </tr>
             </tbody>
           </table>

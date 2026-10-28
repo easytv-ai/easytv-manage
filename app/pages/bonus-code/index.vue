@@ -410,53 +410,53 @@ const money = (v: number) => `¥${(Number(v) || 0).toLocaleString('zh-CN', { min
       <UEmpty v-else-if="rows.length === 0" icon="i-lucide-ticket" :title="t('bonusCode.empty')" :description="t('bonusCode.emptyDesc')" class="min-h-72" />
       <template v-else>
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[72rem] divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="w-10 px-4 py-3">
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UCheckbox :model-value="allSelected ? true : someSelected ? 'indeterminate' : false" @update:model-value="toggleAll" />
                 </th>
-                <th class="px-4 py-3">{{ t('bonusCode.colCode') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
-                <th class="px-4 py-3">{{ t('bonusCode.partner') }}</th>
-                <th class="px-4 py-3">{{ t('bonusCode.colBenefit') }}</th>
-                <th class="whitespace-nowrap px-4 py-3 text-right">{{ t('bonusCode.colClaimed') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('bonusCode.colValidity') }}</th>
-                <th class="whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('bonusCode.colCode') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('bonusCode.partner') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('bonusCode.colBenefit') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('bonusCode.colClaimed') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('bonusCode.colValidity') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
                 <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
-                <td class="px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UCheckbox :model-value="selectedSet.has(item.id)" @update:model-value="toggleOne(item.id, $event === true)" />
                 </td>
-                <td class="px-4 py-3">
-                  <div class="font-mono text-sm font-semibold">{{ item.code }}</div>
-                  <div v-if="item.remark" class="mt-0.5 max-w-56 truncate text-xs text-zinc-400" :title="item.remark">{{ item.remark }}</div>
+                <td class="max-w-0 w-full px-4 py-3">
+                  <div class="truncate font-mono text-sm font-semibold" :title="item.code">{{ item.code }}</div>
+                  <div v-if="item.remark" class="mt-0.5 truncate text-xs text-zinc-400" :title="item.remark">{{ item.remark }}</div>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="item.kind === 1 ? 'error' : item.kind === 2 ? 'warning' : 'primary'" variant="subtle">{{ kindLabel(item.kind) }}</UBadge>
                 </td>
-                <td class="max-w-40 truncate px-4 py-3" :title="item.partner_name || undefined">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3" :title="item.partner_name || undefined">
                   {{ item.partner_name || '—' }}
                   <span v-if="item.partner_user_id" class="ml-1 font-mono text-xs text-zinc-400">#{{ item.partner_user_id }}</span>
                 </td>
-                <td class="max-w-72 px-4 py-3 text-xs">{{ benefitSummary(item) }}</td>
-                <td class="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs">{{ benefitSummary(item) }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">
                   {{ item.claimed_count }}<span class="text-zinc-400"> / {{ item.max_claims || '∞' }}</span>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 text-xs text-zinc-500">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">
                   <div>{{ item.starts_at ? formatUnix(item.starts_at) : t('bonusCode.now') }}</div>
                   <div>→ {{ item.expires_at ? formatUnix(item.expires_at) : t('bonusCode.noExpiry') }}</div>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge v-if="item.status !== 1" color="neutral" variant="subtle">{{ t('common.disabled') }}</UBadge>
                   <UBadge v-else-if="validity(item)" :color="validity(item)!.color" variant="subtle">{{ validity(item)!.text }}</UBadge>
                   <UBadge v-else color="success" variant="subtle">{{ t('common.enabled') }}</UBadge>
                 </td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
-                  <div class="flex flex-nowrap gap-1">
+                  <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" @click="openStats(item)">{{ t('bonusCode.stats') }}</UButton>
                     <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">{{ t('common.edit') }}</UButton>
                     <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="requestConfirm(item, 'status')">
