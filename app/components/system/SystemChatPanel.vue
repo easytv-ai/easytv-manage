@@ -39,10 +39,10 @@ const saving = ref(false)
 const form = reactive({
   enabled: false,
   free: false,
-  model: SELECT_ITEM_UNSET,
+  model: SELECT_ITEM_UNSET as string,
   maxTokens: '0',
-  thinkingMode: SELECT_ITEM_UNSET,
-  thinkingEffort: SELECT_ITEM_UNSET,
+  thinkingMode: SELECT_ITEM_UNSET as string,
+  thinkingEffort: SELECT_ITEM_UNSET as string,
   dailyFreeCount: '100',
   knowledge: '',
 })
