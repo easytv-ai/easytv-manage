@@ -38,7 +38,7 @@ const confirmAction = ref<'status' | 'delete' | 'unpublish'>('status')
 const confirmItem = ref<AdminSkill | null>(null)
 const confirming = ref(false)
 
-// ---- 审核（T27）----
+// ---- 审核 ----
 const reviewStatusItems = computed(() => [
   { label: t('skill.review.allStatus'), value: '__all__' },
   { label: t('skill.review.status0'), value: '0' },

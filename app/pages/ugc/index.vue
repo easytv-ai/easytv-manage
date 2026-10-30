@@ -7,7 +7,7 @@ import { CONSOLE_DEFAULT_PAGE_SIZE } from '~/utils/consoleSelectItems'
 import { DEFAULT_WORK_COVER, resolveMediaUrl } from '~/utils/media'
 
 /**
- * 站外投稿审核（T31）：GET /admin/ugc 待审队列，PUT /admin/ugc/:id/review 通过 / 驳回。
+ * 站外投稿审核：GET /admin/ugc 待审队列，PUT /admin/ugc/:id/review 通过 / 驳回。
  * 积分预估取增长参数 GrowthUgcPoints30/60/120 与 GrowthUgcViralLikes（缺省 100/300/500/1000）。
  */
 

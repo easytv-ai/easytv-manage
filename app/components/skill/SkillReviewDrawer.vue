@@ -3,7 +3,7 @@ import { adminSkillApi, formatUnix, isOk } from '~/api/creative'
 import { DEFAULT_WORK_COVER, resolveMediaUrl } from '~/utils/media'
 
 /**
- * 技能审核详情抽屉（T27）：展示作者 / 描述 / 提示词 / 封面 / 示例视频 / 调用与收益，
+ * 技能审核详情抽屉：展示作者 / 描述 / 提示词 / 封面 / 示例视频 / 调用与收益，
  * 可编辑 revenue_share 并随「通过」一起提交（PUT /admin/skill/:id/review）。
  */
 

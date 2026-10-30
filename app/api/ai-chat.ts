@@ -1,6 +1,6 @@
 import http from '~/api/http'
 
-/** AI 对话：路径与 easytv-api /admin/ai-chat 对齐 */
+/** AI 对话：路径与后端 /admin/ai-chat 一致 */
 export const adminAiChatApi = {
   /** 对话配置：GET /admin/ai-chat/config */
   config() {

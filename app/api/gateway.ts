@@ -1,6 +1,6 @@
 import http from '~/api/http'
 
-/** 生成网关 / 七牛存储：路径与 easytv-api /admin/gateway 对齐 */
+/** 生成网关 / 七牛存储：路径与后端 /admin/gateway 一致 */
 export const adminGatewayApi = {
   config() {
     return http.get('/admin/gateway/config')

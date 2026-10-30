@@ -7,8 +7,7 @@ import { localInputToTs, tsToLocalInput } from '~/utils/datetime-input'
 import { DEFAULT_WORK_COVER, resolveMediaUrl } from '~/utils/media'
 
 /**
- * 活动管理（T33）：活动 CRUD 与结算为 Root；投稿审核（entries）为管理员。
- * 与 easytv-api/API.md 8.6 对齐。
+ * 活动管理：活动 CRUD 与结算为 Root；投稿审核（entries）为管理员。
  */
 
 const { t } = useI18n()

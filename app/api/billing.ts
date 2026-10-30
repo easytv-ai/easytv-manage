@@ -1,6 +1,6 @@
 import http from '~/api/http'
 
-/** 付费域管理接口，路径与 easytv-api/API.md 6.2 对齐。 */
+/** 付费域管理接口，路径与后端管理接口一致。 */
 
 export type PlanPayload = {
   code?: string
@@ -38,7 +38,7 @@ export type PromoPayload = {
   team_seat_min: number
   team_seat_max: number
   team_seat_rate: number
-  /** 全站顶部倒计时条（T18/T20）：落 GrowthPromoBanner* setting 键 */
+  /** 全站顶部倒计时条：落 GrowthPromoBanner* setting 键 */
   banner_enabled?: boolean
   banner_link?: string
 }
@@ -138,7 +138,7 @@ export type ModelPricePayload = {
   points_per_unit?: number
   member_points_per_unit?: number
   status?: 1 | 2
-  /** 促销价（T18/T20）：0 取消促销；起止为 Unix 秒，0 表示立即 / 不限 */
+  /** 促销价：0 取消促销；起止为 Unix 秒，0 表示立即 / 不限 */
   promo_points_per_unit?: number
   promo_label?: string
   promo_starts_at?: number

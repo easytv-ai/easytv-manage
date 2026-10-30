@@ -5,7 +5,7 @@ import { SELECT_ITEM_UNSET } from '~/utils/consoleSelectItems'
 
 /**
  * AI 对话面板：对话开关 / 免费 / 对话模型 / 最大输出 / 思考模式与强度 / 每日免费次数 / 平台知识。
- * 键名与 easytv-api/setting/chat_setting.go 一致；保存走 PUT /admin/ai-chat/config 做局部更新，
+ * 键名与后端对话配置一致；保存走 PUT /admin/ai-chat/config 做局部更新，
  * 返回与 GET 相同的视图，改完即时生效（无需重启）。
  */
 

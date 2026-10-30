@@ -4,8 +4,8 @@ import { diffSettingEntries, parseSettingMap, toSettingValue } from '~/utils/adm
 import { isApiSuccess } from '~/utils/admin-user'
 
 /**
- * 增长参数面板（T9 / T34）：礼包 / 新手任务 / 签到 / 邀请 / 口令默认 / 促销条与首发价 / 积分换算 / 召回与会员日。
- * 键名与默认值与 easytv-api/setting/growth_setting.go 一致；留空表示使用后端默认值。
+ * 增长参数面板：礼包 / 新手任务 / 签到 / 邀请 / 口令默认 / 促销条与首发价 / 积分换算 / 召回与会员日。
+ * 键名与默认值与后端增长配置一致；留空表示使用后端默认值。
  */
 
 type FieldKind = 'int' | 'rate' | 'bool' | 'text' | 'long'

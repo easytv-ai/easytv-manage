@@ -4,9 +4,8 @@ import { adminPartnerApi, type AdminPartner, type PartnerCustomer, type PartnerR
 import { CONSOLE_DEFAULT_PAGE_SIZE, SELECT_ITEM_ALL } from '~/utils/consoleSelectItems'
 
 /**
- * 渠道伙伴计划（T34）：GET /admin/partner 申请队列（管理员可查看），
+ * 渠道伙伴计划：GET /admin/partner 申请队列（管理员可查看），
  * PUT /admin/partner/:id/review 通过 / 驳回 / 停用为 Root，GET /admin/partner/:id/customers 归属客户。
- * 与 easytv-api/API.md 9.3 对齐。
  */
 
 const { t } = useI18n()

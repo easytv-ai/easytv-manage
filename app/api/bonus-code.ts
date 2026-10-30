@@ -1,7 +1,7 @@
 import http from '~/api/http'
 import { authUserHeaders } from '~/utils/auth-user'
 
-/** 口令红包（T15 / T17）：与 easytv-api API.md 7.5 对齐。kind 1 首充加赠 2 定额积分 3 会员天数；status 1 启用 0 停用 */
+/** 口令红包，与后端管理接口一致。kind 1 首充加赠 2 定额积分 3 会员天数；status 1 启用 0 停用 */
 export interface BonusCodeItem {
   id: number
   code: string

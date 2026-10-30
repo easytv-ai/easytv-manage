@@ -1,5 +1,5 @@
 /**
- * 画布媒体动作清单，与 easytv-api/service/media_actions.go 的 mediaActions() 对齐。
+ * 画布媒体动作清单，与后端媒体动作列表一致。
  * MediaActionsDisabled 存逗号分隔的小写 id；空=全开。未知 id 保存时原样保留，避免冲掉新动作。
  */
 

@@ -109,9 +109,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       siteName: (globalThis as any).process?.env?.NUXT_PUBLIC_SITE_NAME || 'EasyTV',
-      apiBaseUrl: (globalThis as any).process?.env?.NUXT_PUBLIC_API_BASE_URL || 'https://tv-api.easyapi.com',
+      apiBaseUrl: (globalThis as any).process?.env?.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3000',
       /** 创作台地址：审核页跳转播放页用 */
-      studioUrl: (globalThis as any).process?.env?.NUXT_PUBLIC_STUDIO_URL || 'https://www.easytv.ai',
+      studioUrl: (globalThis as any).process?.env?.NUXT_PUBLIC_STUDIO_URL || 'http://localhost:3005',
     },
   },
   future: {

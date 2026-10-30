@@ -42,7 +42,7 @@ type Stats = {
   daily: { day: string, users: number, tasks: number, money: number }[]
 }
 
-/** 增长漏斗（T3）：GET /admin/stats/funnel */
+/** 增长漏斗：GET /admin/stats/funnel */
 type FunnelDay = { day: string, register: number, first_task: number, first_video: number, first_work: number, pay_success: number }
 type FunnelSource = { source: string, aff_code: string, bonus_code: string, register: number, paid: number, amount: number }
 type FunnelData = { from: number, to: number, days: FunnelDay[], by_source: FunnelSource[] }
@@ -72,7 +72,7 @@ const fetchStats = useClientListFetch(async () => {
   }
 })
 
-/** 渠道伙伴卡片（T34）：只用 /admin/partner 的 total，不引入不存在的聚合接口 */
+/** 渠道伙伴卡片：只用 /admin/partner 的 total，不引入不存在的聚合接口 */
 const partnerStats = ref<{ approved: number, pending: number } | null>(null)
 async function loadPartnerStats() {
   try {

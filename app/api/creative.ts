@@ -1,7 +1,7 @@
 import http from '~/api/http'
 
 /**
- * 创作域管理接口，路径与 easytv-api/API.md 2.3 对齐。
+ * 创作域管理接口，路径与后端管理接口一致。
  * 列表统一返回 { success, data: { items, total } }。
  */
 

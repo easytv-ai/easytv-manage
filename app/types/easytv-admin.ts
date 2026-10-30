@@ -13,7 +13,7 @@ export interface AdminUser {
   tags: string[]
   createTime: string
   deleted?: boolean
-  /** 增长域（T14） */
+  /** 增长域 */
   inviterId: number
   inviterNickname: string
   affCode: string

@@ -1,6 +1,6 @@
 import http from '~/api/http'
 
-/** 内容运营：Banner / 公告，路径与 easytv-api/API.md 2.3 对齐 */
+/** 内容运营：Banner / 公告，路径与后端管理接口一致 */
 
 export type BannerPayload = {
   title?: string

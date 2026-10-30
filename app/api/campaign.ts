@@ -1,7 +1,7 @@
 import http from '~/api/http'
 
 /**
- * 活动管理（T33）：与 easytv-api/API.md 8.6 对齐。
+ * 活动管理，与后端管理接口一致。
  * CRUD / 结算为 RootAuth，投稿审核为 AdminAuth。
  * status 0 草稿 / 1 进行中 / 2 已结束 / 3 已发奖；投稿 status 0 待审 / 1 通过 / 2 驳回。
  */

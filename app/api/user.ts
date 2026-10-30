@@ -1,10 +1,10 @@
 import http from '~/api/http'
 
-/** 用户状态：与后端 constant.UserStatusEnabled / Disabled 对齐 */
+/** 用户状态：1 启用，2 停用 */
 export const USER_STATUS_ENABLED = 1
 export const USER_STATUS_DISABLED = 2
 
-/** 用户管理：路径与 easytv-api/API.md 2.3 对齐 */
+/** 用户管理：路径与后端管理接口一致 */
 export const user = {
   /** 用户列表：GET /admin/user */
   list(query: Record<string, unknown>) {
@@ -38,7 +38,7 @@ export const user = {
     return http.delete(`/admin/user/${id}`)
   },
 
-  /** 邀请关系与返利流水（T14）：GET /admin/user/:id/invites → { totals, records, bills, bills_total, invite_blocked } */
+  /** 邀请关系与返利流水：GET /admin/user/:id/invites → { totals, records, bills, bills_total, invite_blocked } */
   invites(id: number, query?: Record<string, unknown>) {
     return http.get(`/admin/user/${id}/invites`, query)
   },

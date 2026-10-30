@@ -1,7 +1,7 @@
 import http from '~/api/http'
 
 /**
- * 站外投稿审核（T31）：与 easytv-api/API.md 8.5 对齐。
+ * 站外投稿审核，与后端管理接口一致。
  * status 0 待审 / 1 通过 / 2 驳回；platform douyin | xiaohongshu | bilibili | other。
  */
 

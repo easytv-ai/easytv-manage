@@ -78,7 +78,7 @@ type PriceRow = {
   status: 1 | 2
   /** 是否出现在网关拉取清单里 */
   available: boolean
-  /** 促销价（T20）：0 无促销 */
+  /** 促销价：0 无促销 */
   promoPointsPerUnit: number
   promoLabel: string
   promoStartsAt: number

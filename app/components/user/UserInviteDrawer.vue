@@ -5,7 +5,7 @@ import { formatUnix } from '~/api/creative'
 import { isApiSuccess } from '~/utils/admin-user'
 
 /**
- * 用户邀请关系抽屉（T14）：该用户邀请的人、返利流水，Root 可冻结 / 解冻邀请奖励。
+ * 用户邀请关系抽屉：该用户邀请的人、返利流水，Root 可冻结 / 解冻邀请奖励。
  * 数据：GET /admin/user/:id/invites → { totals, records, bills, bills_total, invite_blocked }
  */
 

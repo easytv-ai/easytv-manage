@@ -17,7 +17,7 @@ import {
 
 /**
  * 媒体工具：画布工具条动作开关 / 作业队列上限 / ffmpeg 路径。
- * 键名与 easytv-api/setting/media_setting.go 一致；MediaActionsDisabled 为逗号分隔小写 id。
+ * 键名与后端媒体配置一致；MediaActionsDisabled 为逗号分隔小写 id。
  */
 
 type SectionId = 'actions' | 'queue' | 'bin'

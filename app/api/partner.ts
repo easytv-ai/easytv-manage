@@ -1,7 +1,7 @@
 import http from '~/api/http'
 
 /**
- * 渠道伙伴计划（T34）：与 easytv-api/API.md 9.3 对齐。
+ * 渠道伙伴计划，与后端管理接口一致。
  * status 0 待审 / 1 已通过 / 2 已驳回 / 3 已停用；rebate_rate 为 0 时取全局 GrowthPartnerRebateRate。
  */
 

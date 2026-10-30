@@ -1,8 +1,8 @@
 # EasyTV 管理后台
 
-EasyTV AI 视频创作平台的运营后台，基于 Nuxt 4 + Nuxt UI，框架层从 `easyapi-ai-manage` 精简而来。
+EasyTV AI 视频创作平台的运营后台，基于 Nuxt 4 + Nuxt UI。
 
-已去掉 Token / 渠道 / 模型 / 计费等 EasyAPI 业务，当前覆盖用户、作品、社区审核、计费、模型定价和系统设置，页面直连 `/admin/*`。
+覆盖用户、作品、社区审核、计费、模型定价和系统设置，页面直连 `/admin/*`。
 
 ## 技术栈
 
