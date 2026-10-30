@@ -261,25 +261,18 @@ async function confirmAdjust() {
       </template>
     </UModal>
 
-    <UModal v-model:open="confirmOpen" title="确认调整积分" :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }">
-      <template #body>
-        <p class="text-sm text-zinc-600 dark:text-zinc-300">
-          确定要为“{{ current?.userName }}”{{ adjustForm.type === 'add' ? '补发' : '扣减' }} {{ adjustForm.amount }} 积分吗？该操作会写入流水。
-        </p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="adjustSaving" @click="() => { confirmOpen = false }">取消</UButton>
-        <UButton
-          type="button"
-          :color="adjustForm.type === 'deduct' ? 'error' : 'primary'"
-          :loading="adjustSaving"
-          :disabled="adjustSaving"
-          @click="confirmAdjust"
-        >
-          {{ adjustSaving ? '处理中…' : '确认' }}
-        </UButton>
-      </template>
-    </UModal>
+    <ManageConfirmModal
+      v-model:open="confirmOpen"
+      title="确认调整积分"
+      :tone="adjustForm.type === 'deduct' ? 'error' : 'primary'"
+      :icon="adjustForm.type === 'deduct' ? 'i-lucide-circle-minus' : 'i-lucide-circle-plus'"
+      :loading="adjustSaving"
+      @confirm="confirmAdjust"
+    >
+      确定要为“{{ current?.userName }}”{{ adjustForm.type === 'add' ? '补发' : '扣减' }}
+      <span class="font-semibold tabular-nums text-highlighted">{{ adjustForm.amount }}</span>
+      积分吗？该操作会写入流水。
+    </ManageConfirmModal>
 
     <UModal v-model:open="logOpen" title="积分流水" :ui="{ content: 'w-[min(96vw,40rem)]' }">
       <template #body>

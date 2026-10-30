@@ -74,6 +74,15 @@ export default defineNuxtConfig({
     colorMode: false,
     fonts: false,
   },
+  // 图标全部走本地 @iconify-json/lucide 打进客户端，不依赖 api.iconify.design（国内经常连不上）
+  icon: {
+    serverBundle: 'local',
+    clientBundle: {
+      scan: true,
+      sizeLimitKb: 512,
+    },
+    fallbackToApi: false,
+  },
   i18n: {
     defaultLocale: 'zh',
     strategy: 'prefix_except_default',

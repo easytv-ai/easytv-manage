@@ -309,20 +309,16 @@ function refUrl(url: string) {
       </template>
     </USlideover>
 
-    <UModal
+    <ManageConfirmModal
       v-model:open="confirmOpen"
       :title="t('subject.confirmDelete')"
-      :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }"
+      :confirm-text="t('common.delete')"
+      :cancel-text="t('common.cancel')"
+      :loading-text="t('common.processing')"
+      :loading="confirming"
+      @confirm="doDelete"
     >
-      <template #body>
-        <p class="text-sm">{{ t('subject.confirmDeleteBody', { name: confirmItem?.name ?? '' }) }}</p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">{{ t('common.cancel') }}</UButton>
-        <UButton type="button" color="error" :loading="confirming" :disabled="confirming" @click="doDelete">
-          {{ confirming ? t('common.saving') : t('common.delete') }}
-        </UButton>
-      </template>
-    </UModal>
+      {{ t('subject.confirmDeleteBody', { name: confirmItem?.name ?? '' }) }}
+    </ManageConfirmModal>
   </div>
 </template>

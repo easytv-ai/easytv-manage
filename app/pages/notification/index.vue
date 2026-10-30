@@ -443,29 +443,19 @@ async function confirm() {
       </template>
     </UModal>
 
-    <UModal
+    <ManageConfirmModal
       v-model:open="confirmOpen"
       :title="confirmAction === 'delete' ? t('notification.confirmDelete') : t('notification.confirmSendAll')"
-      :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }"
+      :tone="confirmAction === 'delete' ? 'error' : 'primary'"
+      :icon="confirmAction === 'delete' ? '' : 'i-lucide-send'"
+      :confirm-text="t('common.confirm')"
+      :cancel-text="t('common.cancel')"
+      :loading-text="t('common.processing')"
+      :loading="confirming || saving"
+      @confirm="confirm"
     >
-      <template #body>
-        <p class="text-sm text-zinc-600 dark:text-zinc-300">
-          <template v-if="confirmAction === 'delete'">{{ t('notification.confirmDeleteBody', { title: confirmItem?.title }) }}</template>
-          <template v-else>{{ t('notification.confirmSendAllBody', { title: form.title.trim() }) }}</template>
-        </p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming || saving" @click="() => { confirmOpen = false }">{{ t('common.cancel') }}</UButton>
-        <UButton
-          type="button"
-          :color="confirmAction === 'delete' ? 'error' : 'primary'"
-          :loading="confirmAction === 'delete' ? confirming : saving"
-          :disabled="confirming || saving"
-          @click="confirm"
-        >
-          {{ (confirmAction === 'delete' ? confirming : saving) ? t('common.processing') : t('common.confirm') }}
-        </UButton>
-      </template>
-    </UModal>
+      <template v-if="confirmAction === 'delete'">{{ t('notification.confirmDeleteBody', { title: confirmItem?.title }) }}</template>
+      <template v-else>{{ t('notification.confirmSendAllBody', { title: form.title.trim() }) }}</template>
+    </ManageConfirmModal>
   </div>
 </template>

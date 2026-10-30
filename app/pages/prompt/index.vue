@@ -8,6 +8,8 @@ import {
   type AdminPromptPayload,
   type AdminPromptSourcePayload,
 } from '~/api/creative'
+import qiniu from '~/api/qiniu'
+import { DEFAULT_WORK_COVER, resolveMediaUrl } from '~/utils/media'
 
 const { t } = useI18n()
 useHead({ title: () => t('prompt.pageTitle') })
@@ -152,30 +154,114 @@ onMounted(() => {
 // ===== 提示词表单 =====
 const formOpen = ref(false)
 const editing = ref<PromptRow | null>(null)
-const form = reactive({ title: '', content: '', coverUrl: '', resultUrl: '', tags: '', category: '', sortOrder: 0 })
+const form = reactive({ title: '', content: '', coverUrl: '', resultUrl: '', tags: [] as string[], category: '', sortOrder: 0 })
 const errors = reactive({ title: '', content: '' })
 const saving = ref(false)
+const coverFile = ref<File | null>(null)
+const resultFile = ref<File | null>(null)
+const uploadingCover = ref(false)
+const uploadingResult = ref(false)
+const uploading = computed(() => uploadingCover.value || uploadingResult.value)
+
+const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif']
+const IMAGE_MAX_BYTES = 8 * 1024 * 1024
+const IMAGE_ACCEPT = '.jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif'
+
+type ImageField = 'coverUrl' | 'resultUrl'
+
+function resetForm() {
+  Object.assign(form, { title: '', content: '', coverUrl: '', resultUrl: '', tags: [], category: '', sortOrder: 0 })
+  Object.assign(errors, { title: '', content: '' })
+  coverFile.value = null
+  resultFile.value = null
+  uploadingCover.value = false
+  uploadingResult.value = false
+}
 
 function openCreate() {
   editing.value = null
-  Object.assign(form, { title: '', content: '', coverUrl: '', resultUrl: '', tags: '', category: '', sortOrder: 0 })
-  Object.assign(errors, { title: '', content: '' })
+  resetForm()
   formOpen.value = true
 }
 
 function openEdit(item: PromptRow) {
   editing.value = item
+  resetForm()
   Object.assign(form, {
     title: item.title,
     content: item.content,
     coverUrl: item.coverUrl,
     resultUrl: item.resultUrl,
-    tags: item.tags.join('、'),
+    tags: [...item.tags],
     category: item.category,
     sortOrder: item.sortOrder,
   })
-  Object.assign(errors, { title: '', content: '' })
   formOpen.value = true
+}
+
+function previewUrl(url: string) {
+  return resolveMediaUrl(url) || DEFAULT_WORK_COVER
+}
+
+function listCover(item: PromptRow) {
+  return resolveMediaUrl(item.coverUrl || item.resultUrl) || DEFAULT_WORK_COVER
+}
+
+const TAG_DELIMITER = /[、,，]/
+
+const imageFields: { field: ImageField, label: string, uploadLabel: string, description: string }[] = [
+  { field: 'coverUrl', label: '封面图', uploadLabel: '点击或拖拽上传封面', description: '列表卡片展示，缺省用默认图' },
+  { field: 'resultUrl', label: '效果图', uploadLabel: '点击或拖拽上传效果图', description: '详情页优先展示，缺省用封面' },
+]
+
+const previewCover = computed(() => resolveMediaUrl(form.coverUrl.trim() || form.resultUrl.trim()) || DEFAULT_WORK_COVER)
+
+function imageFileRef(field: ImageField) {
+  return field === 'coverUrl' ? coverFile : resultFile
+}
+
+function imageUploadingRef(field: ImageField) {
+  return field === 'coverUrl' ? uploadingCover : uploadingResult
+}
+
+function clearImage(field: ImageField) {
+  if (imageUploadingRef(field).value)
+    return
+  imageFileRef(field).value = null
+  form[field] = ''
+}
+
+async function onImageFile(field: ImageField, value: File | File[] | null | undefined) {
+  const file = Array.isArray(value) ? (value[0] ?? null) : (value ?? null)
+  const fileRef = imageFileRef(field)
+  const busy = imageUploadingRef(field)
+  fileRef.value = file
+  if (!file)
+    return
+  const ext = `.${(file.name.split('.').pop() || '').toLowerCase()}`
+  if (!IMAGE_EXTS.includes(ext)) {
+    fileRef.value = null
+    notify('仅支持 jpg、png、webp、gif 图片', 'error')
+    return
+  }
+  if (file.size > IMAGE_MAX_BYTES) {
+    fileRef.value = null
+    notify('图片不能超过 8MB', 'error')
+    return
+  }
+  busy.value = true
+  try {
+    form[field] = await qiniu.uploadImage(file)
+    fileRef.value = null
+    notify(field === 'coverUrl' ? '封面上传成功' : '效果图上传成功')
+  }
+  catch (error: any) {
+    fileRef.value = null
+    notify(error?.message || '上传失败，请稍后重试', 'error')
+  }
+  finally {
+    busy.value = false
+  }
 }
 
 function validate() {
@@ -185,7 +271,7 @@ function validate() {
 }
 
 async function save() {
-  if (saving.value || !validate())
+  if (saving.value || uploading.value || !validate())
     return
   saving.value = true
   try {
@@ -194,8 +280,7 @@ async function save() {
       content: form.content.trim(),
       cover_url: form.coverUrl.trim(),
       result_url: form.resultUrl.trim(),
-      // 顿号和逗号都收，运营怎么顺手怎么填
-      tags: form.tags.split(/[、,，]/).map(v => v.trim()).filter(Boolean),
+      tags: [...new Set(form.tags.map(v => v.trim()).filter(Boolean))],
       category: form.category.trim(),
       sort_order: Number(form.sortOrder) || 0,
     }
@@ -459,8 +544,15 @@ async function removeSource(item: SourceRow) {
           <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
             <tr v-for="item in rows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
               <td class="max-w-0 w-full px-4 py-3">
-                <p class="truncate font-medium" :title="item.title">{{ item.title }}</p>
-                <p class="truncate text-xs text-zinc-400" :title="item.content">{{ item.content }}</p>
+                <div class="flex min-w-0 items-center gap-3">
+                  <div class="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                    <img :src="listCover(item)" alt="" class="h-full w-full object-cover">
+                  </div>
+                  <div class="min-w-0">
+                    <p class="truncate font-medium" :title="item.title">{{ item.title }}</p>
+                    <p class="truncate text-xs text-zinc-400" :title="item.content">{{ item.content }}</p>
+                  </div>
+                </div>
               </td>
               <td class="w-[1%] whitespace-nowrap px-4 py-3">
                 <div class="flex flex-wrap gap-1">
@@ -490,39 +582,157 @@ async function removeSource(item: SourceRow) {
 
     <p v-if="total" class="mt-3 text-xs text-zinc-500">共 {{ total }} 条</p>
 
-    <UModal v-model:open="formOpen" :title="editing ? '编辑提示词' : '新增提示词'" :ui="{ content: 'w-[min(96vw,40rem)]', footer: 'justify-end gap-2' }">
+    <UModal
+      v-model:open="formOpen"
+      :title="editing ? '编辑提示词' : '新增提示词'"
+      description="上架后展示在前台提示词库，用户可一键复制正文"
+      :ui="{ content: 'w-[min(96vw,64rem)] max-w-[min(96vw,64rem)] sm:max-w-[64rem]', body: 'p-0 sm:p-0', footer: 'justify-between gap-2' }"
+    >
       <template #body>
-        <div class="space-y-5">
-          <UFormField label="标题" required :error="errors.title || undefined">
-            <UInput v-model="form.title" maxlength="200" placeholder="例如：电影感人像" class="w-full" />
-          </UFormField>
-          <UFormField label="提示词正文" required :error="errors.content || undefined">
-            <UTextarea v-model="form.content" :rows="8" maxlength="8000" placeholder="用户会原样复制这段文字" class="w-full" />
-          </UFormField>
-          <div class="grid gap-4 sm:grid-cols-2">
-            <UFormField label="标签" help="用顿号或逗号分隔">
-              <UInput v-model="form.tags" placeholder="人像、电影感" class="w-full" />
-            </UFormField>
-            <UFormField label="分类">
-              <UInput v-model="form.category" maxlength="50" placeholder="选填" class="w-full" />
-            </UFormField>
+        <div class="grid lg:grid-cols-[minmax(0,1fr)_19rem]">
+          <div class="space-y-6 p-4 sm:p-6">
+            <section class="space-y-4">
+              <h3 class="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                <UIcon name="i-lucide-file-text" class="size-4 text-primary" />
+                基本信息
+              </h3>
+              <UFormField label="标题" required :hint="`${form.title.length}/200`" :error="errors.title || undefined">
+                <UInput v-model="form.title" maxlength="200" placeholder="例如：电影感人像" class="w-full" @update:model-value="() => { errors.title = '' }" />
+              </UFormField>
+              <UFormField label="提示词正文" required :hint="`${form.content.length}/8000`" :error="errors.content || undefined">
+                <UTextarea
+                  v-model="form.content"
+                  :rows="9"
+                  autoresize
+                  :maxrows="16"
+                  maxlength="8000"
+                  placeholder="用户会原样复制这段文字，建议写清主体、风格、光线、镜头等关键描述"
+                  class="w-full"
+                  :ui="{ base: 'leading-relaxed' }"
+                  @update:model-value="() => { errors.content = '' }"
+                />
+              </UFormField>
+              <UFormField label="标签" help="输入后按回车、逗号或顿号添加，最多 10 个">
+                <UInputTags
+                  v-model="form.tags"
+                  :delimiter="TAG_DELIMITER"
+                  :max="10"
+                  :max-length="20"
+                  add-on-paste
+                  add-on-blur
+                  placeholder="例如：人像"
+                  class="w-full"
+                />
+              </UFormField>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <UFormField label="分类">
+                  <UInput v-model="form.category" maxlength="50" placeholder="选填，例如：摄影" class="w-full" />
+                </UFormField>
+                <UFormField label="排序" hint="越大越靠前">
+                  <UInputNumber v-model="form.sortOrder" :min="0" class="w-full" />
+                </UFormField>
+              </div>
+            </section>
+
+            <section class="space-y-4">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <UIcon name="i-lucide-image" class="size-4 text-primary" />
+                  图片素材
+                </h3>
+                <span class="text-xs text-zinc-500">建议 800×450（16:9），jpg / png / webp / gif，≤ 8MB</span>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <UFormField v-for="item in imageFields" :key="item.field" :label="item.label">
+                  <div class="space-y-2">
+                    <div v-if="form[item.field]" class="group relative aspect-video overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
+                      <img :src="previewUrl(form[item.field])" alt="" class="h-full w-full object-cover">
+                      <div class="absolute inset-0 flex items-center justify-center gap-2 bg-zinc-950/50 opacity-0 transition-opacity group-hover:opacity-100">
+                        <UButton
+                          :to="previewUrl(form[item.field])"
+                          target="_blank"
+                          size="sm"
+                          color="neutral"
+                          variant="solid"
+                          icon="i-lucide-external-link"
+                        >
+                          新窗口查看
+                        </UButton>
+                        <UButton
+                          type="button"
+                          size="sm"
+                          color="error"
+                          variant="solid"
+                          icon="i-lucide-trash-2"
+                          :disabled="imageUploadingRef(item.field).value"
+                          @click="clearImage(item.field)"
+                        >
+                          移除
+                        </UButton>
+                      </div>
+                    </div>
+                    <UFileUpload
+                      v-else
+                      :model-value="imageFileRef(item.field).value"
+                      :accept="IMAGE_ACCEPT"
+                      icon="i-lucide-image-plus"
+                      :label="imageUploadingRef(item.field).value ? '上传中…' : item.uploadLabel"
+                      :description="item.description"
+                      :disabled="imageUploadingRef(item.field).value"
+                      class="w-full"
+                      :ui="{ base: 'aspect-video min-h-0' }"
+                      @update:model-value="value => onImageFile(item.field, value)"
+                    />
+                    <UInput v-model="form[item.field]" icon="i-lucide-link" size="sm" placeholder="或粘贴图片地址" class="w-full" />
+                  </div>
+                </UFormField>
+              </div>
+            </section>
           </div>
-          <div class="grid gap-4 sm:grid-cols-2">
-            <UFormField label="封面图地址">
-              <UInput v-model="form.coverUrl" placeholder="选填" class="w-full" />
-            </UFormField>
-            <UFormField label="效果图地址">
-              <UInput v-model="form.resultUrl" placeholder="选填，详情里优先展示" class="w-full" />
-            </UFormField>
-          </div>
-          <UFormField label="排序" help="越大越靠前">
-            <UInput v-model.number="form.sortOrder" type="number" class="w-full" />
-          </UFormField>
+
+          <aside class="border-t border-zinc-200 bg-zinc-50 p-4 sm:p-6 lg:border-l lg:border-t-0 dark:border-zinc-800 dark:bg-zinc-900/60">
+            <div class="lg:sticky lg:top-0">
+              <p class="mb-3 flex items-center gap-2 text-xs font-medium text-zinc-500">
+                <UIcon name="i-lucide-eye" class="size-3.5" />
+                前台卡片预览
+              </p>
+              <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-zinc-800">
+                <div class="aspect-video bg-zinc-100 dark:bg-zinc-800">
+                  <img :src="previewCover" alt="" class="h-full w-full object-cover">
+                </div>
+                <div class="space-y-2 p-3">
+                  <p class="truncate text-sm font-semibold" :class="form.title.trim() ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'">
+                    {{ form.title.trim() || '提示词标题' }}
+                  </p>
+                  <p class="line-clamp-4 whitespace-pre-line text-xs leading-relaxed" :class="form.content.trim() ? 'text-zinc-600 dark:text-zinc-300' : 'text-zinc-400'">
+                    {{ form.content.trim() || '这里展示提示词正文摘要，用户点击卡片后可复制完整内容。' }}
+                  </p>
+                  <div v-if="form.tags.length || form.category.trim()" class="flex flex-wrap gap-1">
+                    <UBadge v-if="form.category.trim()" color="primary" variant="subtle" size="sm">{{ form.category.trim() }}</UBadge>
+                    <UBadge v-for="tag in form.tags" :key="tag" color="neutral" variant="subtle" size="sm">{{ tag }}</UBadge>
+                  </div>
+                  <div class="flex items-center justify-between border-t border-zinc-100 pt-2 text-xs text-zinc-400 dark:border-zinc-800">
+                    <span class="flex items-center gap-1">
+                      <UIcon name="i-lucide-copy" class="size-3.5" />
+                      {{ editing?.uses ?? 0 }} 次复制
+                    </span>
+                    <span>{{ editing?.sourceName || '后台录入' }}</span>
+                  </div>
+                </div>
+              </div>
+              <p class="mt-3 text-xs leading-relaxed text-zinc-500">远程源同步的条目，后台改过的标题、封面、标签不会被下次同步覆盖。</p>
+            </div>
+          </aside>
         </div>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="saving" @click="() => { formOpen = false }">取消</UButton>
-        <UButton type="button" :loading="saving" @click="save">保存</UButton>
+        <p class="text-xs text-zinc-500"><span class="text-red-500">*</span> 为必填项</p>
+        <div class="flex gap-2">
+          <UButton type="button" color="neutral" variant="outline" :disabled="saving || uploading" @click="() => { formOpen = false }">取消</UButton>
+          <UButton type="button" :loading="saving" :disabled="saving || uploading" @click="save">
+            {{ saving ? '保存中…' : uploading ? '图片上传中…' : editing ? '保存修改' : '创建提示词' }}
+          </UButton>
+        </div>
       </template>
     </UModal>
 
@@ -555,17 +765,9 @@ async function removeSource(item: SourceRow) {
       </template>
     </UModal>
 
-    <UModal v-model:open="confirmOpen" title="删除提示词" :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }">
-      <template #body>
-        <p class="text-sm">
-          确定删除「{{ confirmItem?.title }}」吗？删除后前台立即不可见。
-          <span v-if="confirmItem?.sourceId" class="text-zinc-500">该条来自远程源，下次同步会重新拉回来，如果不想要它，请先停用来源。</span>
-        </p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">取消</UButton>
-        <UButton type="button" color="error" :loading="confirming" @click="doDelete">删除</UButton>
-      </template>
-    </UModal>
+    <ManageConfirmModal v-model:open="confirmOpen" title="删除提示词" confirm-text="删除" :loading="confirming" @confirm="doDelete">
+      确定删除「{{ confirmItem?.title }}」吗？删除后前台立即不可见。
+      <p v-if="confirmItem?.sourceId" class="mt-2 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning">该条来自远程源，下次同步会重新拉回来，如果不想要它，请先停用来源。</p>
+    </ManageConfirmModal>
   </div>
 </template>

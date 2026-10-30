@@ -1071,20 +1071,19 @@ async function confirmImport() {
       </template>
     </div>
 
-    <UModal v-model:open="confirmOpen" :title="confirmAction === 'delete' ? t('modelPrice.confirmDelete') : t('modelPrice.confirmStatus', { action: confirmItem?.status === 1 ? t('modelPrice.disable') : t('modelPrice.enable') })" :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }">
-      <template #body>
-        <p class="text-sm text-zinc-600 dark:text-zinc-300">
-          {{ t('modelPrice.confirmBody', { action: confirmAction === 'delete' ? t('common.delete') : (confirmItem?.status === 1 ? t('modelPrice.disable') : t('modelPrice.enable')), name: confirmItem?.label || confirmItem?.model }) }}
-          <template v-if="confirmAction === 'delete' || confirmItem?.status === 1">{{ t('modelPrice.confirmWarn') }}</template>
-        </p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">{{ t('common.cancel') }}</UButton>
-        <UButton type="button" :color="confirmAction === 'delete' ? 'error' : 'primary'" :loading="confirming" :disabled="confirming" @click="confirm">
-          {{ confirming ? t('common.processing') : t('common.confirm') }}
-        </UButton>
-      </template>
-    </UModal>
+    <ManageConfirmModal
+      v-model:open="confirmOpen"
+      :title="confirmAction === 'delete' ? t('modelPrice.confirmDelete') : t('modelPrice.confirmStatus', { action: confirmItem?.status === 1 ? t('modelPrice.disable') : t('modelPrice.enable') })"
+      :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
+      :confirm-text="t('common.confirm')"
+      :cancel-text="t('common.cancel')"
+      :loading-text="t('common.processing')"
+      :loading="confirming"
+      @confirm="confirm"
+    >
+      {{ t('modelPrice.confirmBody', { action: confirmAction === 'delete' ? t('common.delete') : (confirmItem?.status === 1 ? t('modelPrice.disable') : t('modelPrice.enable')), name: confirmItem?.label || confirmItem?.model }) }}
+      <template v-if="confirmAction === 'delete' || confirmItem?.status === 1">{{ t('modelPrice.confirmWarn') }}</template>
+    </ManageConfirmModal>
 
     <USlideover
       v-model:open="browseOpen"

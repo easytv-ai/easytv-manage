@@ -607,19 +607,19 @@ const money = (v: number) => `¥${(Number(v) || 0).toLocaleString('zh-CN', { min
       </template>
     </UModal>
 
-    <UModal
+    <ManageConfirmModal
       v-model:open="confirmOpen"
       :title="confirmAction === 'delete' ? t('bonusCode.confirmDelete') : t('bonusCode.confirmStatus')"
-      :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }"
+      :tone="confirmAction === 'delete' ? 'error' : 'primary'"
+      :icon="confirmAction === 'delete' ? '' : 'i-lucide-ticket'"
+      :confirm-text="t('common.confirm')"
+      :cancel-text="t('common.cancel')"
+      :loading-text="t('common.processing')"
+      :loading="confirming"
+      @confirm="doConfirm"
     >
-      <template #body>
-        <p class="text-sm">{{ t('bonusCode.confirmBody', { code: confirmItem?.code ?? '' }) }}</p>
-        <p v-if="confirmAction === 'delete'" class="mt-2 text-xs text-zinc-500">{{ t('bonusCode.deleteHint') }}</p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">{{ t('common.cancel') }}</UButton>
-        <UButton type="button" :color="confirmAction === 'delete' ? 'error' : 'primary'" :loading="confirming" :disabled="confirming" @click="doConfirm">{{ t('common.confirm') }}</UButton>
-      </template>
-    </UModal>
+      {{ t('bonusCode.confirmBody', { code: confirmItem?.code ?? '' }) }}
+      <p v-if="confirmAction === 'delete'" class="mt-2 text-xs text-dimmed">{{ t('bonusCode.deleteHint') }}</p>
+    </ManageConfirmModal>
   </div>
 </template>

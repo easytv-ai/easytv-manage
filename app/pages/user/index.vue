@@ -507,55 +507,25 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
       :user="inviteUser"
       @block-changed="onInviteBlockChanged"
     />
-    <UModal
+    <ManageConfirmModal
       v-model:open="statusConfirmOpen"
       :title="statusUser?.status === 1 ? '确认封禁用户' : '确认解封用户'"
-      :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }"
+      :tone="statusUser?.status === 1 ? 'error' : 'success'"
+      :icon="statusUser?.status === 1 ? 'i-lucide-ban' : 'i-lucide-shield-check'"
+      :loading="statusSaving"
+      @confirm="saveStatus"
     >
-      <template #body>
-        <p class="text-sm text-zinc-600 dark:text-zinc-300">
-          确定要{{ statusUser?.status === 1 ? '封禁' : '解封' }}用户“{{ statusUser?.nickname }}”吗？
-        </p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="statusSaving" @click="() => { statusConfirmOpen = false }">
-          取消
-        </UButton>
-        <UButton
-          type="button"
-          :color="statusUser?.status === 1 ? 'error' : 'success'"
-          :loading="statusSaving"
-          :disabled="statusSaving"
-          @click="saveStatus"
-        >
-          {{ statusSaving ? '处理中…' : '确认' }}
-        </UButton>
-      </template>
-    </UModal>
-    <UModal
+      确定要{{ statusUser?.status === 1 ? '封禁' : '解封' }}用户“{{ statusUser?.nickname }}”吗？
+    </ManageConfirmModal>
+    <ManageConfirmModal
       v-model:open="deleteConfirmOpen"
       title="确认注销用户"
-      :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }"
+      icon="i-lucide-user-x"
+      confirm-text="确认注销"
+      :loading="deleteSaving"
+      @confirm="saveDelete"
     >
-      <template #body>
-        <p class="text-sm text-zinc-600 dark:text-zinc-300">
-          确定要注销用户“{{ deleteUser?.nickname }}”吗？该操作不可撤销。
-        </p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="deleteSaving" @click="() => { deleteConfirmOpen = false }">
-          取消
-        </UButton>
-        <UButton
-          type="button"
-          color="error"
-          :loading="deleteSaving"
-          :disabled="deleteSaving"
-          @click="saveDelete"
-        >
-          {{ deleteSaving ? '处理中…' : '确认注销' }}
-        </UButton>
-      </template>
-    </UModal>
+      确定要注销用户“{{ deleteUser?.nickname }}”吗？该操作不可撤销。
+    </ManageConfirmModal>
   </div>
 </template>

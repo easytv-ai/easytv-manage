@@ -308,16 +308,14 @@ async function confirm() {
       </template>
     </UModal>
 
-    <UModal v-model:open="confirmOpen" :title="confirmAction === 'delete' ? '确认删除资产' : `确认${confirmItem?.status === 1 ? '回收' : '恢复'}资产`" :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }">
-      <template #body>
-        <p class="text-sm text-zinc-600 dark:text-zinc-300">确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '回收' : '恢复') }}“{{ confirmItem?.title }}”吗？</p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">取消</UButton>
-        <UButton type="button" :color="confirmAction === 'delete' ? 'error' : 'primary'" :loading="confirming" :disabled="confirming" @click="confirm">
-          {{ confirming ? '处理中…' : '确认' }}
-        </UButton>
-      </template>
-    </UModal>
+    <ManageConfirmModal
+      v-model:open="confirmOpen"
+      :title="confirmAction === 'delete' ? '确认删除资产' : `确认${confirmItem?.status === 1 ? '回收' : '恢复'}资产`"
+      :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
+      :loading="confirming"
+      @confirm="confirm"
+    >
+      确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '回收' : '恢复') }}“{{ confirmItem?.title }}”吗？
+    </ManageConfirmModal>
   </div>
 </template>

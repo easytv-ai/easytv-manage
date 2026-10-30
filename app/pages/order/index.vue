@@ -258,18 +258,15 @@ async function confirmChange() {
       </template>
     </UModal>
 
-    <UModal v-model:open="confirmOpen" :title="confirmAction === 'refund' ? '确认退款' : '确认关闭订单'" :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }">
-      <template #body>
-        <p class="text-sm text-zinc-600 dark:text-zinc-300">
-          确定要{{ confirmAction === 'refund' ? '退款' : '关闭' }}订单“{{ confirmItem?.no }}”吗？该操作不可撤销。
-        </p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">取消</UButton>
-        <UButton type="button" :color="confirmAction === 'refund' ? 'error' : 'warning'" :loading="confirming" :disabled="confirming" @click="confirmChange">
-          {{ confirming ? '处理中…' : '确认' }}
-        </UButton>
-      </template>
-    </UModal>
+    <ManageConfirmModal
+      v-model:open="confirmOpen"
+      :title="confirmAction === 'refund' ? '确认退款' : '确认关闭订单'"
+      :tone="confirmAction === 'refund' ? 'error' : 'warning'"
+      :icon="confirmAction === 'refund' ? 'i-lucide-undo-2' : 'i-lucide-circle-x'"
+      :loading="confirming"
+      @confirm="confirmChange"
+    >
+      确定要{{ confirmAction === 'refund' ? '退款' : '关闭' }}订单“{{ confirmItem?.no }}”吗？该操作不可撤销。
+    </ManageConfirmModal>
   </div>
 </template>

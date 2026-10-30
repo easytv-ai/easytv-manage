@@ -786,18 +786,14 @@ async function confirmChange() {
       </template>
     </UModal>
 
-    <UModal v-model:open="confirmOpen" :title="confirmTitle" :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }">
-      <template #body>
-        <p class="text-sm text-zinc-600 dark:text-zinc-300">
-          确定要{{ confirmKind.includes('delete') ? '删除' : (confirmPlan?.status === 1 || confirmPack?.status === 1 ? '下架' : '上架') }}“{{ confirmPlan?.name || (confirmPack ? `${confirmPack.points} 积分` : '') }}”吗？
-        </p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">取消</UButton>
-        <UButton type="button" :color="confirmKind.includes('delete') ? 'error' : 'primary'" :loading="confirming" :disabled="confirming" @click="confirmChange">
-          {{ confirming ? '处理中…' : '确认' }}
-        </UButton>
-      </template>
-    </UModal>
+    <ManageConfirmModal
+      v-model:open="confirmOpen"
+      :title="confirmTitle"
+      :tone="confirmKind.includes('delete') ? 'error' : confirmPlan?.status === 1 || confirmPack?.status === 1 ? 'warning' : 'success'"
+      :loading="confirming"
+      @confirm="confirmChange"
+    >
+      确定要{{ confirmKind.includes('delete') ? '删除' : (confirmPlan?.status === 1 || confirmPack?.status === 1 ? '下架' : '上架') }}“{{ confirmPlan?.name || (confirmPack ? `${confirmPack.points} 积分` : '') }}”吗？
+    </ManageConfirmModal>
   </div>
 </template>

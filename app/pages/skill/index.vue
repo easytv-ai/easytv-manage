@@ -529,18 +529,16 @@ async function confirm() {
       </template>
     </UModal>
 
-    <UModal v-model:open="confirmOpen" :title="confirmAction === 'delete' ? '确认删除模板' : confirmAction === 'unpublish' ? t('skill.review.confirmUnpublish') : `确认${confirmItem?.status === 1 ? '下架' : '上架'}模板`" :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }">
-      <template #body>
-        <p v-if="confirmAction === 'unpublish'" class="text-sm text-zinc-600 dark:text-zinc-300">{{ t('skill.review.confirmUnpublishBody', { title: confirmItem?.title ?? '' }) }}</p>
-        <p v-else class="text-sm text-zinc-600 dark:text-zinc-300">确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '下架' : '上架') }}“{{ confirmItem?.title }}”吗？</p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">取消</UButton>
-        <UButton type="button" :color="confirmAction === 'delete' ? 'error' : 'primary'" :loading="confirming" :disabled="confirming" @click="confirm">
-          {{ confirming ? '处理中…' : '确认' }}
-        </UButton>
-      </template>
-    </UModal>
+    <ManageConfirmModal
+      v-model:open="confirmOpen"
+      :title="confirmAction === 'delete' ? '确认删除模板' : confirmAction === 'unpublish' ? t('skill.review.confirmUnpublish') : `确认${confirmItem?.status === 1 ? '下架' : '上架'}模板`"
+      :tone="confirmAction === 'delete' ? 'error' : confirmAction === 'unpublish' || confirmItem?.status === 1 ? 'warning' : 'success'"
+      :loading="confirming"
+      @confirm="confirm"
+    >
+      <template v-if="confirmAction === 'unpublish'">{{ t('skill.review.confirmUnpublishBody', { title: confirmItem?.title ?? '' }) }}</template>
+      <template v-else>确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '下架' : '上架') }}“{{ confirmItem?.title }}”吗？</template>
+    </ManageConfirmModal>
 
     <UModal v-model:open="rejectOpen" :title="t('skill.review.rejectTitle')" :description="rejectItem?.title" :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }">
       <template #body>

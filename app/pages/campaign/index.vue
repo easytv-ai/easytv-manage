@@ -612,20 +612,20 @@ const num = (v: unknown) => (Number(v) || 0).toLocaleString()
       </template>
     </UModal>
 
-    <UModal
+    <ManageConfirmModal
       v-model:open="confirmOpen"
       :title="confirmAction === 'delete' ? t('campaign.confirmDelete') : t('campaign.confirmSettle')"
-      :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }"
+      :tone="confirmAction === 'delete' ? 'error' : 'primary'"
+      :icon="confirmAction === 'delete' ? '' : 'i-lucide-trophy'"
+      :confirm-text="t('common.confirm')"
+      :cancel-text="t('common.cancel')"
+      :loading-text="t('common.processing')"
+      :loading="confirming"
+      @confirm="doConfirm"
     >
-      <template #body>
-        <p class="text-sm">{{ t(confirmAction === 'delete' ? 'campaign.confirmDeleteBody' : 'campaign.confirmSettleBody', { title: confirmItem?.title ?? '' }) }}</p>
-        <p v-if="confirmAction === 'settle'" class="mt-2 text-xs text-zinc-500">{{ t('campaign.settleHint2') }}</p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">{{ t('common.cancel') }}</UButton>
-        <UButton type="button" :color="confirmAction === 'delete' ? 'error' : 'primary'" :loading="confirming" :disabled="confirming" @click="doConfirm">{{ t('common.confirm') }}</UButton>
-      </template>
-    </UModal>
+      {{ t(confirmAction === 'delete' ? 'campaign.confirmDeleteBody' : 'campaign.confirmSettleBody', { title: confirmItem?.title ?? '' }) }}
+      <p v-if="confirmAction === 'settle'" class="mt-2 text-xs text-dimmed">{{ t('campaign.settleHint2') }}</p>
+    </ManageConfirmModal>
 
     <USlideover
       v-model:open="entriesOpen"

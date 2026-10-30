@@ -266,19 +266,15 @@ async function confirm() {
       </template>
     </UModal>
 
-    <UModal v-model:open="confirmOpen" :title="confirmAction === 'delete' ? '确认删除分类' : `确认${confirmItem?.status === 1 ? '停用' : '启用'}分类`" :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }">
-      <template #body>
-        <p class="text-sm text-zinc-600 dark:text-zinc-300">
-          确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '停用' : '启用') }}分类“{{ confirmItem?.name }}”吗？
-          <template v-if="confirmAction === 'delete'">已使用该分类的内容不受影响，但前台不再显示这个筛选标签。</template>
-        </p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">取消</UButton>
-        <UButton type="button" :color="confirmAction === 'delete' ? 'error' : 'primary'" :loading="confirming" :disabled="confirming" @click="confirm">
-          {{ confirming ? '处理中…' : '确认' }}
-        </UButton>
-      </template>
-    </UModal>
+    <ManageConfirmModal
+      v-model:open="confirmOpen"
+      :title="confirmAction === 'delete' ? '确认删除分类' : `确认${confirmItem?.status === 1 ? '停用' : '启用'}分类`"
+      :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
+      :loading="confirming"
+      @confirm="confirm"
+    >
+      确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '停用' : '启用') }}分类“{{ confirmItem?.name }}”吗？
+      <template v-if="confirmAction === 'delete'">已使用该分类的内容不受影响，但前台不再显示这个筛选标签。</template>
+    </ManageConfirmModal>
   </div>
 </template>

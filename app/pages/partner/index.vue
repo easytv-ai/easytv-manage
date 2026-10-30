@@ -409,20 +409,20 @@ const detailTiles = computed(() => {
       </template>
     </UModal>
 
-    <UModal
+    <ManageConfirmModal
       v-model:open="confirmOpen"
       :title="t('partner.confirmDisable')"
-      :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }"
+      tone="warning"
+      icon="i-lucide-user-round-minus"
+      :confirm-text="t('common.confirm')"
+      :cancel-text="t('common.cancel')"
+      :loading-text="t('common.processing')"
+      :loading="confirming"
+      @confirm="doDisable"
     >
-      <template #body>
-        <p class="text-sm">{{ t('partner.confirmDisableBody', { name: confirmItem?.name ?? '' }) }}</p>
-        <p class="mt-2 text-xs text-zinc-500">{{ t('partner.confirmDisableHint') }}</p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">{{ t('common.cancel') }}</UButton>
-        <UButton type="button" color="warning" :loading="confirming" :disabled="confirming" @click="doDisable">{{ t('common.confirm') }}</UButton>
-      </template>
-    </UModal>
+      {{ t('partner.confirmDisableBody', { name: confirmItem?.name ?? '' }) }}
+      <p class="mt-2 text-xs text-dimmed">{{ t('partner.confirmDisableHint') }}</p>
+    </ManageConfirmModal>
 
     <USlideover
       v-model:open="detailOpen"

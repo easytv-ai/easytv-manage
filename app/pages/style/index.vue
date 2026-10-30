@@ -541,14 +541,8 @@ async function doDelete() {
       </template>
     </UModal>
 
-    <UModal v-model:open="confirmOpen" title="删除风格" :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }">
-      <template #body>
-        <p class="text-sm">确定删除「{{ confirmItem?.name }}」吗？删除后创作台立即不可见，已套用该风格的节点不受影响。</p>
-      </template>
-      <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">取消</UButton>
-        <UButton type="button" color="error" :loading="confirming" @click="doDelete">删除</UButton>
-      </template>
-    </UModal>
+    <ManageConfirmModal v-model:open="confirmOpen" title="删除风格" confirm-text="删除" :loading="confirming" @confirm="doDelete">
+      确定删除「{{ confirmItem?.name }}」吗？删除后创作台立即不可见，已套用该风格的节点不受影响。
+    </ManageConfirmModal>
   </div>
 </template>
