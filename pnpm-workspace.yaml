@@ -1,0 +1,6 @@
+# pnpm 10+ refuses to run postinstall scripts unless they are allow-listed here.
+allowBuilds:
+  esbuild: true
+  simple-git-hooks: true
+  vue-demi: true
+  workerd: true

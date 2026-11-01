@@ -1,57 +1,125 @@
-# EasyTV 管理后台
+<div align="center">
 
-EasyTV AI 视频创作平台的运营后台，基于 Nuxt 4 + Nuxt UI。
+# EasyTV Manage
 
-覆盖用户、作品、社区审核、计费、模型定价和系统设置，页面直连 `/admin/*`。
+**Admin console of [EasyTV](https://easytv.ai) — the open-source AI short-drama platform.**
 
-## 技术栈
+[![CI](https://github.com/easytv-ai/easytv-manage/actions/workflows/ci.yml/badge.svg)](https://github.com/easytv-ai/easytv-manage/actions/workflows/ci.yml)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+[![Nuxt 4](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt.js&logoColor=white)](https://nuxt.com)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-- Nuxt 4（SPA，`ssr: false`）
-- Vue 3 + TypeScript
-- @nuxt/ui + Tailwind CSS 4
-- @nuxtjs/i18n（简体 / 繁体 / 英文）
-- Cloudflare Workers 部署
+[English](README.md) · [简体中文](README.zh-CN.md) · [Backend](https://github.com/easytv-ai/easytv-api) · [Studio](https://github.com/easytv-ai/easytv-web)
 
-## 开发
+</div>
 
-```bash
-yarn install
-yarn dev
-```
+EasyTV Manage is the operations console for a self-hosted EasyTV: users and
+teams, works and moderation, billing and model pricing, growth campaigns and
+every runtime setting of the backend. It is a Nuxt 4 single-page app that
+talks to the `/admin/*` routes of
+[`easytv-api`](https://github.com/easytv-ai/easytv-api).
 
-本地默认端口：`3006`。
+## What you can manage
 
-演示账号（接口不可用时可用）：`admin@easytv.demo` / `123456`。
+| Area | Pages |
+| --- | --- |
+| **People** | Users (search, identities, bans), teams and member quotas, partners |
+| **Content** | Works, featured showcase, categories, banners, skills, prompts, styles, subjects, projects, assets, canvases |
+| **Community** | Comment / report / activity moderation queues, notices, notifications |
+| **Money** | Orders, recharges, withdrawals, bills, membership plans, point packs, model pricing, invoices |
+| **Growth** | Campaigns, invite and check-in rules, usage logs, dashboards |
+| **System** | Site, payment, model gateway, growth and invoice settings (super admin only) |
 
-## 页面
+Settings edited here are stored in the backend's `setting` table and take
+effect without a restart.
 
-| 路由 | 说明 |
-|------|------|
-| `/login` | 登录 |
-| `/user` | 用户列表、批量查询、身份管理、封禁 |
-| `/team` | 团队额度与成员月度上限 |
-| `/subject` | 主体库查看与违规删除 |
-| `/work` | 作品列表、语种筛选、上下架和删除 |
-| `/showcase` | 精选成片、分类和上下架 |
-| `/skill` | Agent Skill 模板 |
-| `/banner` | 创作台首页轮播 |
-| `/community-audit` | 评论、举报和动态审核 |
-| `/project` | 视频 / 画布项目与回收站 |
-| `/asset` | 素材资产与回收站 |
-| `/canvas` | 画布草稿和公开状态 |
-| `/order` | 会员订单 |
-| `/recharge` | 支付渠道充值记录 |
-| `/withdraw` | 提现审核与打款 |
-| `/bill` | 全站资金流水 |
-| `/category` | 成片 / Skill 分类 |
-| `/notice` | 站内公告 |
-| `/system` | 站点、支付、网关、增长与发票（仅超级管理员） |
+## Quick Start
 
-侧栏里的其余页面（数据看板、创作指标、渠道伙伴、任务、套餐、积分、模型定价、提示词、风格、通知、活动、使用日志）与上表同一套列表交互。
-
-## 构建与部署
+Requires Node.js 22.5+ and [pnpm](https://pnpm.io) 10+ (`corepack enable` installs the pinned version).
 
 ```bash
-yarn build
-yarn deploy
+git clone https://github.com/easytv-ai/easytv-manage.git
+cd easytv-manage
+pnpm install
+cp .env.example .env.development   # point NUXT_PUBLIC_API_BASE_URL at your API
+pnpm dev                        # http://localhost:3006
 ```
+
+Sign in with the `admin` account created by `easytv-api` on first start
+(`ROOT_USERNAME` / `ROOT_PASSWORD`). Without a backend you can still browse
+the UI with the demo account shown on the login page.
+
+### First-run checklist
+
+1. **System → Gateway**: enter the URL and key of your New API-compatible
+   gateway, fetch the model list and import pricing.
+2. **System → Site**: set the public studio URL used in invite links and
+   callbacks.
+3. **System → Payment**: enable WeChat Pay / Alipay if you sell plans or
+   points.
+4. **Model pricing**: adjust point prices per model; the studio shows them in
+   cost estimates.
+
+## Configuration
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `NUXT_PUBLIC_API_BASE_URL` | yes | Base URL of `easytv-api` |
+| `NUXT_PUBLIC_STUDIO_URL` | yes | URL of the creator studio (`easytv-web`): "open site" link, review → player jumps, static asset URLs |
+| `NUXT_PUBLIC_SITE_NAME` | no | Name shown in the console (default `EasyTV`) |
+
+Development reads `.env.development`, production builds read
+`.env.production`. Neither is committed; `.env.example` is the reference.
+
+## Scripts
+
+```bash
+pnpm dev          # dev server on :3006
+pnpm build        # production build (Cloudflare preset)
+pnpm typecheck    # vue-tsc (also runs on pre-push via simple-git-hooks)
+pnpm preview      # build + wrangler dev
+pnpm deploy       # node scripts/deploy.mjs [--env .env.production]
+```
+
+## Project Layout
+
+```
+app/
+  api/           typed wrappers around /admin/* endpoints
+  components/    tables, drawers, forms shared across pages
+  layouts/       console shell (sidebar, top bar)
+  pages/         one folder per admin area
+  utils/         settings mappers, media URL helpers, formatting
+i18n/locales/    zh, zh-TW, en
+scripts/         deploy.mjs
+```
+
+## Deployment
+
+The Nitro preset is `cloudflare_module` (`wrangler.jsonc`):
+
+```bash
+cp .env.example .env.production
+pnpm deploy
+```
+
+For a Node host build with `NITRO_PRESET=node-server pnpm build` and serve
+`.output/public` behind any static server (the app is fully client-side).
+
+## Contributing
+
+Issues and pull requests are welcome, in English or Chinese. See
+[CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md) and
+[CHANGELOG.md](CHANGELOG.md).
+
+## Related Projects
+
+| Repository | Description |
+| --- | --- |
+| [easytv-api](https://github.com/easytv-ai/easytv-api) | Go backend |
+| [easytv-web](https://github.com/easytv-ai/easytv-web) | Creator studio |
+| [easytv-website](https://github.com/easytv-ai/easytv-website) | Project website |
+
+## License
+
+[GNU Affero General Public License v3.0](LICENSE).

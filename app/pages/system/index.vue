@@ -36,7 +36,7 @@ import {
   secretSnapshot,
   toSettingValue,
 } from '~/utils/admin-setting'
-import { OFFICIAL_SITE_URL } from '~/utils/officialSite'
+import { resolveOfficialSiteUrl } from '~/utils/officialSite'
 
 const DEFAULT_LOGO = '/favicon.svg'
 
@@ -343,7 +343,7 @@ onMounted(() => {
   void refreshSettings()
 })
 
-const siteBaseUrl = computed(() => form.siteUrl.trim().replace(/\/$/, '') || OFFICIAL_SITE_URL)
+const siteBaseUrl = computed(() => form.siteUrl.trim().replace(/\/$/, '') || resolveOfficialSiteUrl())
 
 function gotoTab(next: SystemTab) {
   void navigateTo(localePath({

@@ -1,4 +1,4 @@
-import { OFFICIAL_SITE_URL } from '~/utils/officialSite'
+import { resolveOfficialSiteUrl } from '~/utils/officialSite'
 
 /** 列表封面缺省图，接口未返回封面时使用 */
 export const DEFAULT_WORK_COVER = '/images/work-cover.svg'
@@ -19,5 +19,5 @@ export function resolveMediaUrl(url: string | null | undefined): string {
     const base = String(useRuntimeConfig().public.apiBaseUrl || '').replace(/\/$/, '')
     return `${base}${value}`
   }
-  return `${OFFICIAL_SITE_URL}${value.startsWith('/') ? '' : '/'}${value}`
+  return `${resolveOfficialSiteUrl()}${value.startsWith('/') ? '' : '/'}${value}`
 }
