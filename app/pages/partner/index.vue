@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { formatUnix, isOk, parsePaged } from '~/api/creative'
 import { adminPartnerApi, type AdminPartner, type PartnerCustomer, type PartnerReviewPayload } from '~/api/partner'
+import { user as userApi } from '~/api/user'
 import { CONSOLE_DEFAULT_PAGE_SIZE, SELECT_ITEM_ALL } from '~/utils/consoleSelectItems'
 
 /**
@@ -84,6 +85,44 @@ function search() {
 function reset() {
   Object.assign(draft, { status: '0', keyword: '' })
   search()
+}
+
+// ---- 进入代理商后台（复用 /admin/user/:id/console_access 的一次性 ticket，拼代理商后台地址）----
+const runtimeConfig = useRuntimeConfig()
+const consoleOpeningId = ref<number | null>(null)
+
+async function openPartnerConsole(item: AdminPartner) {
+  if (consoleOpeningId.value != null)
+    return
+  consoleOpeningId.value = item.id
+  // 先同步开空白窗口再填地址，避免 await 之后 window.open 被浏览器当弹窗拦掉
+  const win = window.open('', '_blank')
+  try {
+    const res = await userApi.consoleAccess(item.user_id) as { success?: boolean, message?: string, data?: { path?: string } }
+    const path = res?.data?.path
+    if (!isOk(res) || !path) {
+      win?.close()
+      notify(res?.message || t('partner.openConsoleFail'), 'error')
+      return
+    }
+    const base = String((runtimeConfig.public as any).partnerUrl || '').replace(/\/+$/, '')
+    const url = `${base}${path}`
+    if (win) {
+      win.opener = null
+      win.location.href = url
+    }
+    else {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+    notify(t('partner.openConsoleDone', { name: item.name }))
+  }
+  catch {
+    win?.close()
+    notify(t('partner.openConsoleFail'), 'error')
+  }
+  finally {
+    consoleOpeningId.value = null
+  }
 }
 
 async function copyCode(code: string) {
@@ -335,6 +374,7 @@ const detailTiles = computed(() => {
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="xs" variant="soft" color="neutral" @click="openDetail(item)">{{ t('common.detail') }}</UButton>
+                    <UButton v-if="item.status === 1" type="button" size="xs" variant="soft" color="primary" icon="i-lucide-external-link" :loading="consoleOpeningId === item.id" @click="openPartnerConsole(item)">{{ t('partner.openConsole') }}</UButton>
                     <template v-if="isSuperAdmin">
                       <UButton v-if="item.status !== 1" type="button" size="xs" variant="soft" color="success" @click="openReview(item, 'approve')">{{ t('partner.approve') }}</UButton>
                       <UButton v-if="item.status === 0" type="button" size="xs" variant="soft" color="error" @click="openReview(item, 'reject')">{{ t('partner.reject') }}</UButton>

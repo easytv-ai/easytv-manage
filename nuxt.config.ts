@@ -112,6 +112,8 @@ export default defineNuxtConfig({
       apiBaseUrl: (globalThis as any).process?.env?.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3000',
       /** 创作台地址：审核页跳转播放页用 */
       studioUrl: (globalThis as any).process?.env?.NUXT_PUBLIC_STUDIO_URL || 'http://localhost:3005',
+      /** 代理商后台（easytv-partner）地址：渠道伙伴页「进入代理商后台」用 */
+      partnerUrl: (globalThis as any).process?.env?.NUXT_PUBLIC_PARTNER_URL || 'http://localhost:3010',
     },
   },
   future: {

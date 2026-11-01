@@ -1425,7 +1425,10 @@
     "customerAmount": "Paid",
     "customerRebate": "Rebate",
     "customerBoundAt": "Attributed at",
-    "customerFirstPaidAt": "First paid at"
+    "customerFirstPaidAt": "First paid at",
+    "openConsole": "Open console",
+    "openConsoleFail": "Could not open the partner console, please try again later",
+    "openConsoleDone": "Opened the partner console as \"{name}\""
   },
   "prompt": {
     "pageTitle": "Prompt Library",

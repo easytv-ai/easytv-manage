@@ -1425,7 +1425,10 @@
     "customerAmount": "实付",
     "customerRebate": "返佣",
     "customerBoundAt": "归属时间",
-    "customerFirstPaidAt": "首次付费时间"
+    "customerFirstPaidAt": "首次付费时间",
+    "openConsole": "进入后台",
+    "openConsoleFail": "打开代理商后台失败，请稍后重试",
+    "openConsoleDone": "已以「{name}」身份打开代理商后台"
   },
   "prompt": {
     "pageTitle": "提示词库",
