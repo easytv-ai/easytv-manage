@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   conduct, security policy, issue and pull request templates, Dependabot and
   GitHub Actions CI.
 - `pnpm test` alias for the type check so CI and hooks share one command.
+- Dual licensing: AGPL-3.0 remains the public license; [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) (and [zh-CN](COMMERCIAL-LICENSE.zh-CN.md)) is the commercial template for closed-source / SaaS use.
 
 ### Changed
 
