@@ -42,9 +42,17 @@ Requires Node.js 22.5+ and [pnpm](https://pnpm.io) 10+ (`corepack enable` instal
 git clone https://github.com/easytv-ai/easytv-manage.git
 cd easytv-manage
 pnpm install
-cp .env.example .env.development   # point NUXT_PUBLIC_API_BASE_URL at your API
+cp .env.example .env.development
 pnpm dev                        # http://localhost:3006
 ```
+
+The example already points at the hosted API `https://tv-api.easyapi.com`,
+the creator studio `https://www.easytv.ai` and the partner console
+`https://partner.easytv.ai`, the same targets as
+[`easytv-web`](https://github.com/easytv-ai/easytv-web). `pnpm dev` works
+without copying an env file. For a local stack, set the API to
+`http://localhost:8383`, the studio to `http://localhost:3005` and the
+partner console to `http://localhost:3010`.
 
 Sign in with the `admin` account created by `easytv-api` on first start
 (`ROOT_USERNAME` / `ROOT_PASSWORD`). Without a backend you can still browse
@@ -65,12 +73,14 @@ the UI with the demo account shown on the login page.
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| `NUXT_PUBLIC_API_BASE_URL` | yes | Base URL of `easytv-api` |
-| `NUXT_PUBLIC_STUDIO_URL` | yes | URL of the creator studio (`easytv-web`): "open site" link, review → player jumps, static asset URLs |
+| `NUXT_PUBLIC_API_BASE_URL` | yes | Base URL of `easytv-api` (default `https://tv-api.easyapi.com`) |
+| `NUXT_PUBLIC_STUDIO_URL` | yes | URL of the creator studio (`easytv-web`): "open site" link, review → player jumps, static asset URLs (default `https://www.easytv.ai`) |
+| `NUXT_PUBLIC_PARTNER_URL` | yes | URL of the partner console (`easytv-partner`): "open partner console" on the Partners page (default `https://partner.easytv.ai`) |
 | `NUXT_PUBLIC_SITE_NAME` | no | Name shown in the console (default `EasyTV`) |
 
 Development reads `.env.development`, production builds read
-`.env.production`. Neither is committed; `.env.example` is the reference.
+`.env.production`. Missing files fall back to the defaults in
+`nuxt.config.ts`. Neither file is committed; `.env.example` is the reference.
 
 ## Scripts
 
@@ -79,7 +89,7 @@ pnpm dev          # dev server on :3006
 pnpm build        # production build (Cloudflare preset)
 pnpm typecheck    # vue-tsc (also runs on pre-push via simple-git-hooks)
 pnpm preview      # build + wrangler dev
-pnpm deploy       # node scripts/deploy.mjs [--env .env.production]
+pnpm deploy       # build + wrangler deploy
 ```
 
 ## Project Layout
@@ -92,7 +102,6 @@ app/
   pages/         one folder per admin area
   utils/         settings mappers, media URL helpers, formatting
 i18n/locales/    zh, zh-TW, en
-scripts/         deploy.mjs
 ```
 
 ## Deployment
@@ -100,7 +109,6 @@ scripts/         deploy.mjs
 The Nitro preset is `cloudflare_module` (`wrangler.jsonc`):
 
 ```bash
-cp .env.example .env.production
 pnpm deploy
 ```
 

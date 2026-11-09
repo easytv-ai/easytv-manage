@@ -23,7 +23,7 @@
     "generate": "cross-env NODE_OPTIONS=--max-old-space-size=8192 nuxt generate --dotenv .env.production",
     "preview": "pnpm run build && wrangler dev",
     "start": "cross-env NODE_ENV=production nuxt start",
-    "deploy": "node scripts/deploy.mjs",
+    "deploy": "pnpm run build && wrangler deploy",
     "cf-typegen": "wrangler types",
     "typecheck": "nuxt typecheck",
     "prepare": "simple-git-hooks",
