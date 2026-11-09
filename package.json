@@ -37,15 +37,15 @@
     "vue": "^3.5.39"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.149",
+    "@iconify-json/lucide": "^1.2.151",
     "@tailwindcss/typography": "^0.5.20",
-    "@types/node": "^26.1.0",
+    "@types/node": "^26.6.6",
     "cross-env": "^10.1.0",
     "nitro-cloudflare-dev": "^0.2.2",
     "simple-git-hooks": "^2.14.0",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vue-tsc": "^3",
-    "wrangler": "^4.118.0"
+    "wrangler": "^4.158.0"
   },
   "simple-git-hooks": {
     "pre-push": "npm run typecheck"
