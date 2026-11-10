@@ -23,6 +23,15 @@ type Metrics = {
   tasks: { total: number, succeeded: number, failed: number, cancelled: number, active: number, success_rate: Pct, timeout_failed: number, by_type: TaskTypeStat[] }
   compose: { jobs: number, done: number, failed: number, active: number, success_rate: Pct, first_users: number, first_succeeded: number, first_failed: number, first_success_rate: Pct, eventually_done: number, eventual_rate: Pct }
   retries: { nodes: number, tasks: number, avg_per_node: number, retried_nodes: number, retried_rate: Pct, buckets: { label: string, nodes: number }[], by_type: { type: string, nodes: number, tasks: number, avg_per_node: number }[] }
+  // 旧后端没有这一块（API.md 39.3）
+  rerolls?: {
+    nodes: number, succeeded: number, first_pass_nodes: number, first_pass_rate: Pct, avg_per_node: number
+    spent_points: number, wasted_points: number, wasted_rate: Pct
+    by_type: { type: string, nodes: number, first_pass_nodes: number, first_pass_rate: Pct, avg_per_node: number }[]
+    by_model: { model: string, type: string, total: number, rerolled: number, keep_rate: Pct, pulls_per_keep: number | null }[]
+    reasons: { reason: string, count: number }[]
+    reason_tasks: number
+  } | null
   ref_missing: { events: number, items: number, users: number, per_hundred_tasks: Pct, by_source: { source: string, events: number, items: number, users: number }[] }
   refund: { backlog_tasks: number, backlog_points: number, backlog_oldest: number, refunded_tasks: number, refunded_points: number }
   stuck: { tasks: number, compose_jobs: number, active_tasks: number, scan_limit_hit: boolean, items: { id: number, user_id: number, type: string, model: string, status: string, progress: number, created_at: number, last_at: number, idle_minutes: number }[] }
@@ -326,6 +335,65 @@ const bucketMax = computed(() => Math.max(1, ...(data.value?.retries.buckets ?? 
           </ul>
         </section>
       </div>
+
+      <!-- 抽卡：成功后又生成 -->
+      <section v-if="data.rerolls" class="mt-6 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+        <h2 class="text-sm font-semibold">{{ t('creationMetrics.rerollTitle') }}</h2>
+        <p class="mt-0.5 text-xs text-zinc-500">{{ t('creationMetrics.rerollDesc') }}</p>
+        <p v-if="!data.rerolls.nodes" class="py-6 text-center text-sm text-zinc-400">{{ t('creationMetrics.empty') }}</p>
+        <template v-else>
+          <dl class="mt-4 grid grid-cols-2 gap-4 text-sm lg:grid-cols-4">
+            <div>
+              <dt class="text-xs text-zinc-500">{{ t('creationMetrics.rerollFirstPass') }}</dt>
+              <dd class="mt-1 text-xl font-semibold tabular-nums">{{ pct(data.rerolls.first_pass_rate) }}</dd>
+              <dd class="text-xs text-zinc-500">{{ t('creationMetrics.rerollFirstPassSub', { pass: num(data.rerolls.first_pass_nodes), nodes: num(data.rerolls.nodes) }) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-zinc-500">{{ t('creationMetrics.rerollAvg') }}</dt>
+              <dd class="mt-1 text-xl font-semibold tabular-nums">{{ data.rerolls.avg_per_node }}</dd>
+              <dd class="text-xs text-zinc-500">
+                <span v-for="row in data.rerolls.by_type" :key="row.type" class="mr-2">{{ typeLabel(row.type) }} {{ row.avg_per_node }}</span>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs text-zinc-500">{{ t('creationMetrics.rerollWasted') }}</dt>
+              <dd class="mt-1 text-xl font-semibold tabular-nums" :class="(data.rerolls.wasted_rate ?? 0) >= 30 ? 'text-rose-600' : ''">{{ pct(data.rerolls.wasted_rate) }}</dd>
+              <dd class="text-xs text-zinc-500">{{ t('creationMetrics.rerollWastedSub', { wasted: num(data.rerolls.wasted_points), spent: num(data.rerolls.spent_points) }) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-zinc-500">{{ t('creationMetrics.rerollReasons', { n: num(data.rerolls.reason_tasks) }) }}</dt>
+              <dd class="mt-1 space-y-0.5 text-xs">
+                <div v-for="r in data.rerolls.reasons" :key="r.reason" class="flex justify-between gap-3">
+                  <span>{{ t(`creationMetrics.rerollReason.${r.reason}`, r.reason) }}</span>
+                  <span class="tabular-nums text-zinc-500">{{ num(r.count) }}</span>
+                </div>
+                <div v-if="!data.rerolls.reasons.length" class="text-zinc-400">{{ t('creationMetrics.rerollReasonsEmpty') }}</div>
+              </dd>
+            </div>
+          </dl>
+          <table class="mt-5 w-full text-sm">
+            <thead class="text-left text-xs text-zinc-500">
+              <tr>
+                <th class="py-2 pr-3">{{ t('creationMetrics.colModel') }}</th>
+                <th class="px-3 py-2 text-right">{{ t('creationMetrics.rerollColKept') }}</th>
+                <th class="px-3 py-2 text-right">{{ t('creationMetrics.rerollColKeepRate') }}</th>
+                <th class="py-2 pl-3 text-right">{{ t('creationMetrics.rerollColPulls') }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-900">
+              <tr v-for="row in data.rerolls.by_model" :key="`${row.type}-${row.model}`">
+                <td class="py-2 pr-3">
+                  <span class="font-mono text-xs">{{ row.model }}</span>
+                  <span class="ml-1 text-xs text-zinc-400">{{ typeLabel(row.type) }}</span>
+                </td>
+                <td class="px-3 py-2 text-right tabular-nums">{{ t('creationMetrics.failOfTotal', { failed: num(row.total - row.rerolled), total: num(row.total) }) }}</td>
+                <td class="px-3 py-2 text-right tabular-nums" :class="row.total >= 10 && (row.keep_rate ?? 100) < 50 ? 'text-rose-600' : ''">{{ pct(row.keep_rate) }}</td>
+                <td class="py-2 pl-3 text-right tabular-nums">{{ row.pulls_per_keep ?? '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
+      </section>
 
       <!-- 长时间无进展 -->
       <section class="mt-6 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
