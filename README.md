@@ -46,13 +46,11 @@ cp .env.example .env.development
 pnpm dev                        # http://localhost:3006
 ```
 
-The example already points at the hosted API `https://tv-api.easyapi.com`,
-the creator studio `https://www.easytv.ai` and the partner console
-`https://partner.easytv.ai`, the same targets as
-[`easytv-web`](https://github.com/easytv-ai/easytv-web). `pnpm dev` works
-without copying an env file. For a local stack, set the API to
-`http://localhost:8383`, the studio to `http://localhost:3005` and the
-partner console to `http://localhost:3010`.
+The API defaults to `http://localhost:8383`. Studio and partner links still
+default to `http://localhost:3005` and `http://localhost:3010`. `pnpm dev`
+talks to a local API without an env file. A public deploy must set
+`NUXT_PUBLIC_API_BASE_URL` itself. Local studio is `http://localhost:3005`,
+partner console `http://localhost:3010`.
 
 Sign in with the `admin` account created by `easytv-api` on first start
 (`ROOT_USERNAME` / `ROOT_PASSWORD`). Without a backend you can still browse
@@ -73,9 +71,9 @@ the UI with the demo account shown on the login page.
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| `NUXT_PUBLIC_API_BASE_URL` | yes | Base URL of `easytv-api` (default `https://tv-api.easyapi.com`) |
-| `NUXT_PUBLIC_STUDIO_URL` | yes | URL of the creator studio (`easytv-web`): "open site" link, review → player jumps, static asset URLs (default `https://www.easytv.ai`) |
-| `NUXT_PUBLIC_PARTNER_URL` | yes | URL of the partner console (`easytv-partner`): "open partner console" on the Partners page (default `https://partner.easytv.ai`) |
+| `NUXT_PUBLIC_API_BASE_URL` | yes | Base URL of `easytv-api` (default `http://localhost:8383`) |
+| `NUXT_PUBLIC_STUDIO_URL` | yes | URL of the creator studio (`easytv-web`): "open site" link, review → player jumps, static asset URLs (default `http://localhost:3005`) |
+| `NUXT_PUBLIC_PARTNER_URL` | yes | URL of the partner console (`easytv-partner`): "open partner console" on the Partners page (default `http://localhost:3010`) |
 | `NUXT_PUBLIC_SITE_NAME` | no | Name shown in the console (default `EasyTV`) |
 
 Development reads `.env.development`, production builds read

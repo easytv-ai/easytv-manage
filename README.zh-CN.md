@@ -41,7 +41,7 @@ cp .env.example .env.development
 pnpm dev                        # http://localhost:3006
 ```
 
-示例已经对接线上接口 `https://tv-api.easyapi.com`、创作台 `https://www.easytv.ai` 和代理商后台 `https://partner.easytv.ai`，与 [`easytv-web`](https://github.com/easytv-ai/easytv-web) 相同。不复制 env 文件也能直接 `pnpm dev`。要对本地后端，把接口改成 `http://localhost:8383`，创作台 `http://localhost:3005`，代理商后台 `http://localhost:3010`。
+缺省接口是本机 `http://localhost:8383`，创作台缺省 `http://localhost:3005`，代理商后台缺省 `http://localhost:3010`。线上部署要自己改这三项，不要沿用缺省值。
 
 用 `easytv-api` 首次启动创建的 `admin` 账号登录（`ROOT_USERNAME` / `ROOT_PASSWORD`）。没有后端时可用登录页上的演示账号浏览界面。
 
@@ -56,9 +56,9 @@ pnpm dev                        # http://localhost:3006
 
 | 变量 | 必填 | 说明 |
 | --- | --- | --- |
-| `NUXT_PUBLIC_API_BASE_URL` | 是 | `easytv-api` 地址（默认 `https://tv-api.easyapi.com`） |
-| `NUXT_PUBLIC_STUDIO_URL` | 是 | 创作台（`easytv-web`）地址：顶栏「官网」、审核跳播放页、静态资源拼接（默认 `https://www.easytv.ai`） |
-| `NUXT_PUBLIC_PARTNER_URL` | 是 | 代理商后台（`easytv-partner`）地址：渠道伙伴页「进入代理商后台」（默认 `https://partner.easytv.ai`） |
+| `NUXT_PUBLIC_API_BASE_URL` | 是 | `easytv-api` 地址（默认 `http://localhost:8383`） |
+| `NUXT_PUBLIC_STUDIO_URL` | 是 | 创作台（`easytv-web`）地址：顶栏「官网」、审核跳播放页、静态资源拼接（默认 `http://localhost:3005`） |
+| `NUXT_PUBLIC_PARTNER_URL` | 是 | 代理商后台（`easytv-partner`）地址：渠道伙伴页「进入代理商后台」（默认 `http://localhost:3010`） |
 | `NUXT_PUBLIC_SITE_NAME` | 否 | 后台显示的站点名（默认 `EasyTV`） |
 
 开发读 `.env.development`，生产构建读 `.env.production`。文件不存在时用 `nuxt.config.ts` 里的默认值。两者都不入库，以 `.env.example` 为准。

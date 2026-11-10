@@ -8,7 +8,7 @@ definePageMeta({ layout: 'console' })
 
 const { notify } = useNotifyToast()
 const runtimeConfig = useRuntimeConfig()
-const siteUrl = String((runtimeConfig.public as any).studioUrl || 'https://www.easytv.ai').replace(/\/$/, '')
+const siteUrl = String((runtimeConfig.public as any).studioUrl || '').replace(/\/$/, '')
 
 const { loading, listReady, beginListLoad, markListReady } = useListReadyState()
 const page = ref(1)

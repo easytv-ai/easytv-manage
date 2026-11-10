@@ -268,7 +268,7 @@ async function confirm() {
             <UInput v-model="form.title" maxlength="40" placeholder="例如：Skill 商店活动" class="w-full" />
           </UFormField>
           <UFormField label="跳转链接" hint="选填，填写后将在新窗口打开" :error="errors.linkUrl || undefined">
-            <UInput v-model="form.linkUrl" placeholder="https://www.easytv.ai/studio" class="w-full" />
+            <UInput v-model="form.linkUrl" placeholder="https://studio.example.com" class="w-full" />
           </UFormField>
           <UFormField label="副标题" hint="显示在标题下方，例如「Pixel · 154 喜欢」">
             <UInput v-model="form.subtitle" maxlength="80" placeholder="例如：Pixel · 154 喜欢" class="w-full" />

@@ -419,7 +419,7 @@ export function smsSettingEntries(sms: SmsSettings, includeAppKey: boolean) {
   return entries
 }
 
-export const DEFAULT_INVOICE_SERVICE_URL = 'https://fapiao-api.easyapi.com'
+export const DEFAULT_INVOICE_SERVICE_URL = ''
 export const DEFAULT_INVOICE_TAX_RATE = '0.01'
 export const DEFAULT_INVOICE_ITEM_NO = '3040203'
 export const DEFAULT_INVOICE_ITEM_NAME = '技术服务费'

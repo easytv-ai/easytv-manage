@@ -321,10 +321,10 @@ async function submitQiniu() {
           </div>
         </UFormField>
         <UFormField :label="t('system.gatewayBaseUrl')" required :help="t('system.gatewayBaseUrlHelp')" :error="errors.baseUrl || undefined">
-          <UInput v-model="gatewayForm.baseUrl" class="w-full" placeholder="https://api.easyapi.com" />
+          <UInput v-model="gatewayForm.baseUrl" class="w-full" placeholder="https://api.example.com" />
         </UFormField>
         <UFormField :label="t('system.gatewayPricingBaseUrl')" :help="t('system.gatewayPricingBaseUrlHelp')" :error="errors.pricingBaseUrl || undefined">
-          <UInput v-model="gatewayForm.pricingBaseUrl" class="w-full" placeholder="https://token.easyapi.com" />
+          <UInput v-model="gatewayForm.pricingBaseUrl" class="w-full" placeholder="https://console.example.com" />
         </UFormField>
         <UFormField :label="t('system.gatewayApiKey')" class="sm:col-span-2" :help="t('system.gatewayApiKeyHelp')">
           <UInput
@@ -411,7 +411,7 @@ async function submitQiniu() {
           <UInput v-model="qiniuForm.bucket" class="w-full" placeholder="easyapi" />
         </UFormField>
         <UFormField :label="t('system.qiniuDomain')" class="sm:col-span-2" :help="t('system.qiniuDomainHelp')">
-          <UInput v-model="qiniuForm.domain" class="w-full" placeholder="https://qiniu.easyapi.com" />
+          <UInput v-model="qiniuForm.domain" class="w-full" placeholder="https://cdn.example.com" />
         </UFormField>
         <UFormField label="Access Key" :help="t('system.qiniuKeyHelp')">
           <UInput

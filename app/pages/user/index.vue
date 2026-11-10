@@ -276,7 +276,12 @@ async function openUserConsole(user: AdminUser) {
       notify(res?.message || '打开控制台失败', 'error')
       return
     }
-    const studio = String((runtimeConfig.public as any).studioUrl || 'https://www.easytv.ai').replace(/\/+$/, '')
+    const studio = String((runtimeConfig.public as any).studioUrl || '').replace(/\/+$/, '')
+    if (!studio) {
+      win?.close()
+      notify('未配置创作台地址')
+      return
+    }
     const url = `${studio}${path}`
     if (win) {
       win.opener = null

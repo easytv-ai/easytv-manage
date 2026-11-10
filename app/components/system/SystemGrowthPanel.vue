@@ -57,7 +57,7 @@ const SECTIONS: GrowthSection[] = [
       { key: 'GrowthInviteRechargeCap', kind: 'int', def: '2000' },
       { key: 'GrowthInviteDailyIpLimit', kind: 'int', def: '3' },
       { key: 'GrowthSignupDailyIpLimit', kind: 'int', def: '10' },
-      { key: 'GrowthInviteBaseUrl', kind: 'text', def: 'https://www.easytv.ai', placeholder: 'https://www.easytv.ai' },
+      { key: 'GrowthInviteBaseUrl', kind: 'text', def: '', placeholder: 'https://studio.example.com' },
     ],
   },
   {
