@@ -40,28 +40,28 @@ const pageSize = ref(CONSOLE_DEFAULT_PAGE_SIZE)
 const draft = reactive({ keyword: '', category: '', status: '__all__', source: '__all__' })
 const applied = ref({ ...draft })
 
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '已上架 / 可用', value: '1' },
-  { label: '已下架', value: '2' },
-  { label: '待审核', value: '3' },
-  { label: '已收录', value: '4' },
-]
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('style.statusAvailable'), value: '1' },
+  { label: t('common.offShelf'), value: '2' },
+  { label: t('common.pendingReview'), value: '3' },
+  { label: t('common.featured'), value: '4' },
+])
 
-const sourceItems = [
-  { label: '全部来源', value: '__all__' },
-  { label: '官方', value: 'official' },
-  { label: '用户投稿', value: 'user' },
-]
+const sourceItems = computed(() => [
+  { label: t('common.allSources'), value: '__all__' },
+  { label: t('common.official'), value: 'official' },
+  { label: t('common.userSubmit'), value: 'user' },
+])
 
 const STATUS_COLOR: Record<StyleStatus, 'success' | 'neutral' | 'warning' | 'primary'> = { 1: 'success', 2: 'neutral', 3: 'warning', 4: 'primary' }
 
 function statusLabel(item: StyleRow) {
   switch (item.status) {
-    case 2: return '已下架'
-    case 3: return '待审核'
-    case 4: return '已收录'
-    default: return item.userId > 0 ? '私有' : '已上架'
+    case 2: return t('common.offShelf')
+    case 3: return t('common.pendingReview')
+    case 4: return t('common.featured')
+    default: return item.userId > 0 ? t('common.private') : t('style.onShelfPrivate')
   }
 }
 
@@ -69,16 +69,16 @@ function isUserStyle(item: StyleRow) {
   return item.userId > 0
 }
 
-const kindsItems = [
-  { label: '图片 / 视频都可', value: 'all' },
-  { label: '仅图片', value: 'image' },
-  { label: '仅视频', value: 'video' },
-]
+const kindsItems = computed(() => [
+  { label: t('common.imageAndVideo'), value: 'all' },
+  { label: t('common.imageOnly'), value: 'image' },
+  { label: t('common.videoOnly'), value: 'video' },
+])
 
 function kindsLabel(kinds: StyleKind[]) {
   if (!kinds.length || (kinds.includes('image') && kinds.includes('video')))
-    return '都可'
-  return kinds.includes('video') ? '视频' : '图片'
+    return t('common.both')
+  return kinds.includes('video') ? t('common.video') : t('common.image')
 }
 
 function toRow(item: any): StyleRow {
@@ -115,7 +115,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '风格加载失败', 'error')
+      notify(raw?.message ?? t('style.loadFail'), 'error')
       return
     }
     const maxPage = Math.max(1, Math.ceil(parsed.total / pageSize.value) || 1)
@@ -197,8 +197,8 @@ function openEdit(item: StyleRow) {
 }
 
 function validate() {
-  errors.name = form.name.trim() ? '' : '请输入风格名'
-  errors.prompt = form.prompt.trim() ? '' : '请输入风格提示词'
+  errors.name = form.name.trim() ? '' : t('style.nameRequired')
+  errors.prompt = form.prompt.trim() ? '' : t('style.promptRequired')
   return !errors.name && !errors.prompt
 }
 
@@ -217,23 +217,23 @@ async function onCoverFile(value: File | File[] | null | undefined) {
   const ext = `.${(file.name.split('.').pop() || '').toLowerCase()}`
   if (!COVER_EXTS.includes(ext)) {
     coverFile.value = null
-    notify('仅支持 jpg、png、webp、gif 图片', 'error')
+    notify(t('common.imageTypeOnly'), 'error')
     return
   }
   if (file.size > COVER_MAX_BYTES) {
     coverFile.value = null
-    notify('封面图片不能超过 8MB', 'error')
+    notify(t('style.coverTooLarge'), 'error')
     return
   }
   uploading.value = true
   try {
     form.coverUrl = await qiniu.uploadImage(file)
     coverFile.value = null
-    notify('封面上传成功')
+    notify(t('common.coverUploaded'))
   }
   catch (error: any) {
     coverFile.value = null
-    notify(error?.message || '封面上传失败，请稍后重试', 'error')
+    notify(error?.message || t('common.uploadFail'), 'error')
   }
   finally {
     uploading.value = false
@@ -267,10 +267,10 @@ async function save() {
       ? await adminStyleApi.update(editing.value.id, payload)
       : await adminStyleApi.create(payload)
     if (!isOk(raw)) {
-      notify(raw?.message ?? '保存失败', 'error')
+      notify(raw?.message ?? t('common.saveFail'), 'error')
       return
     }
-    notify(editing.value ? '风格已更新' : '风格已创建', 'success')
+    notify(editing.value ? t('style.updated') : t('style.created'), 'success')
     formOpen.value = false
     void fetchList()
   }
@@ -282,7 +282,7 @@ async function save() {
 async function setStatus(item: StyleRow, next: StyleStatus, okText = '') {
   const raw = await adminStyleApi.update(item.id, { status: next })
   if (!isOk(raw)) {
-    notify(raw?.message ?? '操作失败', 'error')
+    notify(raw?.message ?? t('common.opFail'), 'error')
     return
   }
   item.status = next
@@ -297,7 +297,7 @@ function toggleStatus(item: StyleRow) {
 
 /** 用户已收录的行：撤回收录，回到作者私有（status=1），公开列表不再显示 */
 function unlistUserStyle(item: StyleRow) {
-  return setStatus(item, 1, '已撤回收录')
+  return setStatus(item, 1, t('common.takeDown'))
 }
 
 // ===== 投稿审核 =====
@@ -322,11 +322,11 @@ async function doReview() {
   try {
     const raw = await adminStyleApi.review(item.id, { approve: reviewApprove.value, reason: reviewReason.value.trim() || undefined })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '审核失败', 'error')
+      notify(raw?.message ?? t('style.reviewFail'), 'error')
       return
     }
     item.status = reviewApprove.value ? 4 : 1
-    notify(reviewApprove.value ? '已收录进风格库' : '已驳回', 'success')
+    notify(reviewApprove.value ? t('style.reviewedIn') : t('style.rejected'), 'success')
     reviewOpen.value = false
   }
   finally {
@@ -351,10 +351,10 @@ async function doDelete() {
   try {
     const raw = await adminStyleApi.remove(item.id)
     if (!isOk(raw)) {
-      notify(raw?.message ?? '删除失败', 'error')
+      notify(raw?.message ?? t('common.deleteFail'), 'error')
       return
     }
-    notify('已删除', 'success')
+    notify(t('common.deletedOk'), 'success')
     confirmOpen.value = false
     void fetchList()
   }
@@ -372,26 +372,20 @@ async function doDelete() {
       </template>
     </ManagePageHeader>
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <UFormField label="关键词">
-          <UInput v-model="draft.keyword" placeholder="风格名或提示词" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="分类">
-          <UInput v-model="draft.category" placeholder="例如：电影感" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="来源">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('common.keyword')">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('style.keywordPh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.category')">
+          <UInput v-model="draft.category" :placeholder="t('style.categoryPh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.source')">
           <USelect v-model="draft.source" :items="sourceItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField label="状态">
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
@@ -404,14 +398,14 @@ async function doDelete() {
         <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
           <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
             <tr>
-              <th class="min-w-0 w-full px-4 py-3 text-left">风格</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">分类</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">标签</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">适用</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">套用</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">排序</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-              <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+              <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.name') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.category') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('style.colTags') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('style.colKinds') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('style.colUses') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.sort') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+              <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -426,8 +420,8 @@ async function doDelete() {
                     <p class="truncate font-medium" :title="item.name">{{ item.name }}</p>
                     <p class="truncate text-xs text-zinc-400" :title="item.prompt">{{ item.prompt }}</p>
                     <p v-if="isUserStyle(item)" class="mt-0.5 truncate text-xs text-zinc-400">
-                      作者：{{ item.userNickname || `用户 #${item.userId}` }}
-                      <span v-if="item.sourceAssetId > 0"> · 来源图 #{{ item.sourceAssetId }}</span>
+                      {{ t('common.author') }}：{{ item.userNickname || `${t('common.user')} #${item.userId}` }}
+                      <span v-if="item.sourceAssetId > 0"> · {{ t('style.sourceAsset') }} #{{ item.sourceAssetId }}</span>
                     </p>
                   </div>
                 </div>
@@ -446,18 +440,18 @@ async function doDelete() {
               </td>
               <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                 <div class="flex w-max flex-nowrap gap-1">
-                  <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
+                  <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">{{ t('common.edit') }}</UButton>
                   <template v-if="isUserStyle(item)">
                     <template v-if="item.status === 3">
-                      <UButton type="button" size="sm" variant="soft" color="success" @click="openReview(item, true)">通过</UButton>
-                      <UButton type="button" size="sm" variant="soft" color="warning" @click="openReview(item, false)">驳回</UButton>
+                      <UButton type="button" size="sm" variant="soft" color="success" @click="openReview(item, true)">{{ t('common.pass') }}</UButton>
+                      <UButton type="button" size="sm" variant="soft" color="warning" @click="openReview(item, false)">{{ t('common.reject') }}</UButton>
                     </template>
-                    <UButton v-else-if="item.status === 4" type="button" size="sm" variant="soft" color="warning" @click="unlistUserStyle(item)">撤回收录</UButton>
+                    <UButton v-else-if="item.status === 4" type="button" size="sm" variant="soft" color="warning" @click="unlistUserStyle(item)">{{ t('common.takeDown') }}</UButton>
                   </template>
                   <UButton v-else type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="toggleStatus(item)">
-                    {{ item.status === 1 ? '下架' : '上架' }}
+                    {{ item.status === 1 ? t('common.takeDown') : t('common.putOn') }}
                   </UButton>
-                  <UButton type="button" size="sm" variant="soft" color="error" @click="requestDelete(item)">删除</UButton>
+                  <UButton type="button" size="sm" variant="soft" color="error" @click="requestDelete(item)">{{ t('common.delete') }}</UButton>
                 </div>
               </td>
             </tr>
@@ -468,48 +462,48 @@ async function doDelete() {
       </template>
     </div>
 
-    <UModal v-model:open="formOpen" :title="editing ? '编辑风格' : '新增风格'" :ui="{ content: 'w-[min(96vw,40rem)]', footer: 'justify-end gap-2' }">
+    <UModal v-model:open="formOpen" :title="editing ? t('style.editTitle') : t('style.createTitle')" :ui="{ content: 'w-[min(96vw,40rem)]', footer: 'justify-end gap-2' }">
       <template #body>
         <div class="space-y-5">
-          <UFormField label="风格名" required :error="errors.name || undefined">
-            <UInput v-model="form.name" maxlength="50" placeholder="例如：胶片电影感" class="w-full" :disabled="editingUserStyle" />
+          <UFormField :label="t('common.name')" required :error="errors.name || undefined">
+            <UInput v-model="form.name" maxlength="50" :placeholder="t('style.namePh')" class="w-full" :disabled="editingUserStyle" />
           </UFormField>
-          <UFormField label="风格提示词" required :error="errors.prompt || undefined" help="生成时自动拼到节点提示词末尾，写画面质感、色调、光影，不要写具体内容。">
-            <UTextarea v-model="form.prompt" :rows="5" maxlength="2000" placeholder="例如：35mm 胶片颗粒，柔和的高光过渡，宽银幕构图" class="w-full" :disabled="editingUserStyle" />
+          <UFormField :label="t('style.promptLabel')" required :error="errors.prompt || undefined" :help="t('style.promptHelp')">
+            <UTextarea v-model="form.prompt" :rows="5" maxlength="2000" :placeholder="t('style.promptPh')" class="w-full" :disabled="editingUserStyle" />
           </UFormField>
-          <UFormField label="负向提示词" help="选填，现阶段只保存不使用。">
-            <UInput v-model="form.negative" maxlength="500" placeholder="例如：过度锐化、塑料感" class="w-full" :disabled="editingUserStyle" />
+          <UFormField :label="t('style.negative')" :help="t('style.negativeHelp')">
+            <UInput v-model="form.negative" maxlength="500" :placeholder="t('style.negativePh')" class="w-full" :disabled="editingUserStyle" />
           </UFormField>
           <div class="grid gap-4 sm:grid-cols-2">
-            <UFormField label="标签" help="用顿号或逗号分隔">
-              <UInput v-model="form.tags" placeholder="胶片、颗粒" class="w-full" />
+            <UFormField :label="t('common.tag')" :help="t('style.tagsHelp')">
+              <UInput v-model="form.tags" class="w-full" />
             </UFormField>
-            <UFormField label="分类" help="创作台按分类出页签">
-              <UInput v-model="form.category" maxlength="50" placeholder="电影感 / 动画 / 插画 / 摄影 / 氛围" class="w-full" />
+            <UFormField :label="t('common.category')" :help="t('style.categoryHelp')">
+              <UInput v-model="form.category" maxlength="50" :placeholder="t('style.categoryHint')" class="w-full" />
             </UFormField>
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
-            <UFormField label="适用类型">
+            <UFormField :label="t('style.kindsLabel')">
               <USelect v-model="form.kinds" :items="kindsItems" value-key="value" class="w-full" :disabled="editingUserStyle" />
             </UFormField>
-            <UFormField label="排序" help="越大越靠前">
+            <UFormField :label="t('common.sort')" :help="t('common.sortHintDesc')">
               <UInput v-model.number="form.sortOrder" type="number" class="w-full" />
             </UFormField>
           </div>
-          <p v-if="editingUserStyle" class="text-xs text-zinc-500">用户投稿的风格只能改分类、标签和排序，名字 / 提示词 / 封面由作者维护。</p>
-          <UFormField v-if="!editingUserStyle" label="封面">
+          <p v-if="editingUserStyle" class="text-xs text-zinc-500">{{ t('style.userHint') }}</p>
+          <UFormField v-if="!editingUserStyle" :label="t('common.cover')">
             <div v-if="form.coverUrl" class="relative">
               <img :src="form.coverUrl" alt="" class="aspect-video w-full rounded-lg object-cover">
               <UButton type="button" size="sm" color="neutral" class="absolute right-2 top-2" :disabled="uploading" @click="clearCover">
-                清除
+                {{ t('common.clear') }}
               </UButton>
             </div>
             <UFileUpload
               v-else
               :model-value="coverFile"
               accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
-              :label="uploading ? '上传中…' : '点击或拖拽上传封面'"
-              description="选填，建议 800×450，jpg / png / webp / gif，不超过 8MB；没有封面时创作台显示纯文字卡片"
+              :label="uploading ? t('common.uploading') : t('common.uploadCover')"
+              :description="t('skill.coverUploadHint')"
               class="w-full min-h-40"
               :disabled="uploading"
               @update:model-value="onCoverFile"
@@ -518,31 +512,31 @@ async function doDelete() {
         </div>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="saving || uploading" @click="() => { formOpen = false }">取消</UButton>
-        <UButton type="button" :loading="saving" :disabled="saving || uploading" @click="save">保存</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="saving || uploading" @click="() => { formOpen = false }">{{ t('common.cancel') }}</UButton>
+        <UButton type="button" :loading="saving" :disabled="saving || uploading" @click="save">{{ t('common.save') }}</UButton>
       </template>
     </UModal>
 
-    <UModal v-model:open="reviewOpen" :title="reviewApprove ? '通过投稿' : '驳回投稿'" :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }">
+    <UModal v-model:open="reviewOpen" :title="reviewApprove ? t('style.reviewApprove') : t('style.reviewReject')" :ui="{ content: 'w-[min(96vw,28rem)]', footer: 'justify-end gap-2' }">
       <template #body>
         <div class="space-y-4">
           <p class="text-sm">
-            <template v-if="reviewApprove">「{{ reviewItem?.name }}」将收录进官方风格库，所有人可见可用；作者之后再编辑会重新进入审核。</template>
-            <template v-else>「{{ reviewItem?.name }}」将退回为作者的私有风格。</template>
+            {{ reviewApprove ? t('style.reviewApproveHint') : t('style.reviewRejectHint') }}
           </p>
-          <UFormField label="备注" :help="reviewApprove ? '选填，会随站内通知发给作者' : '选填，建议写明原因，会随站内通知发给作者'">
-            <UTextarea v-model="reviewReason" :rows="3" maxlength="200" placeholder="例如：封面不清晰 / 提示词含具体主体内容" class="w-full" />
+          <UFormField :label="t('common.remark')" :help="reviewApprove ? t('style.remarkHelpApprove') : t('style.remarkHelpReject')">
+            <UTextarea v-model="reviewReason" :rows="3" maxlength="200" :placeholder="t('style.remarkPh')" class="w-full" />
           </UFormField>
         </div>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="reviewing" @click="() => { reviewOpen = false }">取消</UButton>
-        <UButton type="button" :color="reviewApprove ? 'success' : 'warning'" :loading="reviewing" @click="doReview">{{ reviewApprove ? '通过' : '驳回' }}</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="reviewing" @click="() => { reviewOpen = false }">{{ t('common.cancel') }}</UButton>
+        <UButton type="button" :color="reviewApprove ? 'success' : 'warning'" :loading="reviewing" @click="doReview">{{ reviewApprove ? t('common.pass') : t('common.reject') }}</UButton>
       </template>
     </UModal>
 
-    <ManageConfirmModal v-model:open="confirmOpen" title="删除风格" confirm-text="删除" :loading="confirming" @confirm="doDelete">
-      确定删除「{{ confirmItem?.name }}」吗？删除后创作台立即不可见，已套用该风格的节点不受影响。
+    <ManageConfirmModal v-model:open="confirmOpen" :title="t('style.confirmDelete')" :confirm-text="t('common.delete')" :loading="confirming" @confirm="doDelete">
+      {{ t('common.confirmNamed', { action: t('common.delete'), name: confirmItem?.name }) }}
+      {{ t('style.confirmDeleteBody') }}
     </ManageConfirmModal>
   </div>
 </template>

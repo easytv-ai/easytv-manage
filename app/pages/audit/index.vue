@@ -34,17 +34,17 @@ type AuditRow = {
   payload: unknown
 }
 
-const CATEGORY_LABEL: Record<string, string> = {
-  login: '登录/注册',
-  usage: '功能使用',
-  operation: '管理操作',
-  security: '安全相关',
-}
-const ROLE_LABEL: Record<number, string> = {
-  1: '普通用户',
-  10: '管理员',
-  100: '超级管理员',
-}
+const CATEGORY_LABEL = computed<Record<string, string>>(() => ({
+  login: t('audit.catAuth'),
+  usage: t('audit.catFeature'),
+  operation: t('audit.catAdmin'),
+  security: t('audit.catSecurity'),
+}))
+const ROLE_LABEL = computed<Record<number, string>>(() => ({
+  1: t('user.roleUser'),
+  10: t('common.admin'),
+  100: t('common.superAdmin'),
+}))
 const PARAM_LABEL: Record<string, string> = {
   email: '注册邮箱',
   mobile: '手机号',
@@ -85,21 +85,21 @@ const detailOpen = ref(false)
 const detailItem = ref<AuditRow | null>(null)
 
 const pageRows = computed(() => rows.value)
-const categoryItems = [
-  { label: '全部分类', value: SELECT_ITEM_ALL },
-  { label: CATEGORY_LABEL.login, value: 'login' },
-  { label: CATEGORY_LABEL.usage, value: 'usage' },
-  { label: CATEGORY_LABEL.operation, value: 'operation' },
-  { label: CATEGORY_LABEL.security, value: 'security' },
-]
-const successItems = [
-  { label: '全部结果', value: SELECT_ITEM_ALL },
-  { label: '成功', value: 'true' },
-  { label: '失败', value: 'false' },
-]
+const categoryItems = computed(() => [
+  { label: t('audit.allCategories'), value: SELECT_ITEM_ALL },
+  { label: CATEGORY_LABEL.value.login, value: 'login' },
+  { label: CATEGORY_LABEL.value.usage, value: 'usage' },
+  { label: CATEGORY_LABEL.value.operation, value: 'operation' },
+  { label: CATEGORY_LABEL.value.security, value: 'security' },
+])
+const successItems = computed(() => [
+  { label: t('audit.allResults'), value: SELECT_ITEM_ALL },
+  { label: t('common.success'), value: 'true' },
+  { label: t('common.fail'), value: 'false' },
+])
 
 function categoryLabel(category: string) {
-  return CATEGORY_LABEL[category] || category || '—'
+  return CATEGORY_LABEL.value[category] || category || '—'
 }
 
 function categoryColor(category: string) {
@@ -115,7 +115,7 @@ function categoryColor(category: string) {
 }
 
 function roleLabel(role: number) {
-  return ROLE_LABEL[role] || `角色 ${role}`
+  return ROLE_LABEL.value[role] || `${t('audit.role')} ${role}`
 }
 
 function paramLabel(key: string) {
@@ -199,7 +199,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify((raw as any)?.message ?? '使用日志加载失败', 'error')
+      notify((raw as any)?.message ?? t('audit.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(toRow)
@@ -221,13 +221,13 @@ onMounted(() => {
     draft.userId = userId
   if (username)
     draft.username = username
-  if (CATEGORY_LABEL[category])
+  if (CATEGORY_LABEL.value[category])
     draft.category = category
   if (action)
     draft.action = action
   if (success === 'true' || success === 'false')
     draft.success = success
-  if (userId || username || CATEGORY_LABEL[category] || action || success === 'true' || success === 'false')
+  if (userId || username || CATEGORY_LABEL.value[category] || action || success === 'true' || success === 'false')
     applied.value = { ...draft }
   void fetchList()
 })
@@ -242,7 +242,7 @@ function search() {
   const startTs = localInputToTs(draft.startAt)
   const endTs = localInputToTs(draft.endAt)
   if (startTs && endTs && startTs > endTs) {
-    notify('开始时间不能晚于结束时间', 'error')
+    notify(t('common.startAfterEnd'), 'error')
     return
   }
   applied.value = {
@@ -276,35 +276,29 @@ function gotoUser(userId: number) {
   <div class="console-container">
     <ManagePageHeader :page-title="t('audit.title')" :page-description="t('audit.description')" />
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <UFormField label="用户名">
-          <UInput v-model="draft.username" placeholder="请输入用户名" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="用户 ID">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField label="用户名">
+          <UInput icon="i-lucide-search" v-model="draft.username" placeholder="请输入用户名" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField label="用户 ID">
           <UInput v-model="draft.userId" placeholder="请输入用户 ID" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="日志分类">
+        </ManageFilterField>
+        <ManageFilterField label="日志分类">
           <USelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField label="操作标识">
+        </ManageFilterField>
+        <ManageFilterField label="操作标识">
           <UInput v-model="draft.action" placeholder="如 user.login" class="w-full font-mono" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="开始时间">
+        </ManageFilterField>
+        <ManageFilterField label="开始时间">
           <UInput v-model="draft.startAt" type="datetime-local" class="w-full" />
-        </UFormField>
-        <UFormField label="结束时间">
+        </ManageFilterField>
+        <ManageFilterField label="结束时间">
           <UInput v-model="draft.endAt" type="datetime-local" class="w-full" />
-        </UFormField>
-        <UFormField label="结果">
+        </ManageFilterField>
+        <ManageFilterField label="结果">
           <USelect v-model="draft.success" :items="successItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">

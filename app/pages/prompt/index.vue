@@ -53,14 +53,14 @@ const sources = ref<SourceRow[]>([])
 const draft = reactive({ keyword: '', tag: '', status: '__all__', sourceId: '__all__' })
 const applied = ref({ ...draft })
 
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '已上架', value: '1' },
-  { label: '已下架', value: '2' },
-]
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.onShelf'), value: '1' },
+  { label: t('common.offShelf'), value: '2' },
+])
 const sourceItems = computed(() => [
-  { label: '全部来源', value: '__all__' },
-  { label: '后台录入', value: '0' },
+  { label: t('common.allSources'), value: '__all__' },
+  { label: t('prompt.backend'), value: '0' },
   ...sources.value.map(item => ({ label: item.name, value: String(item.id) })),
 ])
 
@@ -112,7 +112,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '提示词加载失败', 'error')
+      notify(raw?.message ?? t('prompt.loadFail'), 'error')
       return
     }
     let items = parsed.items.map(toRow)
@@ -130,7 +130,7 @@ const fetchList = useClientListFetch(async () => {
 async function fetchSources() {
   const raw = await adminPromptSourceApi.list()
   if (!isOk(raw)) {
-    notify(raw?.message ?? '来源加载失败', 'error')
+    notify(raw?.message ?? t('prompt.sourceLoadFail'), 'error')
     return
   }
   sources.value = Array.isArray(raw.data) ? raw.data.map(toSourceRow) : []
@@ -241,23 +241,23 @@ async function onImageFile(field: ImageField, value: File | File[] | null | unde
   const ext = `.${(file.name.split('.').pop() || '').toLowerCase()}`
   if (!IMAGE_EXTS.includes(ext)) {
     fileRef.value = null
-    notify('仅支持 jpg、png、webp、gif 图片', 'error')
+    notify(t('common.imageTypeOnly'), 'error')
     return
   }
   if (file.size > IMAGE_MAX_BYTES) {
     fileRef.value = null
-    notify('图片不能超过 8MB', 'error')
+    notify(t('common.imageTooLarge', { n: 8 }), 'error')
     return
   }
   busy.value = true
   try {
     form[field] = await qiniu.uploadImage(file)
     fileRef.value = null
-    notify(field === 'coverUrl' ? '封面上传成功' : '效果图上传成功')
+    notify(field === 'coverUrl' ? t('common.coverUploaded') : t('prompt.effectOk'))
   }
   catch (error: any) {
     fileRef.value = null
-    notify(error?.message || '上传失败，请稍后重试', 'error')
+    notify(error?.message || t('common.uploadFail'), 'error')
   }
   finally {
     busy.value = false
@@ -265,8 +265,8 @@ async function onImageFile(field: ImageField, value: File | File[] | null | unde
 }
 
 function validate() {
-  errors.title = form.title.trim() ? '' : '请输入标题'
-  errors.content = form.content.trim() ? '' : '请输入提示词正文'
+  errors.title = form.title.trim() ? '' : t('prompt.titleRequired')
+  errors.content = form.content.trim() ? '' : t('prompt.contentRequired')
   return !errors.title && !errors.content
 }
 
@@ -291,7 +291,7 @@ async function save() {
       notify(raw?.message ?? '保存失败', 'error')
       return
     }
-    notify(editing.value ? '提示词已更新' : '提示词已创建', 'success')
+    notify(editing.value ? t('prompt.updated') : t('prompt.created'), 'success')
     formOpen.value = false
     void fetchList()
   }
@@ -330,7 +330,7 @@ async function doDelete() {
       notify(raw?.message ?? '删除失败', 'error')
       return
     }
-    notify('已删除', 'success')
+    notify(t('common.deletedOk'), 'success')
     confirmOpen.value = false
     void fetchList()
   }
@@ -370,7 +370,7 @@ function openSourceEdit(item: SourceRow) {
 async function saveSource() {
   if (sourceSaving.value)
     return
-  sourceErrors.name = sourceForm.name.trim() ? '' : '请输入来源名称'
+  sourceErrors.name = sourceForm.name.trim() ? '' : t('prompt.sourceNameRequired')
   const url = sourceForm.url.trim()
   sourceErrors.url = /^https?:\/\//.test(url) ? '' : '请输入 http(s) 开头的抓取地址'
   if (sourceErrors.name || sourceErrors.url)
@@ -391,7 +391,7 @@ async function saveSource() {
       notify(raw?.message ?? '保存失败', 'error')
       return
     }
-    notify(editingSource.value ? '来源已更新' : '来源已创建', 'success')
+    notify(editingSource.value ? t('prompt.sourceUpdated') : t('prompt.sourceCreated'), 'success')
     sourceFormOpen.value = false
     void fetchSources()
   }
@@ -407,7 +407,7 @@ async function syncSource(item: SourceRow) {
   try {
     const raw = await adminPromptSourceApi.sync(item.id)
     if (!isOk(raw)) {
-      notify(raw?.message ?? '同步失败', 'error')
+      notify(raw?.message ?? t('prompt.syncFail'), 'error')
       void fetchSources()
       return
     }
@@ -427,7 +427,7 @@ async function removeSource(item: SourceRow) {
     notify(raw?.message ?? '删除失败', 'error')
     return
   }
-  notify('来源已删除，已同步的提示词会保留', 'success')
+  notify(t('prompt.sourceDeleted'), 'success')
   void fetchSources()
   void fetchList()
 }
@@ -501,26 +501,20 @@ async function removeSource(item: SourceRow) {
       </div>
     </UCard>
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-4">
-        <UFormField label="关键词">
-          <UInput v-model="draft.keyword" placeholder="标题或正文" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="标签">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField label="关键词">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" placeholder="标题或正文" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField label="标签">
           <UInput v-model="draft.tag" placeholder="按单个标签筛选" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="来源">
+        </ManageFilterField>
+        <ManageFilterField label="来源">
           <USelect v-model="draft.sourceId" :items="sourceItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField label="状态">
+        </ManageFilterField>
+        <ManageFilterField label="状态">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">

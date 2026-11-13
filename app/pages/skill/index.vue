@@ -61,18 +61,18 @@ const rejecting = ref(false)
 const SKILL_CATEGORIES = ['专业影视', '商业广告', '短剧漫剧', '动漫游戏', '音乐MV', '自媒体创作', '通用技能', '发现']
 const skillCategories = computed(() => SKILL_CATEGORIES.map(name => ({ name })))
 const categoryItems = computed(() => [
-  { label: '全部分类', value: '__all__' },
+  { label: t('common.allCategories'), value: '__all__' },
   ...SKILL_CATEGORIES.map(name => ({ label: name, value: name })),
 ])
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '已上架', value: '1' },
-  { label: '已下架', value: '2' },
-]
-const sourceItems = [
-  { label: '官方', value: 'official' },
-  { label: '用户私有', value: 'user' },
-]
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.onShelf'), value: '1' },
+  { label: t('common.offShelf'), value: '2' },
+])
+const sourceItems = computed(() => [
+  { label: t('common.official'), value: 'official' },
+  { label: t('common.userPrivate'), value: 'user' },
+])
 
 const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
@@ -119,7 +119,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '加载失败', 'error')
+      notify(raw?.message ?? t('skill.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(toRow)
@@ -215,7 +215,7 @@ function openCreate() {
 }
 function openEdit(item: AdminSkill) {
   if (isPrivate(item)) {
-    notify('用户私有 Skill 不能编辑内容，只能下架', 'error')
+    notify(t('skill.privateNoEdit'), 'error')
     return
   }
   editing.value = item
@@ -234,9 +234,9 @@ function openEdit(item: AdminSkill) {
   formOpen.value = true
 }
 function validate() {
-  errors.title = form.title.trim() ? '' : '请输入 Skill 名称'
-  errors.authorName = form.authorName.trim() ? '' : '请输入作者名称'
-  errors.category = form.category ? '' : '请选择分类'
+  errors.title = form.title.trim() ? '' : t('skill.titleRequired')
+  errors.authorName = form.authorName.trim() ? '' : t('common.nameRequired')
+  errors.category = form.category ? '' : t('skill.categoryRequired')
   return !errors.title && !errors.authorName && !errors.category
 }
 function clearCover() {
@@ -255,23 +255,23 @@ async function onCoverFile(value: File | File[] | null | undefined) {
   const ext = `.${(file.name.split('.').pop() || '').toLowerCase()}`
   if (!COVER_EXTS.includes(ext)) {
     coverFile.value = null
-    notify('仅支持 jpg、png、webp、gif 图片', 'error')
+    notify(t('common.imageTypeOnly'), 'error')
     return
   }
   if (file.size > COVER_MAX_BYTES) {
     coverFile.value = null
-    notify('封面图片不能超过 8MB', 'error')
+    notify(t('skill.coverTooLarge'), 'error')
     return
   }
   uploading.value = true
   try {
     form.cover = await qiniu.uploadImage(file)
     coverFile.value = null
-    notify('封面上传成功')
+    notify(t('common.coverUploaded'))
   }
   catch (error: any) {
     coverFile.value = null
-    notify(error?.message || '封面上传失败，请稍后重试', 'error')
+    notify(error?.message || t('common.uploadFail'), 'error')
   }
   finally {
     uploading.value = false
@@ -294,10 +294,10 @@ async function submit() {
       ? await adminSkillApi.update(editing.value.id, payload)
       : await adminSkillApi.create({ ...payload, status: 1 })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '保存失败，请稍后重试', 'error')
+      notify(raw?.message ?? t('common.saveFail'), 'error')
       return
     }
-    notify(editing.value ? 'Skill 模板更新成功' : 'Skill 模板创建成功')
+    notify(editing.value ? t('skill.updated') : t('skill.created'))
     formOpen.value = false
     await fetchList(`f-${Date.now()}`)
   }
@@ -307,11 +307,11 @@ async function submit() {
 }
 function requestConfirm(item: AdminSkill, action: 'status' | 'delete' | 'unpublish') {
   if (isPrivate(item) && action === 'delete') {
-    notify('用户私有 Skill 不能删除，只能下架', 'error')
+    notify(t('skill.privateNoDelete'), 'error')
     return
   }
   if (isPrivate(item) && action === 'status' && item.status !== 1) {
-    notify('用户私有 Skill 不允许重新上架', 'error')
+    notify(t('skill.privateNoRepublish'), 'error')
     return
   }
   confirmItem.value = item
@@ -325,7 +325,7 @@ async function confirm() {
   try {
     const item = confirmItem.value
     if (confirmAction.value !== 'delete' && isPrivate(item) && item.status !== 1) {
-      notify('用户私有 Skill 不允许重新上架', 'error')
+      notify(t('skill.privateNoRepublish'), 'error')
       return
     }
     const raw = confirmAction.value === 'delete'
@@ -334,10 +334,10 @@ async function confirm() {
         ? await adminSkillApi.review(item.id, { action: 'unpublish' })
         : await adminSkillApi.update(item.id, { status: item.status === 1 ? 2 : 1 })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '操作失败，请稍后重试', 'error')
+      notify(raw?.message ?? t('common.opFail'), 'error')
       return
     }
-    notify(confirmAction.value === 'delete' ? 'Skill 模板已删除' : confirmAction.value === 'unpublish' ? t('skill.review.unpublished') : (item.status === 1 ? 'Skill 模板已下架' : 'Skill 模板已上架'))
+    notify(confirmAction.value === 'delete' ? t('skill.deleted') : confirmAction.value === 'unpublish' ? t('skill.review.unpublished') : (item.status === 1 ? t('skill.offShelf') : t('skill.onShelf')))
     confirmOpen.value = false
     await fetchList(`c-${Date.now()}`)
   }
@@ -357,29 +357,23 @@ async function confirm() {
 
     <UTabs v-model="tab" :items="tabItems" :content="false" class="mb-4 w-full sm:w-80" />
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <UFormField label="Skill 名称">
-          <UInput v-model="draft.title" placeholder="请输入 Skill 名称" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField v-if="tab === 'all'" label="来源">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('common.name')">
+          <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('skill.titleRequired')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField v-if="tab === 'all'" :label="t('common.source')">
           <USelect v-model="draft.source" :items="sourceItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField label="分类">
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.category')">
           <USelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField v-if="tab === 'all'" label="状态">
+        </ManageFilterField>
+        <ManageFilterField v-if="tab === 'all'" :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField v-if="tab === 'all'" :label="t('skill.review.status')">
+        </ManageFilterField>
+        <ManageFilterField v-if="tab === 'all'" :label="t('skill.review.status')">
           <USelect v-model="draft.reviewStatus" :items="reviewStatusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
@@ -398,15 +392,15 @@ async function confirm() {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="min-w-0 w-full px-4 py-3 text-left">Skill 名称</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">来源</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">作者名称</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">分类</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">使用量</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.name') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('skill.colSource') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('skill.colAuthor') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.category') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.uses') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('skill.nodeCount') }}</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('skill.review.status') }}</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -420,14 +414,14 @@ async function confirm() {
                   </div>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <UBadge :color="isPrivate(item) ? 'warning' : 'primary'" variant="subtle">{{ isPrivate(item) ? '用户私有' : '官方' }}</UBadge>
+                  <UBadge :color="isPrivate(item) ? 'warning' : 'primary'" variant="subtle">{{ isPrivate(item) ? t('common.userPrivate') : t('common.official') }}</UBadge>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ isPrivate(item) ? (item.authorName || `#${item.userId}`) : item.authorName }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.category }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.uses.toLocaleString() }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.graphNodes > 0 ? item.graphNodes : '—' }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '已上架' : '已下架' }}</UBadge>
+                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? t('common.onShelf') : t('common.offShelf') }}</UBadge>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <template v-if="isPrivate(item)">
@@ -444,7 +438,7 @@ async function confirm() {
                     <UButton v-if="item.reviewStatus === 2" type="button" size="sm" variant="soft" color="warning" @click="requestConfirm(item, 'unpublish')">{{ t('skill.review.unpublish') }}</UButton>
                   </div>
                   <div v-else class="flex w-max flex-nowrap gap-1">
-                    <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
+                    <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">{{ t('common.edit') }}</UButton>
                     <UButton
                       type="button"
                       size="sm"
@@ -452,9 +446,9 @@ async function confirm() {
                       :color="item.status === 1 ? 'warning' : 'success'"
                       @click="requestConfirm(item, 'status')"
                     >
-                      {{ item.status === 1 ? '下架' : '上架' }}
+                      {{ item.status === 1 ? t('common.takeDown') : t('common.putOn') }}
                     </UButton>
-                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">删除</UButton>
+                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">{{ t('common.delete') }}</UButton>
                   </div>
                 </td>
               </tr>
@@ -467,56 +461,56 @@ async function confirm() {
 
     <UModal
       v-model:open="formOpen"
-      :title="editing ? '编辑模板' : '新建模板'"
-      description="封面展示在 Agent 市场，未上传时使用默认图。"
+      :title="editing ? t('skill.editTitle') : t('skill.createTitle')"
+      :description="t('skill.coverHint')"
       :ui="{ content: 'w-[min(96vw,36rem)]', body: 'space-y-5', footer: 'justify-end gap-2' }"
     >
       <template #body>
         <div class="grid gap-4 sm:grid-cols-2">
-          <UFormField label="Skill 名称" required :error="errors.title || undefined">
-            <UInput v-model="form.title" maxlength="40" placeholder="例如：品牌大片运镜" class="w-full" />
+          <UFormField :label="t('common.name')" required :error="errors.title || undefined">
+            <UInput v-model="form.title" maxlength="40" :placeholder="t('skill.titlePh')" class="w-full" />
           </UFormField>
-          <UFormField label="作者名称" required :error="errors.authorName || undefined">
-            <UInput v-model="form.authorName" maxlength="32" placeholder="请输入作者名称" class="w-full" />
+          <UFormField :label="t('skill.colAuthor')" required :error="errors.authorName || undefined">
+            <UInput v-model="form.authorName" maxlength="32" :placeholder="t('common.nameRequired')" class="w-full" />
           </UFormField>
         </div>
-        <UFormField label="分类" required :error="errors.category || undefined">
+        <UFormField :label="t('common.category')" required :error="errors.category || undefined">
           <USelect v-model="form.category" :items="skillCategories.map(item => ({ label: item.name, value: item.name }))" value-key="value" class="w-full" />
         </UFormField>
         <UFormField
-          label="执行规则"
-          help="只对文字对话生效：用户在画布助手里激活这个 Skill 后，这段会拼在提示词最前面。生图生视频不受影响。"
+          :label="t('skill.guide')"
+          :help="t('skill.guideHelp')"
         >
           <UTextarea
             v-model="form.guide"
             :rows="5"
             maxlength="4000"
-            placeholder="按什么步骤做、必须先问清什么、有哪些不能做的事"
+            :placeholder="t('skill.guidePh')"
             class="w-full"
           />
         </UFormField>
-        <UFormField label="输出格式" help="产出应该长什么样，比如分镜表要哪几列、每段字数上限。">
+        <UFormField :label="t('skill.outputFormat')" :help="t('skill.outputFormatHelp')">
           <UTextarea
             v-model="form.outputFormat"
             :rows="4"
             maxlength="4000"
-            placeholder="选填"
+            :placeholder="t('skill.outputOptional')"
             class="w-full"
           />
         </UFormField>
-        <UFormField label="封面">
+        <UFormField :label="t('common.cover')">
           <div v-if="coverPreviewUrl" class="relative">
             <img :src="coverPreviewUrl" alt="" class="aspect-video w-full rounded-lg object-cover">
             <UButton type="button" size="sm" color="neutral" class="absolute right-2 top-2" :disabled="uploading" @click="clearCover">
-              清除
+              {{ t('common.clear') }}
             </UButton>
           </div>
           <UFileUpload
             v-else
             :model-value="coverFile"
             accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
-            :label="uploading ? '上传中…' : '点击或拖拽上传封面'"
-            description="选填，建议 800×450，jpg / png / webp / gif，不超过 8MB"
+            :label="uploading ? t('common.uploading') : t('common.uploadCover')"
+            :description="t('skill.coverUploadHint')"
             class="w-full min-h-40"
             :disabled="uploading"
             @update:model-value="onCoverFile"
@@ -524,20 +518,20 @@ async function confirm() {
         </UFormField>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="saving || uploading" @click="() => { formOpen = false }">取消</UButton>
-        <UButton type="button" :loading="saving" :disabled="saving || uploading" @click="submit">{{ saving ? '保存中…' : '保存' }}</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="saving || uploading" @click="() => { formOpen = false }">{{ t('common.cancel') }}</UButton>
+        <UButton type="button" :loading="saving" :disabled="saving || uploading" @click="submit">{{ saving ? t('common.saving') : t('common.save') }}</UButton>
       </template>
     </UModal>
 
     <ManageConfirmModal
       v-model:open="confirmOpen"
-      :title="confirmAction === 'delete' ? '确认删除模板' : confirmAction === 'unpublish' ? t('skill.review.confirmUnpublish') : `确认${confirmItem?.status === 1 ? '下架' : '上架'}模板`"
+      :title="confirmAction === 'delete' ? t('skill.confirmDelete') : confirmAction === 'unpublish' ? t('skill.review.confirmUnpublish') : t('common.confirmStatusNamed', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn'), kind: t('common.kindSkill') })"
       :tone="confirmAction === 'delete' ? 'error' : confirmAction === 'unpublish' || confirmItem?.status === 1 ? 'warning' : 'success'"
       :loading="confirming"
       @confirm="confirm"
     >
       <template v-if="confirmAction === 'unpublish'">{{ t('skill.review.confirmUnpublishBody', { title: confirmItem?.title ?? '' }) }}</template>
-      <template v-else>确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '下架' : '上架') }}“{{ confirmItem?.title }}”吗？</template>
+      <template v-else>{{ t('common.confirmNamed', { action: confirmAction === 'delete' ? t('common.delete') : (confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn')), name: confirmItem?.title }) }}</template>
     </ManageConfirmModal>
 
     <UModal v-model:open="rejectOpen" :title="t('skill.review.rejectTitle')" :description="rejectItem?.title" :ui="{ content: 'w-[min(96vw,30rem)]', footer: 'justify-end gap-2' }">

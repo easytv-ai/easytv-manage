@@ -6,7 +6,6 @@ import {
   isApiSuccess,
   isHttpAvatar,
   parseUserListResponse,
-  userRoleLabel,
 } from '~/utils/admin-user'
 import { CONSOLE_DEFAULT_PAGE_SIZE } from '~/utils/consoleSelectItems'
 
@@ -68,28 +67,34 @@ function onInviteBlockChanged(userId: number, blocked: boolean) {
     row.inviteBlocked = blocked
 }
 
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '正常', value: '1' },
-  { label: '禁用', value: '2' },
-]
-const deletedItems = [
-  { label: '未注销', value: '__all__' },
-  { label: '已注销', value: '1' },
-]
-const identityItems = [
-  { label: '官方账号', value: 'easytv_official' },
-  { label: '企业账号', value: 'enterprise' },
-  { label: '学院讲师', value: 'easytv_teacher' },
-  { label: '学院助教', value: 'easytv_teaching_assistant' },
-]
-const identityLabels = Object.fromEntries(identityItems.map(item => [item.value, item.label]))
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('user.statusNormal'), value: '1' },
+  { label: t('user.statusDisabled'), value: '2' },
+])
+const deletedItems = computed(() => [
+  { label: t('user.notDeactivated'), value: '__all__' },
+  { label: t('user.deactivatedStatus'), value: '1' },
+])
+const identityItems = computed(() => [
+  { label: t('user.identityOfficial'), value: 'easytv_official' },
+  { label: t('user.identityEnterprise'), value: 'enterprise' },
+  { label: t('user.identityTeacher'), value: 'easytv_teacher' },
+  { label: t('user.identityAssistant'), value: 'easytv_teaching_assistant' },
+])
 
 function identityText(user: AdminUser) {
   const key = user.identity || user.tags[0]
-  if (key && identityLabels[key])
-    return identityLabels[key]
-  return userRoleLabel(user.role) || t('user.identityNone')
+  const hit = identityItems.value.find(item => item.value === key)
+  if (hit)
+    return hit.label
+  if (Number(user.role) === 10)
+    return t('user.roleAdmin')
+  if (Number(user.role) === 100)
+    return t('user.roleRoot')
+  if (Number(user.role) === 1)
+    return t('user.roleUser')
+  return t('user.identityNone')
 }
 
 function avatarLetter(user: AdminUser) {
@@ -132,7 +137,7 @@ async function refreshList() {
     if (!parsed) {
       pageRows.value = []
       total.value = 0
-      notify(raw?.message ?? '用户列表加载失败', 'error')
+      notify(raw?.message ?? t('user.loadFail'), 'error')
       return
     }
     pageRows.value = parsed.rows
@@ -144,7 +149,7 @@ async function refreshList() {
       return
     pageRows.value = []
     total.value = 0
-    notify('用户列表加载失败，请稍后重试', 'error')
+    notify(t('user.loadFailRetry'), 'error')
   }
   finally {
     if (seq === listFetchSeq)
@@ -214,15 +219,15 @@ async function saveStatus() {
     const action = statusUser.value.status === 1 ? 'disable' : 'enable'
     const res = await userApi.manage(statusUser.value.id, action)
     if (!isApiSuccess(res)) {
-      notify(res?.message ?? '操作失败，请稍后重试', 'error')
+      notify(res?.message ?? t('common.opFail'), 'error')
       return
     }
-    notify(action === 'disable' ? '用户已封禁' : '用户已解封')
+    notify(action === 'disable' ? t('user.banned') : t('user.unbanned'))
     statusConfirmOpen.value = false
     await refreshList()
   }
   catch {
-    notify('操作失败，请稍后重试', 'error')
+    notify(t('common.opFail'), 'error')
   }
   finally {
     statusSaving.value = false
@@ -241,15 +246,15 @@ async function saveDelete() {
   try {
     const res = await userApi.delete(deleteUser.value.id)
     if (!isApiSuccess(res)) {
-      notify(res?.message ?? '注销失败，请稍后重试', 'error')
+      notify(res?.message ?? t('user.deactivateFail'), 'error')
       return
     }
-    notify('用户已注销')
+    notify(t('user.deactivated'))
     deleteConfirmOpen.value = false
     await refreshList()
   }
   catch {
-    notify('注销失败，请稍后重试', 'error')
+    notify(t('user.deactivateFail'), 'error')
   }
   finally {
     deleteSaving.value = false
@@ -273,13 +278,13 @@ async function openUserConsole(user: AdminUser) {
     const path = res?.data?.path
     if (!isApiSuccess(res) || !path) {
       win?.close()
-      notify(res?.message || '打开控制台失败', 'error')
+      notify(res?.message || t('user.consoleFail'), 'error')
       return
     }
     const studio = String((runtimeConfig.public as any).studioUrl || '').replace(/\/+$/, '')
     if (!studio) {
       win?.close()
-      notify('未配置创作台地址')
+      notify(t('user.studioUrlMissing'))
       return
     }
     const url = `${studio}${path}`
@@ -290,11 +295,11 @@ async function openUserConsole(user: AdminUser) {
     else {
       window.open(url, '_blank', 'noopener,noreferrer')
     }
-    notify(`已以「${user.nickname || user.username}」身份打开创作台`)
+    notify(t('user.consoleOpened', { name: user.nickname || user.username }))
   }
   catch {
     win?.close()
-    notify('打开控制台失败，请稍后重试', 'error')
+    notify(t('user.consoleFailRetry'), 'error')
   }
   finally {
     consoleOpeningId.value = null
@@ -316,11 +321,11 @@ function gotoAudit(user: AdminUser) {
 
 function moreItems(user: AdminUser): DropdownMenuItem[] {
   const items: DropdownMenuItem[] = [
-    { label: '身份管理', onSelect: () => editIdentity(user) },
-    { label: '邀请', onSelect: () => openInvites(user) },
-    { label: '会员积分', onSelect: () => { void gotoWallet(user) } },
-    { label: '通知', onSelect: () => { void gotoNotification(user) } },
-    { label: '使用日志', onSelect: () => { void gotoAudit(user) } },
+    { label: t('user.menuIdentity'), onSelect: () => editIdentity(user) },
+    { label: t('user.menuInvite'), onSelect: () => openInvites(user) },
+    { label: t('user.menuWallet'), onSelect: () => { void gotoWallet(user) } },
+    { label: t('user.menuNotify'), onSelect: () => { void gotoNotification(user) } },
+    { label: t('user.menuAudit'), onSelect: () => { void gotoAudit(user) } },
   ]
   if (isSuperAdmin.value) {
     items.push({
@@ -328,7 +333,7 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
       onSelect: () => openRebind(user),
     })
   }
-  items.push({ label: '注销', color: 'error', onSelect: () => confirmDelete(user) })
+  items.push({ label: t('user.menuDeactivate'), color: 'error', onSelect: () => confirmDelete(user) })
   return items
 }
 </script>
@@ -337,29 +342,23 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
   <div class="console-container">
     <ManagePageHeader :page-title="t('user.title')" :page-description="t('user.description')" />
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <UFormField label="账号 / 用户名">
-          <UInput v-model="draft.keyword" placeholder="请输入账号或用户名" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="状态">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('user.keywordLabel')">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('user.keywordPh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField label="账号">
+        </ManageFilterField>
+        <ManageFilterField :label="t('user.accountFilter')">
           <USelect v-model="draft.deleted" :items="deletedItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField label="邀请人 ID">
-          <UInput v-model="draft.inviterId" type="number" min="1" placeholder="只看某个用户邀请来的人" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="注册来源">
-          <UInput v-model="draft.source" placeholder="utm_source，例如 bilibili" class="w-full" @keyup.enter="search" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+        <ManageFilterField :label="t('user.inviterId')">
+          <UInput v-model="draft.inviterId" type="number" min="1" :placeholder="t('user.inviterIdPh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('user.regSource')">
+          <UInput v-model="draft.source" :placeholder="t('user.sourcePh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
@@ -378,16 +377,16 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">头像</th>
-                <th class="min-w-0 w-full px-4 py-3 text-left">用户名</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">账号</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.avatar') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.username') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.account') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">ID</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">UUID</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">身份</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">邀请人</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">来源</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('user.colIdentity') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('user.inviter') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.source') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -427,14 +426,14 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
                     v-if="user.inviterId > 0"
                     type="button"
                     class="inline-flex items-center gap-1 text-primary hover:underline"
-                    :title="`按邀请人 #${user.inviterId} 筛选`"
+                    :title="t('user.filterInviter', { id: user.inviterId })"
                     @click="filterByInviter(user.inviterId)"
                   >
                     <span>{{ user.inviterNickname || `#${user.inviterId}` }}</span>
                     <span v-if="user.inviterNickname" class="font-mono text-xs text-zinc-400">#{{ user.inviterId }}</span>
                   </button>
                   <span v-else class="text-zinc-400">—</span>
-                  <UBadge v-if="user.inviteBlocked" color="warning" variant="subtle" class="ml-1">奖励已冻结</UBadge>
+                  <UBadge v-if="user.inviteBlocked" color="warning" variant="subtle" class="ml-1">{{ t('user.rewardFrozen') }}</UBadge>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <span v-if="user.source" class="text-xs">{{ user.source }}</span>
@@ -443,7 +442,7 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="user.deleted ? 'neutral' : user.status === 1 ? 'success' : 'error'" variant="subtle">
-                    {{ user.deleted ? '已注销' : user.status === 1 ? '正常' : '禁用' }}
+                    {{ user.deleted ? t('user.deactivatedStatus') : user.status === 1 ? t('user.statusNormal') : t('user.statusDisabled') }}
                   </UBadge>
                 </td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
@@ -455,10 +454,10 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
                       color="primary"
                       :loading="consoleOpeningId === user.id"
                       :disabled="user.status !== 1 || (consoleOpeningId != null && consoleOpeningId !== user.id)"
-                      :title="user.status !== 1 ? '已禁用的用户无法打开控制台' : '以该用户身份打开创作台'"
+                      :title="user.status !== 1 ? t('user.consoleDisabledHint') : t('user.consoleHint')"
                       @click="() => { void openUserConsole(user) }"
                     >
-                      控制台
+                      {{ t('user.console') }}
                     </UButton>
                     <UButton
                       type="button"
@@ -467,7 +466,7 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
                       :color="user.status === 1 ? 'error' : 'success'"
                       @click="confirmStatus(user)"
                     >
-                      {{ user.status === 1 ? '封禁' : '解封' }}
+                      {{ user.status === 1 ? t('user.ban') : t('user.unban') }}
                     </UButton>
                     <UDropdownMenu
                       :items="moreItems(user)"
@@ -478,7 +477,7 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
                         item: 'cursor-pointer rounded-none hover:bg-zinc-100 data-highlighted:bg-zinc-100 dark:hover:bg-zinc-800 dark:data-highlighted:bg-zinc-800',
                       }"
                     >
-                      <UButton type="button" size="sm" variant="soft" color="neutral" icon="i-lucide-ellipsis" square aria-label="更多操作" />
+                      <UButton type="button" size="sm" variant="soft" color="neutral" icon="i-lucide-ellipsis" square :aria-label="t('common.more')" />
                     </UDropdownMenu>
                   </div>
                   <span v-else class="text-zinc-400">—</span>
@@ -514,23 +513,23 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
     />
     <ManageConfirmModal
       v-model:open="statusConfirmOpen"
-      :title="statusUser?.status === 1 ? '确认封禁用户' : '确认解封用户'"
+      :title="statusUser?.status === 1 ? t('user.confirmBan') : t('user.confirmUnban')"
       :tone="statusUser?.status === 1 ? 'error' : 'success'"
       :icon="statusUser?.status === 1 ? 'i-lucide-ban' : 'i-lucide-shield-check'"
       :loading="statusSaving"
       @confirm="saveStatus"
     >
-      确定要{{ statusUser?.status === 1 ? '封禁' : '解封' }}用户“{{ statusUser?.nickname }}”吗？
+      {{ statusUser?.status === 1 ? t('user.confirmBanBody', { name: statusUser?.nickname }) : t('user.confirmUnbanBody', { name: statusUser?.nickname }) }}
     </ManageConfirmModal>
     <ManageConfirmModal
       v-model:open="deleteConfirmOpen"
-      title="确认注销用户"
+      :title="t('user.confirmDeactivate')"
       icon="i-lucide-user-x"
-      confirm-text="确认注销"
+      :confirm-text="t('user.confirmDeactivateBtn')"
       :loading="deleteSaving"
       @confirm="saveDelete"
     >
-      确定要注销用户“{{ deleteUser?.nickname }}”吗？该操作不可撤销。
+      {{ t('user.confirmDeactivateBody', { name: deleteUser?.nickname }) }}
     </ManageConfirmModal>
   </div>
 </template>

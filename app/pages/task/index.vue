@@ -21,40 +21,40 @@ const detailOpen = ref(false)
 const detailItem = ref<any | null>(null)
 
 const pageRows = computed(() => rows.value)
-const TYPE_LABEL: Record<string, string> = {
-  text: '文本',
-  image: '图片',
-  video: '视频',
-  audio: '音频',
-}
-const STATUS_LABEL: Record<string, string> = {
-  pending: '排队中',
-  running: '进行中',
-  succeeded: '已完成',
-  failed: '失败',
-  cancelled: '已取消',
-}
-const typeItems = [
-  { label: '全部类型', value: '__all__' },
-  { label: '文本', value: 'text' },
-  { label: '图片', value: 'image' },
-  { label: '视频', value: 'video' },
-  { label: '音频', value: 'audio' },
-]
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '排队中', value: 'pending' },
-  { label: '进行中', value: 'running' },
-  { label: '已完成', value: 'succeeded' },
-  { label: '失败', value: 'failed' },
-  { label: '已取消', value: 'cancelled' },
-]
+const TYPE_LABEL = computed<Record<string, string>>(() => ({
+  text: t('common.text'),
+  image: t('common.image'),
+  video: t('common.video'),
+  audio: t('common.audio'),
+}))
+const STATUS_LABEL = computed<Record<string, string>>(() => ({
+  pending: t('common.queued'),
+  running: t('common.running'),
+  succeeded: t('common.succeeded'),
+  failed: t('common.failed'),
+  cancelled: t('common.cancelled'),
+}))
+const typeItems = computed(() => [
+  { label: t('common.allTypes'), value: '__all__' },
+  { label: t('common.text'), value: 'text' },
+  { label: t('common.image'), value: 'image' },
+  { label: t('common.video'), value: 'video' },
+  { label: t('common.audio'), value: 'audio' },
+])
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.queued'), value: 'pending' },
+  { label: t('common.running'), value: 'running' },
+  { label: t('common.succeeded'), value: 'succeeded' },
+  { label: t('common.failed'), value: 'failed' },
+  { label: t('common.cancelled'), value: 'cancelled' },
+])
 
 function typeLabel(type: string) {
-  return TYPE_LABEL[type] || type || '—'
+  return TYPE_LABEL.value[type] || type || '—'
 }
 function statusLabel(status: string) {
-  return STATUS_LABEL[status] || status || '—'
+  return STATUS_LABEL.value[status] || status || '—'
 }
 function statusColor(status: string) {
   if (status === 'succeeded')
@@ -69,10 +69,10 @@ function statusColor(status: string) {
 }
 function pointsText(item: any) {
   if (item.status === 'succeeded')
-    return `${item.costPoints} 积分`
+    return `${item.costPoints} ${t('common.points')}`
   if (item.status === 'pending' || item.status === 'running')
-    return `占用 ${item.pointsFrozen} 积分`
-  return '积分已退回'
+    return `${t('common.occupy')} ${item.pointsFrozen} ${t('common.points')}`
+  return t('task.pointsBack')
 }
 function toRow(item: any) {
   return {
@@ -112,7 +112,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '任务加载失败', 'error')
+      notify(raw?.message ?? t('task.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(toRow)
@@ -130,11 +130,11 @@ onMounted(() => {
   const type = String(route.query.type || '')
   if (userId)
     draft.userId = userId
-  if (STATUS_LABEL[status])
+  if (STATUS_LABEL.value[status])
     draft.status = status
-  if (TYPE_LABEL[type])
+  if (TYPE_LABEL.value[type])
     draft.type = type
-  if (userId || STATUS_LABEL[status] || TYPE_LABEL[type])
+  if (userId || STATUS_LABEL.value[status] || TYPE_LABEL.value[type])
     applied.value = { ...draft }
   void fetchList()
 })
@@ -171,10 +171,10 @@ async function copyPrompt(text: string) {
     return
   try {
     await navigator.clipboard.writeText(text)
-    notify('提示词已复制')
+    notify(t('task.copied'))
   }
   catch {
-    notify('复制失败', 'error')
+    notify(t('common.copyFail'), 'error')
   }
 }
 </script>
@@ -183,23 +183,17 @@ async function copyPrompt(text: string) {
   <div class="console-container">
     <ManagePageHeader :page-title="t('task.title')" :page-description="t('task.description')" />
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <UFormField label="用户">
-          <UInput v-model="draft.userId" placeholder="请输入用户 ID" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="类型">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('common.user')">
+          <UInput v-model="draft.userId" :placeholder="t('task.userPh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.type')">
           <USelect v-model="draft.type" :items="typeItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField label="状态">
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
@@ -212,15 +206,15 @@ async function copyPrompt(text: string) {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">单号</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">用户</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">类型</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">模型</th>
-                <th class="min-w-0 w-full px-4 py-3 text-left">提示词</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">积分</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">创建时间</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.code') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.user') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.model') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.prompt') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.points') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -239,15 +233,15 @@ async function copyPrompt(text: string) {
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3" :title="item.model">{{ item.model || '—' }}</td>
                 <td class="max-w-0 w-full px-4 py-3 text-zinc-600 dark:text-zinc-300">
-                  <div class="truncate" :title="item.prompt">{{ item.prompt || '（无提示词）' }}</div>
+                  <div class="truncate" :title="item.prompt">{{ item.prompt || '—' }}</div>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ pointsText(item) }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div class="flex w-max flex-nowrap gap-1">
-                    <UButton type="button" size="sm" variant="soft" @click="openDetail(item)">查看详情</UButton>
-                    <UButton v-if="item.resultUrl" type="button" size="sm" variant="soft" @click="gotoResult(item.resultUrl)">查看结果</UButton>
-                    <UButton v-if="item.prompt" type="button" size="sm" variant="soft" @click="() => { void copyPrompt(item.prompt) }">复制提示词</UButton>
+                    <UButton type="button" size="sm" variant="soft" @click="openDetail(item)">{{ t('common.detail') }}</UButton>
+                    <UButton v-if="item.resultUrl" type="button" size="sm" variant="soft" @click="gotoResult(item.resultUrl)">{{ t('common.viewResult') }}</UButton>
+                    <UButton v-if="item.prompt" type="button" size="sm" variant="soft" @click="() => { void copyPrompt(item.prompt) }">{{ t('common.copyPrompt') }}</UButton>
                   </div>
                 </td>
               </tr>
@@ -258,38 +252,38 @@ async function copyPrompt(text: string) {
       </template>
     </div>
 
-    <UModal v-model:open="detailOpen" title="任务详情" :ui="{ content: 'w-[min(96vw,40rem)]', footer: 'justify-end gap-2' }">
+    <UModal v-model:open="detailOpen" :title="t('common.detail')" :ui="{ content: 'w-[min(96vw,40rem)]', footer: 'justify-end gap-2' }">
       <template #body>
         <div v-if="detailItem" class="grid gap-3 text-sm">
-          <p><span class="text-zinc-500">单号</span>　{{ detailItem.taskNo || detailItem.id }}</p>
-          <p><span class="text-zinc-500">用户</span>　{{ detailItem.userName }}</p>
-          <p><span class="text-zinc-500">类型</span>　{{ typeLabel(detailItem.type) }}</p>
-          <p><span class="text-zinc-500">状态</span>　{{ statusLabel(detailItem.status) }}{{ detailItem.status === 'running' && detailItem.progress ? ` ${detailItem.progress}%` : '' }}</p>
-          <p><span class="text-zinc-500">模型</span>　{{ detailItem.model || '—' }}</p>
-          <p><span class="text-zinc-500">积分</span>　{{ pointsText(detailItem) }}</p>
-          <p><span class="text-zinc-500">创建时间</span>　{{ detailItem.createdAt }}</p>
-          <p v-if="detailItem.startedAt"><span class="text-zinc-500">开始时间</span>　{{ detailItem.startedAt }}</p>
-          <p v-if="detailItem.finishedAt"><span class="text-zinc-500">结束时间</span>　{{ detailItem.finishedAt }}</p>
-          <p v-if="detailItem.canvasId"><span class="text-zinc-500">画布</span>　
+          <p><span class="text-zinc-500">{{ t('common.code') }}</span>　{{ detailItem.taskNo || detailItem.id }}</p>
+          <p><span class="text-zinc-500">{{ t('common.user') }}</span>　{{ detailItem.userName }}</p>
+          <p><span class="text-zinc-500">{{ t('common.type') }}</span>　{{ typeLabel(detailItem.type) }}</p>
+          <p><span class="text-zinc-500">{{ t('common.status') }}</span>　{{ statusLabel(detailItem.status) }}{{ detailItem.status === 'running' && detailItem.progress ? ` ${detailItem.progress}%` : '' }}</p>
+          <p><span class="text-zinc-500">{{ t('common.model') }}</span>　{{ detailItem.model || '—' }}</p>
+          <p><span class="text-zinc-500">{{ t('common.points') }}</span>　{{ pointsText(detailItem) }}</p>
+          <p><span class="text-zinc-500">{{ t('common.createTime') }}</span>　{{ detailItem.createdAt }}</p>
+          <p v-if="detailItem.startedAt"><span class="text-zinc-500">{{ t('task.startedAt') }}</span>　{{ detailItem.startedAt }}</p>
+          <p v-if="detailItem.finishedAt"><span class="text-zinc-500">{{ t('task.endedAt') }}</span>　{{ detailItem.finishedAt }}</p>
+          <p v-if="detailItem.canvasId"><span class="text-zinc-500">{{ t('common.kindCanvas') }}</span>　
             <UButton type="button" size="sm" variant="link" class="-ml-2" @click="() => { void gotoCanvas(detailItem.canvasId) }">#{{ detailItem.canvasId }}</UButton>
           </p>
           <div>
-            <p class="mb-1 text-zinc-500">提示词</p>
-            <p class="whitespace-pre-wrap break-all rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">{{ detailItem.prompt || '（无提示词）' }}</p>
+            <p class="mb-1 text-zinc-500">{{ t('common.prompt') }}</p>
+            <p class="whitespace-pre-wrap break-all rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">{{ detailItem.prompt || '—' }}</p>
           </div>
           <div v-if="detailItem.errorMsg">
-            <p class="mb-1 text-zinc-500">失败原因</p>
+            <p class="mb-1 text-zinc-500">{{ t('common.failReason') }}</p>
             <p class="whitespace-pre-wrap break-all rounded-lg bg-rose-50 p-3 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{{ detailItem.errorMsg }}</p>
           </div>
           <div v-if="detailItem.resultText">
-            <p class="mb-1 text-zinc-500">文本结果</p>
+            <p class="mb-1 text-zinc-500">{{ t('task.textResult') }}</p>
             <p class="whitespace-pre-wrap break-all rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">{{ detailItem.resultText }}</p>
           </div>
         </div>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" @click="() => { detailOpen = false }">关闭</UButton>
-        <UButton v-if="detailItem?.resultUrl" type="button" @click="gotoResult(detailItem.resultUrl)">查看结果</UButton>
+        <UButton type="button" color="neutral" variant="outline" @click="() => { detailOpen = false }">{{ t('common.close') }}</UButton>
+        <UButton v-if="detailItem?.resultUrl" type="button" @click="gotoResult(detailItem.resultUrl)">{{ t('common.viewResult') }}</UButton>
       </template>
     </UModal>
   </div>

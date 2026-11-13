@@ -31,10 +31,10 @@ const statusItems = computed(() => [
   { label: t('common.published'), value: '1' },
   { label: t('common.unpublished'), value: '2' },
 ])
-const typeItems = [
-  { label: '系统公告', value: 'system' },
-  { label: '活动公告', value: 'activity' },
-]
+const typeItems = computed(() => [
+  { label: t('common.systemNotice'), value: 'system' },
+  { label: t('common.activityNotice'), value: 'activity' },
+])
 
 const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
@@ -65,7 +65,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '公告加载失败', 'error')
+      notify(raw?.message ?? t('notice.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(toRow)
@@ -107,8 +107,8 @@ function openEdit(item: AdminNotice) {
   formOpen.value = true
 }
 function validate() {
-  errors.title = form.title.trim() ? '' : '请输入公告标题'
-  errors.content = form.content.trim() ? '' : '请输入公告内容'
+  errors.title = form.title.trim() ? '' : t('notice.titleRequired')
+  errors.content = form.content.trim() ? '' : t('notice.contentRequired')
   return !errors.title && !errors.content
 }
 async function submit() {
@@ -121,10 +121,10 @@ async function submit() {
       ? await adminNoticeApi.update(editing.value.id, payload)
       : await adminNoticeApi.create({ ...payload, status: 1 })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '保存失败', 'error')
+      notify(raw?.message ?? t('common.saveFail'), 'error')
       return
     }
-    notify(editing.value ? '公告更新成功' : '公告发布成功')
+    notify(editing.value ? t('notice.updated') : t('notice.created'))
     formOpen.value = false
     await fetchList(`f-${Date.now()}`)
   }
@@ -147,10 +147,10 @@ async function confirm() {
       ? await adminNoticeApi.remove(item.id)
       : await adminNoticeApi.update(item.id, { status: item.status === 1 ? 2 : 1 })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '操作失败', 'error')
+      notify(raw?.message ?? t('common.opFail'), 'error')
       return
     }
-    notify(confirmAction.value === 'delete' ? '公告已删除' : (item.status === 1 ? '公告已下线' : '公告已发布'))
+    notify(confirmAction.value === 'delete' ? t('notice.deleted') : (item.status === 1 ? t('notice.unpublished') : t('notice.published')))
     confirmOpen.value = false
     await fetchList(`c-${Date.now()}`)
   }
@@ -168,20 +168,14 @@ async function confirm() {
       </template>
     </ManagePageHeader>
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2">
-        <UFormField :label="t('notice.titleField')">
-          <UInput v-model="draft.title" :placeholder="t('notice.titleField')" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField :label="t('common.status')">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('notice.titleField')">
+          <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('notice.titleField')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
@@ -210,16 +204,16 @@ async function confirm() {
                   <p class="max-w-xs truncate" :title="item.content">{{ item.content }}</p>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '已发布' : '已下线' }}</UBadge>
+                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? t('common.published') : t('notice.offline') }}</UBadge>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div class="flex w-max flex-nowrap gap-1">
-                    <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
+                    <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">{{ t('common.edit') }}</UButton>
                     <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="requestConfirm(item, 'status')">
-                      {{ item.status === 1 ? '下线' : '发布' }}
+                      {{ item.status === 1 ? t('common.unpublish') : t('common.publish') }}
                     </UButton>
-                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">删除</UButton>
+                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">{{ t('common.delete') }}</UButton>
                   </div>
                 </td>
               </tr>
@@ -230,21 +224,21 @@ async function confirm() {
       </template>
     </div>
 
-    <UModal v-model:open="formOpen" :title="editing ? '编辑公告' : '新建公告'" :ui="{ content: 'w-[min(96vw,36rem)]', footer: 'justify-end gap-2' }">
+    <UModal v-model:open="formOpen" :title="editing ? t('notice.editTitle') : t('notice.createTitle')" :ui="{ content: 'w-[min(96vw,36rem)]', footer: 'justify-end gap-2' }">
       <template #body>
         <div class="space-y-5">
-          <UFormField label="公告标题" required :error="errors.title || undefined">
-            <UInput v-model="form.title" maxlength="40" placeholder="例如：创作台维护通知" class="w-full" />
+          <UFormField :label="t('notice.titleField')" required :error="errors.title || undefined">
+            <UInput v-model="form.title" maxlength="40" :placeholder="t('notice.titlePh')" class="w-full" />
           </UFormField>
-          <UFormField label="公告内容" required hint="最多 500 字" :error="errors.content || undefined">
-            <UTextarea v-model="form.content" :rows="5" maxlength="500" placeholder="请输入公告内容" class="w-full" />
+          <UFormField :label="t('notice.contentLabel')" required :hint="t('notice.contentHint')" :error="errors.content || undefined">
+            <UTextarea v-model="form.content" :rows="5" maxlength="500" :placeholder="t('notice.contentRequired')" class="w-full" />
           </UFormField>
           <div class="grid items-stretch gap-4 sm:grid-cols-2">
-            <UFormField label="类型">
+            <UFormField :label="t('common.type')">
               <USelect v-model="form.type" :items="typeItems" value-key="value" class="w-full" />
             </UFormField>
             <UFormField
-              label="置顶"
+              :label="t('common.pin')"
               :ui="{
                 root: 'flex h-full flex-col',
                 container: 'mt-1 flex min-h-9 flex-1 items-center',
@@ -252,7 +246,7 @@ async function confirm() {
             >
               <USwitch
                 v-model="form.pinned"
-                label="在消息中心置顶显示"
+                :label="t('notice.pin')"
                 :ui="{
                   root: 'relative inline-flex items-center',
                   base: 'leading-none',
@@ -265,20 +259,20 @@ async function confirm() {
         </div>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="saving" @click="() => { formOpen = false }">取消</UButton>
-        <UButton type="button" :loading="saving" :disabled="saving" @click="submit">{{ saving ? '保存中…' : '保存' }}</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="saving" @click="() => { formOpen = false }">{{ t('common.cancel') }}</UButton>
+        <UButton type="button" :loading="saving" :disabled="saving" @click="submit">{{ saving ? t('common.saving') : t('common.save') }}</UButton>
       </template>
     </UModal>
 
     <ManageConfirmModal
       v-model:open="confirmOpen"
-      :title="confirmAction === 'delete' ? '确认删除公告' : `确认${confirmItem?.status === 1 ? '下线' : '发布'}公告`"
+      :title="confirmAction === 'delete' ? t('notice.confirmDelete') : t('common.confirmStatusNamed', { action: confirmItem?.status === 1 ? t('common.unpublish') : t('common.publish'), kind: t('common.kindNotice') })"
       :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
       :icon="confirmAction !== 'delete' && confirmItem?.status !== 1 ? 'i-lucide-megaphone' : ''"
       :loading="confirming"
       @confirm="confirm"
     >
-      确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '下线' : '发布') }}“{{ confirmItem?.title }}”吗？
+      {{ t('common.confirmNamed', { action: confirmAction === 'delete' ? t('common.delete') : (confirmItem?.status === 1 ? t('common.unpublish') : t('common.publish')), name: confirmItem?.title }) }}
     </ManageConfirmModal>
   </div>
 </template>

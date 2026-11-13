@@ -296,20 +296,14 @@ const detailTiles = computed(() => {
   <div class="console-container">
     <ManagePageHeader :page-title="t('partner.title')" :page-description="t('partner.description')" />
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <UFormField :label="t('common.status')">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('common.keyword')">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('partner.keywordPh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField :label="t('common.keyword')">
-          <UInput v-model="draft.keyword" :placeholder="t('partner.keywordPh')" class="w-full" @keyup.enter="search" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">

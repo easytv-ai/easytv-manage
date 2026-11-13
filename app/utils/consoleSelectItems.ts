@@ -23,6 +23,9 @@ export function pageSizeSelectItems(sizes: readonly number[] = CONSOLE_PAGE_SIZE
 }
 
 /** 带「条/页」文案的分页下拉项 */
-export function consolePageSizeSelectItems(sizes: readonly number[] = CONSOLE_PAGE_SIZES) {
-  return sizes.map(n => ({ label: `${n}条/页`, value: n }))
+export function consolePageSizeSelectItems(
+  t: (key: string, params?: Record<string, unknown>) => string,
+  sizes: readonly number[] = CONSOLE_PAGE_SIZES,
+) {
+  return sizes.map(n => ({ label: t('common.perPage', { n }), value: n }))
 }

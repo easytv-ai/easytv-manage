@@ -29,7 +29,7 @@ const confirming = ref(false)
 /** 成片分类（后台「内容分类」维护） */
 const categories = ref<string[]>([])
 const categoryItems = computed(() => [
-  { label: '全部分类', value: '__all__' },
+  { label: t('common.allCategories'), value: '__all__' },
   ...categories.value.map(name => ({ label: name, value: name })),
 ])
 const formCategoryItems = computed(() => {
@@ -38,11 +38,11 @@ const formCategoryItems = computed(() => {
     list.unshift({ label: form.category, value: form.category })
   return list
 })
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '已上架', value: '1' },
-  { label: '已下架', value: '2' },
-]
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.onShelf'), value: '1' },
+  { label: t('common.offShelf'), value: '2' },
+])
 
 const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
@@ -86,7 +86,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '精选成片加载失败', 'error')
+      notify(raw?.message ?? t('showcase.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(toRow)
@@ -148,7 +148,7 @@ async function fetchPickPage(pageNo: number) {
   })
   const parsed = parsePaged(raw)
   if (!parsed)
-    notify(raw?.message ?? '作品加载失败', 'error')
+    notify(raw?.message ?? t('showcase.workLoadFail'), 'error')
   return parsed
 }
 
@@ -274,7 +274,7 @@ async function submit() {
       notify(raw?.message ?? '保存失败', 'error')
       return
     }
-    notify('精选成片更新成功')
+    notify(t('showcase.updated'))
     formOpen.value = false
     await fetchList(`f-${Date.now()}`)
   }
@@ -302,7 +302,7 @@ async function confirm() {
       notify(raw?.message ?? '操作失败', 'error')
       return
     }
-    notify(confirmAction.value === 'delete' ? '已移出精选' : (item.status === 1 ? '成片已下架' : '成片已上架'))
+    notify(confirmAction.value === 'delete' ? t('showcase.removed') : (item.status === 1 ? t('showcase.offShelf') : t('showcase.onShelf')))
     confirmOpen.value = false
     await fetchList(`c-${Date.now()}`)
   }
@@ -320,23 +320,17 @@ async function confirm() {
       </template>
     </ManagePageHeader>
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-3">
-        <UFormField label="成片标题">
-          <UInput v-model="draft.title" placeholder="请输入成片标题" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="分类">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField label="成片标题">
+          <UInput icon="i-lucide-search" v-model="draft.title" placeholder="请输入成片标题" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField label="分类">
           <USelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField label="状态">
+        </ManageFilterField>
+        <ManageFilterField label="状态">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">

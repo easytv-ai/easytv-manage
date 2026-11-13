@@ -75,7 +75,7 @@ const SECTIONS: GrowthSection[] = [
       { key: 'GrowthPromoBannerLink', kind: 'text', def: '/pricing', placeholder: '/pricing' },
       { key: 'GrowthNewModelPromoRate', kind: 'rate', def: '0.5' },
       { key: 'GrowthNewModelPromoDays', kind: 'int', def: '7' },
-      { key: 'GrowthNewModelPromoLabel', kind: 'text', def: '首发 5 折', placeholder: '首发 5 折' },
+      { key: 'GrowthNewModelPromoLabel', kind: 'text', def: '首发 5 折' },
     ],
   },
   {
@@ -341,7 +341,7 @@ function toggleBool(key: string) {
               v-else-if="field.kind === 'text'"
               :model-value="String(form[field.key] ?? '')"
               class="w-full"
-              :placeholder="field.placeholder ?? field.def"
+              :placeholder="field.key === 'GrowthNewModelPromoLabel' ? t('modelPrice.promoLabelPh') : (field.placeholder ?? field.def)"
               @update:model-value="form[field.key] = String($event ?? '')"
             />
             <UInput

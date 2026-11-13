@@ -28,28 +28,28 @@ const confirmAudit = ref<AdminAudit | null>(null)
 const confirmRemark = ref('')
 const confirming = ref(false)
 
-const typeItems = [
-  { label: '举报（作品 / 评论）', value: 'report' },
-  { label: '作品发布审核', value: 'work' },
-  { label: '评论', value: 'comment' },
-]
-const reviewStatusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '待审核', value: '0' },
-  { label: '已通过', value: '1' },
-  { label: '已驳回', value: '2' },
-]
-const commentStatusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '正常', value: '1' },
-  { label: '已隐藏', value: '2' },
-]
-const statusItems = computed(() => draft.type === 'comment' ? commentStatusItems : reviewStatusItems)
-const typeLabels: Record<AuditType, string> = {
-  work: '作品',
-  report: '举报',
-  comment: '评论',
-}
+const typeItems = computed(() => [
+  { label: t('communityAudit.tabReport'), value: 'report' },
+  { label: t('communityAudit.tabWork'), value: 'work' },
+  { label: t('communityAudit.tabComment'), value: 'comment' },
+])
+const reviewStatusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.pendingReview'), value: '0' },
+  { label: t('communityAudit.passed'), value: '1' },
+  { label: t('common.reject'), value: '2' },
+])
+const commentStatusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.normal'), value: '1' },
+  { label: t('communityAudit.hidden'), value: '2' },
+])
+const statusItems = computed(() => draft.type === 'comment' ? commentStatusItems.value : reviewStatusItems.value)
+const typeLabels = computed<Record<AuditType, string>>(() => ({
+  work: t('communityAudit.work'),
+  report: t('communityAudit.report'),
+  comment: t('communityAudit.tabComment'),
+}))
 
 const pageRows = computed(() => rows.value)
 const isReport = computed(() => applied.value.type === 'report')
@@ -62,8 +62,8 @@ function commentToRow(item: any): AdminAudit {
     type: 'comment',
     content: item.content || '',
     authorName: item.author?.nickname || `#${item.user_id}`,
-    targetTitle: item.work_title || `作品 #${item.work_id}`,
-    reason: item.parent_id ? '回复' : '一级评论',
+    targetTitle: item.work_title || `${t('communityAudit.work')} #${item.work_id}`,
+    reason: item.parent_id ? t('communityAudit.reply') : t('communityAudit.topComment'),
     status: item.status === 2 ? 2 : 1,
     createdAt: formatUnix(item.created_at),
     workId: Number(item.work_id) || 0,
@@ -80,11 +80,11 @@ function reportToRow(item: any): AdminAudit {
   return {
     id: item.id,
     type: 'report',
-    content: item.content || '（无补充说明）',
+    content: item.content || t('communityAudit.noReason'),
     authorName: item.reporter_name || `#${item.user_id}`,
     targetTitle: isCommentReport
-      ? `评论：${String(item.comment_content || '').slice(0, 40) || `#${item.comment_id}`}`
-      : (item.work_title || `作品 #${item.work_id}`),
+      ? `${t('communityAudit.tabComment')}：${String(item.comment_content || '').slice(0, 40) || `#${item.comment_id}`}`
+      : (item.work_title || `${t('communityAudit.work')} #${item.work_id}`),
     reason: item.reason || '',
     status: item.status === 1 ? 1 : item.status === 2 ? 2 : 0,
     createdAt: formatUnix(item.created_at),
@@ -99,10 +99,10 @@ function workToRow(item: any): AdminAudit {
   return {
     id: item.id,
     type: 'work',
-    content: item.description || '（无简介）',
+    content: item.description || t('communityAudit.noReason'),
     authorName: item.author?.nickname || `#${item.user_id}`,
     targetTitle: item.title,
-    reason: item.category || '未分类',
+    reason: item.category || '—',
     status: item.review_status === 1 ? 1 : item.review_status === 2 ? 2 : 0,
     createdAt: formatUnix(item.published_at || item.created_at),
     workId: item.id,
@@ -124,7 +124,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '加载失败', 'error')
+      notify(raw?.message ?? t('communityAudit.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(applied.value.type === 'report' ? reportToRow : applied.value.type === 'comment' ? commentToRow : workToRow)
@@ -167,14 +167,14 @@ function requestConfirm(audit: AdminAudit, action: ConfirmAction) {
 
 function confirmTitle() {
   if (confirmAction.value === 'hide')
-    return '确认隐藏评论'
+    return t('communityAudit.confirmHide')
   if (confirmAction.value === 'restore')
-    return '确认恢复评论'
+    return t('communityAudit.confirmRestore')
   if (confirmAction.value === 'delete')
-    return '确认删除评论'
+    return t('communityAudit.confirmDelete')
   if (confirmAction.value === 'pass')
-    return `确认${passLabel(confirmAudit.value)}`
-  return '确认驳回'
+    return t('communityAudit.confirmPass')
+  return t('communityAudit.confirmReject')
 }
 
 function confirmColor() {
@@ -189,10 +189,10 @@ function confirmColor() {
 
 function remarkHint() {
   if (confirmAction.value === 'hide')
-    return '选填，会随站内通知发给评论人'
+    return t('communityAudit.remarkPhPass')
   if (confirmAction.value === 'restore')
-    return '选填'
-  return '选填，作者 / 复核时可见'
+    return t('communityAudit.remarkPhOptional')
+  return t('communityAudit.remarkPhReject')
 }
 
 async function confirm() {
@@ -207,10 +207,10 @@ async function confirm() {
         ? await adminCommentApi.remove(audit.id)
         : await adminCommentApi.setStatus(audit.id, confirmAction.value === 'hide' ? 2 : 1, remark)
       if (!isOk(raw)) {
-        notify(raw?.message ?? '操作失败', 'error')
+        notify(raw?.message ?? t('common.opFail'), 'error')
         return
       }
-      notify(confirmAction.value === 'delete' ? '评论已删除' : confirmAction.value === 'hide' ? '评论已隐藏，已通知评论人' : '评论已恢复')
+      notify(confirmAction.value === 'delete' ? t('communityAudit.commentDeleted') : confirmAction.value === 'hide' ? t('communityAudit.commentHidden') : t('communityAudit.commentRestored'))
     }
     else {
       const result = confirmAction.value === 'pass' ? 1 : 2
@@ -218,13 +218,13 @@ async function confirm() {
         ? await adminReportApi.setStatus(audit.id, result, remark)
         : await adminWorkApi.review(audit.id, result, remark)
       if (!isOk(raw)) {
-        notify(raw?.message ?? '操作失败', 'error')
+        notify(raw?.message ?? t('common.opFail'), 'error')
         return
       }
       if (audit.type === 'report')
-        notify(confirmAction.value === 'pass' ? (audit.targetType === 'comment' ? '举报成立，评论已隐藏' : '举报成立，作品已下架') : '举报已驳回')
+        notify(confirmAction.value === 'pass' ? (audit.targetType === 'comment' ? t('communityAudit.reportCommentHidden') : t('communityAudit.reportWorkDown')) : t('communityAudit.reportRejected'))
       else
-        notify(confirmAction.value === 'pass' ? '作品审核已通过' : '作品已驳回并隐藏')
+        notify(confirmAction.value === 'pass' ? t('communityAudit.workPassed') : t('communityAudit.workRejected'))
     }
     confirmOpen.value = false
     await fetchList(`c-${Date.now()}`)
@@ -236,18 +236,18 @@ async function confirm() {
 
 function passLabel(audit: AdminAudit | null) {
   if (audit?.type !== 'report')
-    return '通过'
-  return audit.targetType === 'comment' ? '成立并隐藏' : '成立并下架'
+    return t('common.pass')
+  return audit.targetType === 'comment' ? t('common.hide') : t('common.takeDown')
 }
 
 function statusLabel(audit: AdminAudit) {
   if (audit.type === 'comment')
-    return audit.status === 2 ? '已隐藏' : '正常'
+    return audit.status === 2 ? t('communityAudit.hidden') : t('common.normal')
   if (audit.status === 1)
-    return audit.type === 'report' ? '已成立' : '已通过'
+    return audit.type === 'report' ? t('communityAudit.handled') : t('communityAudit.passed')
   if (audit.status === 2)
-    return '已驳回'
-  return '待审核'
+    return t('common.reject')
+  return t('common.pendingReview')
 }
 
 function statusColor(status: AdminAudit['status']) {
@@ -267,23 +267,17 @@ function watchUrl(audit: AdminAudit) {
   <div class="console-container">
     <ManagePageHeader :page-title="t('communityAudit.title')" :page-description="t('communityAudit.description')" />
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <UFormField label="关键词">
-          <UInput v-model="draft.keyword" placeholder="作品标题 / 举报说明 / 评论内容" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="类型">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('common.keyword')">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('communityAudit.keywordPhWork')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.type')">
           <USelect v-model="draft.type" :items="typeItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField label="状态">
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
@@ -302,27 +296,27 @@ function watchUrl(audit: AdminAudit) {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="min-w-0 w-full px-4 py-3 text-left">{{ isReport ? '举报说明' : isComment ? '评论内容' : '作品简介' }}</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport ? '举报人' : isComment ? '评论人' : '作者' }}</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport ? '举报对象' : isComment ? '所属作品' : '作品' }}</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">类型</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport ? '原因' : isComment ? '层级' : '分类' }}</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport || isComment ? '提交时间' : '发布时间' }}</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ isReport ? t('communityAudit.colReason') : isComment ? t('communityAudit.colComment') : t('skill.review.descriptionLabel') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport ? t('communityAudit.colReporter') : isComment ? t('communityAudit.colAuthor') : t('communityAudit.colOwner') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport ? t('communityAudit.colTarget') : isComment ? t('communityAudit.colWork') : t('communityAudit.work') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.type') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport ? t('common.reason') : isComment ? t('communityAudit.colLevel') : t('common.category') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ isReport || isComment ? t('communityAudit.submittedAt') : t('communityAudit.publishedAt') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="audit in pageRows" :key="`${audit.type}-${audit.id}`" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
                 <td class="max-w-0 w-full px-4 py-3">
                   <p class="truncate" :title="audit.content">{{ audit.content }}</p>
-                  <p v-if="audit.remark" class="mt-1 truncate text-xs text-zinc-400" :title="audit.remark">备注：{{ audit.remark }}</p>
+                  <p v-if="audit.remark" class="mt-1 truncate text-xs text-zinc-400" :title="audit.remark">{{ t('common.remark') }}：{{ audit.remark }}</p>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.authorName }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <a :href="watchUrl(audit)" target="_blank" rel="noopener" class="text-primary hover:underline">{{ audit.targetTitle }}</a>
                 </td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.type === 'report' && audit.targetType === 'comment' ? '评论举报' : typeLabels[audit.type] }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.type === 'report' && audit.targetType === 'comment' ? t('communityAudit.tabComment') : typeLabels[audit.type] }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.reason }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="statusColor(audit.status)" variant="subtle">
@@ -332,19 +326,19 @@ function watchUrl(audit: AdminAudit) {
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ audit.createdAt }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div v-if="audit.type === 'comment'" class="flex w-max flex-nowrap gap-1">
-                    <UButton v-if="audit.status !== 2" type="button" size="sm" variant="soft" color="warning" :disabled="confirming" @click="requestConfirm(audit, 'hide')">隐藏</UButton>
-                    <UButton v-else type="button" size="sm" variant="soft" color="success" :disabled="confirming" @click="requestConfirm(audit, 'restore')">恢复</UButton>
-                    <UButton type="button" size="sm" variant="soft" color="error" :disabled="confirming" @click="requestConfirm(audit, 'delete')">删除</UButton>
+                    <UButton v-if="audit.status !== 2" type="button" size="sm" variant="soft" color="warning" :disabled="confirming" @click="requestConfirm(audit, 'hide')">{{ t('common.hide') }}</UButton>
+                    <UButton v-else type="button" size="sm" variant="soft" color="success" :disabled="confirming" @click="requestConfirm(audit, 'restore')">{{ t('common.restore') }}</UButton>
+                    <UButton type="button" size="sm" variant="soft" color="error" :disabled="confirming" @click="requestConfirm(audit, 'delete')">{{ t('common.delete') }}</UButton>
                   </div>
                   <div v-else-if="audit.status === 0" class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" :color="isReport ? 'error' : 'success'" @click="requestConfirm(audit, 'pass')">
                       {{ passLabel(audit) }}
                     </UButton>
                     <UButton type="button" size="sm" variant="soft" :color="isReport ? 'neutral' : 'error'" @click="requestConfirm(audit, 'reject')">
-                      驳回
+                      {{ t('common.reject') }}
                     </UButton>
                   </div>
-                  <span v-else class="text-zinc-400">已处理</span>
+                  <span v-else class="text-zinc-400">{{ t('communityAudit.processed') }}</span>
                 </td>
               </tr>
             </tbody>
@@ -368,30 +362,30 @@ function watchUrl(audit: AdminAudit) {
           <div class="text-sm text-zinc-600 dark:text-zinc-300">
             <p>
               <template v-if="isCommentAction">
-                <template v-if="confirmAction === 'hide'">隐藏“{{ confirmAudit?.authorName }}”的评论？评论将不再对其他人展示，并通知评论人。</template>
-                <template v-else-if="confirmAction === 'restore'">恢复“{{ confirmAudit?.authorName }}”的评论？评论将重新公开显示。</template>
-                <template v-else>删除“{{ confirmAudit?.authorName }}”的评论？此操作不可恢复，一级评论会连带回复一起删除。</template>
+                <template v-if="confirmAction === 'hide'">{{ t('communityAudit.hideBody', { name: confirmAudit?.authorName }) }}</template>
+                <template v-else-if="confirmAction === 'restore'">{{ t('communityAudit.restoreBody', { name: confirmAudit?.authorName }) }}</template>
+                <template v-else>{{ t('communityAudit.deleteBody', { name: confirmAudit?.authorName }) }}</template>
               </template>
               <template v-else-if="confirmAudit?.type === 'report'">
-                <template v-if="confirmAction === 'pass' && confirmAudit?.targetType === 'comment'">判定“{{ confirmAudit?.authorName }}”对该评论的举报成立？评论会立即隐藏并通知评论人，同一评论的其它待处理举报一并结案。</template>
-                <template v-else-if="confirmAction === 'pass'">判定“{{ confirmAudit?.authorName }}”对《{{ confirmAudit?.targetTitle }}》的举报成立？作品会立即下架，同一作品的其它待处理举报一并结案。</template>
-                <template v-else>驳回“{{ confirmAudit?.authorName }}”的举报？{{ confirmAudit?.targetType === 'comment' ? '评论保持展示。' : '作品保持展示。' }}</template>
+                <template v-if="confirmAction === 'pass' && confirmAudit?.targetType === 'comment'">{{ t('communityAudit.passCommentBody', { name: confirmAudit?.authorName }) }}</template>
+                <template v-else-if="confirmAction === 'pass'">{{ t('communityAudit.passWorkBody', { name: confirmAudit?.authorName, title: confirmAudit?.targetTitle }) }}</template>
+                <template v-else>{{ confirmAudit?.targetType === 'comment' ? t('communityAudit.rejectCommentBody', { name: confirmAudit?.authorName }) : t('communityAudit.rejectWorkBody', { name: confirmAudit?.authorName }) }}</template>
               </template>
               <template v-else>
-                <template v-if="confirmAction === 'pass'">通过“{{ confirmAudit?.authorName }}”发布的《{{ confirmAudit?.targetTitle }}》？</template>
-                <template v-else>驳回《{{ confirmAudit?.targetTitle }}》？作品会从信息流隐藏，作者在「我的作品」里可以看到驳回备注。</template>
+                <template v-if="confirmAction === 'pass'">{{ t('communityAudit.passReviewBody', { name: confirmAudit?.authorName, title: confirmAudit?.targetTitle }) }}</template>
+                <template v-else>{{ t('communityAudit.rejectReviewBody', { title: confirmAudit?.targetTitle }) }}</template>
               </template>
             </p>
             <p v-if="isCommentAction && confirmAudit?.content" class="mt-2 line-clamp-3 rounded-md bg-zinc-50 px-3 py-2 text-xs text-zinc-500 dark:bg-zinc-900">{{ confirmAudit.content }}</p>
           </div>
-          <UFormField v-if="showRemark" label="处理备注" :hint="remarkHint()">
-            <UInput v-model="confirmRemark" maxlength="255" placeholder="例如：含未授权素材" class="w-full" />
+          <UFormField v-if="showRemark" :label="t('communityAudit.rejectRemark')" :hint="remarkHint()">
+            <UInput v-model="confirmRemark" maxlength="255" :placeholder="t('communityAudit.rejectRemarkPh')" class="w-full" />
           </UFormField>
         </div>
       </template>
       <template #footer>
         <UButton type="button" color="neutral" variant="outline" :disabled="confirming" @click="() => { confirmOpen = false }">
-          取消
+          {{ t('common.cancel') }}
         </UButton>
         <UButton
           type="button"
@@ -400,7 +394,7 @@ function watchUrl(audit: AdminAudit) {
           :disabled="confirming"
           @click="confirm"
         >
-          {{ confirming ? '处理中…' : '确认' }}
+          {{ confirming ? t('common.processing') : t('common.confirm') }}
         </UButton>
       </template>
     </UModal>

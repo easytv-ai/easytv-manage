@@ -15,15 +15,19 @@ const props = withDefaults(defineProps<{
   description: '',
   tone: 'error',
   icon: '',
-  confirmText: '确认',
-  cancelText: '取消',
-  loadingText: '处理中…',
+  confirmText: '',
+  cancelText: '',
+  loadingText: '',
   loading: false,
   disabled: false,
 })
 
+const { t } = useI18n()
 const emit = defineEmits<{ confirm: [] }>()
 const open = defineModel<boolean>('open', { default: false })
+const confirmLabel = computed(() => props.confirmText || t('common.confirm'))
+const cancelLabel = computed(() => props.cancelText || t('common.cancel'))
+const loadingLabel = computed(() => props.loadingText || t('common.processing'))
 
 const TONE_STYLE: Record<Tone, { icon: string, badge: string }> = {
   error: { icon: 'i-lucide-trash-2', badge: 'bg-error/10 text-error ring-error/5' },
@@ -61,9 +65,9 @@ function close() {
         </div>
       </div>
       <div class="flex justify-end gap-2 border-t border-default bg-elevated/50 px-6 py-4">
-        <UButton type="button" color="neutral" variant="outline" :disabled="loading" @click="close">{{ cancelText }}</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="loading" @click="close">{{ cancelLabel }}</UButton>
         <UButton type="button" :color="tone" :loading="loading" :disabled="loading || disabled" @click="emit('confirm')">
-          {{ loading ? loadingText : confirmText }}
+          {{ loading ? loadingLabel : confirmLabel }}
         </UButton>
       </div>
     </template>

@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<{
 const page = defineModel<number>('page', { required: true })
 const pageSize = defineModel<number>('pageSize', { required: true })
 
-const sizeItems = computed(() => props.pageSizeItems ?? consolePageSizeSelectItems())
+const sizeItems = computed(() => props.pageSizeItems ?? consolePageSizeSelectItems(t))
 </script>
 
 <template>

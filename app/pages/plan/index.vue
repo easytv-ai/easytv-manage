@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AdminMembershipPlan, AdminPointsPack, AdminPromoConfig } from '~/types/easytv-admin'
-import { formatValidity, POINTS_DAY_ITEMS, toPositiveInt, toPositiveNumber } from '~/utils/pricing-admin'
+import { formatValidity, pointsDayItems, toPositiveInt, toPositiveNumber } from '~/utils/pricing-admin'
 import { adminPackApi, adminPlanApi, adminPromoApi, type PromoPayload } from '~/api/billing'
 import { isOk } from '~/api/creative'
 
@@ -83,11 +83,12 @@ const confirming = ref(false)
 const planRows = computed(() => [...membershipPlans.value].sort((a, b) => a.sortOrder - b.sortOrder))
 const packRows = computed(() => [...pointsPacks.value].sort((a, b) => a.sortOrder - b.sortOrder))
 
-const tabItems = [
-  { label: '会员套餐', value: 'membership' },
-  { label: '积分包', value: 'points' },
-  { label: '活动设置', value: 'promo' },
-]
+const tabItems = computed(() => [
+  { label: t('common.tabMembership'), value: 'membership' },
+  { label: t('common.tabPoints'), value: 'points' },
+  { label: t('common.tabPromo'), value: 'promo' },
+])
+const dayItems = computed(() => pointsDayItems(t))
 
 function formatDiscount(price: number, origin: number) {
   if (!origin || price >= origin)
@@ -557,7 +558,7 @@ async function confirmChange() {
           <ul class="mb-6 space-y-2.5 text-sm text-zinc-600 dark:text-zinc-300">
             <li class="flex items-center gap-2">
               <UIcon name="i-lucide-calendar" class="size-4 shrink-0 text-zinc-400" />
-              {{ formatValidity(item.days) }}
+              {{ formatValidity(item.days, t) }}
             </li>
             <li class="flex items-center gap-2">
               <UIcon name="i-lucide-wallet" class="size-4 shrink-0 text-zinc-400" />
@@ -748,7 +749,7 @@ async function confirmChange() {
               </UInput>
             </UFormField>
             <UFormField label="有效期" required>
-              <USelect v-model="packForm.days" :items="POINTS_DAY_ITEMS" value-key="value" class="w-full" />
+              <USelect v-model="packForm.days" :items="dayItems" value-key="value" class="w-full" />
             </UFormField>
           </div>
           <div class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800" @click="packForm.featured = !packForm.featured">

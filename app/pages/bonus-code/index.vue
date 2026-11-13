@@ -381,26 +381,20 @@ const money = (v: number) => `¥${(Number(v) || 0).toLocaleString('zh-CN', { min
       </template>
     </ManagePageHeader>
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <UFormField :label="t('common.keyword')">
-          <UInput v-model="draft.keyword" :placeholder="t('bonusCode.keywordPh')" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField :label="t('common.type')">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('common.keyword')">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('bonusCode.keywordPh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.type')">
           <USelect v-model="draft.kind" :items="kindItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField :label="t('common.status')">
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField :label="t('bonusCode.partner')">
+        </ManageFilterField>
+        <ManageFilterField :label="t('bonusCode.partner')">
           <UInput v-model="draft.partner" :placeholder="t('bonusCode.partnerFilterPh')" class="w-full" @keyup.enter="search" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">

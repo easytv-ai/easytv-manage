@@ -25,11 +25,11 @@ const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
 const DRAFT_DEFAULT = { title: '', status: '__all__' }
 const API = adminCanvasApi
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '正常', value: '1' },
-  { label: '回收站', value: '2' },
-]
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.normal'), value: '1' },
+  { label: t('common.trash'), value: '2' },
+])
 function toRow(item: any): AdminCanvas {
   return {
     id: item.id,
@@ -58,7 +58,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '加载失败', 'error')
+      notify(raw?.message ?? t('canvas.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(toRow)
@@ -101,10 +101,10 @@ async function confirm() {
       ? await API.remove(item.id)
       : await API.setStatus(item.id, item.status === 1 ? 2 : 1)
     if (!isOk(raw)) {
-      notify(raw?.message ?? '操作失败，请稍后重试', 'error')
+      notify(raw?.message ?? t('common.opFail'), 'error')
       return
     }
-    notify(confirmAction.value === 'delete' ? '画布已删除' : (item.status === 1 ? '画布已移入回收站' : '画布已恢复'))
+    notify(confirmAction.value === 'delete' ? t('canvas.deleted') : (item.status === 1 ? t('canvas.trashed') : t('canvas.restored')))
     confirmOpen.value = false
     await fetchList(`c-${Date.now()}`)
   }
@@ -118,20 +118,14 @@ async function confirm() {
   <div class="console-container">
     <ManagePageHeader :page-title="t('canvas.title')" :page-description="t('canvas.description')" />
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2">
-        <UFormField label="画布名称">
-          <UInput v-model="draft.title" placeholder="请输入画布名称" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="状态">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('canvas.colName')">
+          <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('canvas.namePh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
@@ -144,13 +138,13 @@ async function confirm() {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="min-w-0 w-full px-4 py-3 text-left">画布名称</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">创建人</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">节点数</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">公开</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">创建时间</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('canvas.colName') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.owner') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.nodes') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.public') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -160,17 +154,17 @@ async function confirm() {
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.ownerName }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.nodeCount }}</td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.publicVisible ? '是' : '否' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.publicVisible ? t('common.yes') : t('common.no') }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '正常' : '回收站' }}</UBadge>
+                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? t('common.normal') : t('common.trash') }}</UBadge>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.createdAt }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div class="flex w-max flex-nowrap gap-1">
                     <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="requestConfirm(item, 'status')">
-                      {{ item.status === 1 ? '回收' : '恢复' }}
+                      {{ item.status === 1 ? t('common.moveToTrash') : t('common.restore') }}
                     </UButton>
-                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">删除</UButton>
+                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">{{ t('common.delete') }}</UButton>
                   </div>
                 </td>
               </tr>
@@ -183,12 +177,12 @@ async function confirm() {
 
     <ManageConfirmModal
       v-model:open="confirmOpen"
-      :title="confirmAction === 'delete' ? '确认删除画布' : `确认${confirmItem?.status === 1 ? '下架' : '上架'}画布`"
+      :title="confirmAction === 'delete' ? t('canvas.confirmDelete') : (confirmItem?.status === 1 ? t('canvas.confirmTrash') : t('canvas.confirmRestore'))"
       :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
       :loading="confirming"
       @confirm="confirm"
     >
-      确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '下架' : '上架') }}“{{ confirmItem?.title }}”吗？
+      {{ t('common.confirmNamed', { action: confirmAction === 'delete' ? t('common.delete') : (confirmItem?.status === 1 ? t('common.moveToTrash') : t('common.restore')), name: confirmItem?.title }) }}
     </ManageConfirmModal>
   </div>
 </template>

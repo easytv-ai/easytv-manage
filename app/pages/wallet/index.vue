@@ -29,10 +29,10 @@ const adjustErrors = reactive({ amount: '' })
 const adjustSaving = ref(false)
 const confirmOpen = ref(false)
 
-const typeItems = [
-  { label: '补发积分', value: 'add' },
-  { label: '扣减积分', value: 'deduct' },
-]
+const typeItems = computed(() => [
+  { label: t('wallet.grantTitle'), value: 'add' },
+  { label: t('wallet.deduct'), value: 'deduct' },
+])
 
 const pageRows = computed(() => rows.value)
 
@@ -81,7 +81,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '钱包列表加载失败', 'error')
+      notify(raw?.message ?? t('wallet.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(toRow)
@@ -136,7 +136,7 @@ async function openLog(item: AdminWallet) {
   const raw = await adminWalletApi.logs({ user_id: item.userId, page: 1, page_size: 50 })
   const parsed = parsePaged(raw)
   if (!parsed) {
-    notify(raw?.message ?? '流水加载失败', 'error')
+    notify(raw?.message ?? t('wallet.logFail'), 'error')
     return
   }
   currentLogs.value = parsed.items.map(toLog)
@@ -166,7 +166,7 @@ async function confirmAdjust() {
       notify(raw?.message ?? '调整失败', 'error')
       return
     }
-    notify(adjustForm.type === 'add' ? '积分已补发' : '积分已扣减')
+    notify(adjustForm.type === 'add' ? t('wallet.granted') : t('wallet.deducted'))
     confirmOpen.value = false
     adjustOpen.value = false
     await fetchList(`a-${Date.now()}`)
@@ -181,17 +181,11 @@ async function confirmAdjust() {
   <div class="console-container">
     <ManagePageHeader :page-title="t('wallet.title')" :page-description="t('wallet.description')" />
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <UFormField label="账号 / 用户名">
-          <UInput v-model="draft.keyword" placeholder="请输入账号或用户名" class="w-full" @keyup.enter="search" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField label="账号 / 用户名">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" placeholder="请输入账号或用户名" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">

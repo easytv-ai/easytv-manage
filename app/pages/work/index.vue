@@ -43,11 +43,11 @@ const langItems = computed(() => [
   { label: t('work.langAll'), value: SELECT_ITEM_ALL },
   ...LANGS.map(code => ({ label: t(`work.lang.${code}`), value: code })),
 ])
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '已上架', value: '1' },
-  { label: '已下架', value: '2' },
-]
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.onShelf'), value: '1' },
+  { label: t('common.offShelf'), value: '2' },
+])
 const categories = ref<string[]>([])
 const formCategoryItems = computed(() => {
   const list = categories.value.map(name => ({ label: name, value: name }))
@@ -105,7 +105,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? '加载失败', 'error')
+      notify(raw?.message ?? t('work.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(toRow)
@@ -151,7 +151,7 @@ function openEdit(item: AdminWork) {
   formOpen.value = true
 }
 function validate() {
-  errors.title = form.title.trim() ? '' : '请输入作品标题'
+  errors.title = form.title.trim() ? '' : t('work.titleRequired')
   return !errors.title
 }
 function clearCover() {
@@ -170,23 +170,23 @@ async function onCoverFile(value: File | File[] | null | undefined) {
   const ext = `.${(file.name.split('.').pop() || '').toLowerCase()}`
   if (!COVER_EXTS.includes(ext)) {
     coverFile.value = null
-    notify('仅支持 jpg、png、webp、gif 图片', 'error')
+    notify(t('common.imageTypeOnly'), 'error')
     return
   }
   if (file.size > COVER_MAX_BYTES) {
     coverFile.value = null
-    notify('封面图片不能超过 8MB', 'error')
+    notify(t('common.imageTooLarge', { n: 8 }), 'error')
     return
   }
   uploading.value = true
   try {
     form.cover = await qiniu.uploadImage(file)
     coverFile.value = null
-    notify('封面上传成功')
+    notify(t('common.coverUploaded'))
   }
   catch (error: any) {
     coverFile.value = null
-    notify(error?.message || '封面上传失败，请稍后重试', 'error')
+    notify(error?.message || t('common.uploadFail'), 'error')
   }
   finally {
     uploading.value = false
@@ -204,10 +204,10 @@ async function submit() {
       cover_url: form.cover.trim(),
     })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '保存失败，请稍后重试', 'error')
+      notify(raw?.message ?? t('common.saveFail'), 'error')
       return
     }
-    notify('作品更新成功')
+    notify(t('work.updated'))
     formOpen.value = false
     await fetchList(`f-${Date.now()}`)
   }
@@ -230,10 +230,10 @@ async function confirm() {
       ? await API.remove(item.id)
       : await API.setStatus(item.id, item.status === 1 ? 2 : 1)
     if (!isOk(raw)) {
-      notify(raw?.message ?? '操作失败，请稍后重试', 'error')
+      notify(raw?.message ?? t('common.opFail'), 'error')
       return
     }
-    notify(confirmAction.value === 'delete' ? '作品已删除' : (item.status === 1 ? '作品已下架' : '作品已上架'))
+    notify(confirmAction.value === 'delete' ? t('work.deleted') : (item.status === 1 ? t('work.offShelf') : t('work.onShelf')))
     confirmOpen.value = false
     await fetchList(`c-${Date.now()}`)
   }
@@ -247,23 +247,17 @@ async function confirm() {
   <div class="console-container">
     <ManagePageHeader :page-title="t('work.title')" :page-description="t('work.description')" />
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <UFormField label="作品标题">
-          <UInput v-model="draft.title" placeholder="请输入作品标题" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="状态">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('common.title')">
+          <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('work.titlePh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField :label="t('work.langLabel')">
+        </ManageFilterField>
+        <ManageFilterField :label="t('work.langLabel')">
           <USelect v-model="draft.lang" :items="langItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
@@ -282,15 +276,15 @@ async function confirm() {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="min-w-0 w-full px-4 py-3 text-left">作品标题</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">作者名称</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.title') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.colAuthor') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.langLabel') }}</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">时长</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">播放量</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">点赞数</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">创建时间</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.colDuration') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.colPlayCount') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.colLikes') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.createTime') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -317,13 +311,13 @@ async function confirm() {
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ work.likeCount.toLocaleString() }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="work.status === 1 ? 'success' : 'neutral'" variant="subtle">
-                    {{ work.status === 1 ? '已上架' : '已下架' }}
+                    {{ work.status === 1 ? t('common.onShelf') : t('common.offShelf') }}
                   </UBadge>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ work.createdAt }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div class="flex w-max flex-nowrap gap-1">
-                    <UButton type="button" size="sm" variant="soft" @click="openEdit(work)">编辑</UButton>
+                    <UButton type="button" size="sm" variant="soft" @click="openEdit(work)">{{ t('common.edit') }}</UButton>
                     <UButton
                       type="button"
                       size="sm"
@@ -331,10 +325,10 @@ async function confirm() {
                       :color="work.status === 1 ? 'warning' : 'success'"
                       @click="requestConfirm(work, 'status')"
                     >
-                      {{ work.status === 1 ? '下架' : '上架' }}
+                      {{ work.status === 1 ? t('common.takeDown') : t('common.putOn') }}
                     </UButton>
                     <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(work, 'delete')">
-                      删除
+                      {{ t('common.delete') }}
                     </UButton>
                   </div>
                 </td>
@@ -352,36 +346,36 @@ async function confirm() {
 
     <UModal
       v-model:open="formOpen"
-      title="编辑作品"
-      description="作者由发布账号决定，后台只能改标题、简介、分类和封面。"
+      :title="t('work.editTitle')"
+      :description="t('work.officialHint')"
       :ui="{ content: 'w-[min(96vw,36rem)]', body: 'space-y-5', footer: 'justify-end gap-2' }"
     >
       <template #body>
-        <UFormField label="作品标题" required :error="errors.title || undefined">
-          <UInput v-model="form.title" maxlength="40" placeholder="请输入作品标题" class="w-full" />
+        <UFormField :label="t('common.title')" required :error="errors.title || undefined">
+          <UInput v-model="form.title" maxlength="40" :placeholder="t('work.titlePh')" class="w-full" />
         </UFormField>
-        <UFormField label="作者名称">
+        <UFormField :label="t('work.colAuthor')">
           <UInput :model-value="editing?.authorName ?? ''" disabled class="w-full" />
         </UFormField>
-        <UFormField label="分类">
-          <USelect v-model="form.category" :items="formCategoryItems" value-key="value" placeholder="请选择分类" class="w-full" />
+        <UFormField :label="t('common.category')">
+          <USelect v-model="form.category" :items="formCategoryItems" value-key="value" :placeholder="t('skill.categoryRequired')" class="w-full" />
         </UFormField>
-        <UFormField label="简介" hint="选填">
-          <UTextarea v-model="form.description" :rows="3" maxlength="1000" placeholder="请输入作品简介" class="w-full" />
+        <UFormField :label="t('skill.review.descriptionLabel')" :hint="t('common.optional')">
+          <UTextarea v-model="form.description" :rows="3" maxlength="1000" :placeholder="t('skill.descRequired')" class="w-full" />
         </UFormField>
-        <UFormField label="封面">
+        <UFormField :label="t('common.cover')">
           <div v-if="coverPreviewUrl" class="relative">
             <img :src="coverPreviewUrl" alt="" class="aspect-video w-full rounded-lg object-cover">
             <UButton type="button" size="sm" color="neutral" class="absolute right-2 top-2" :disabled="uploading" @click="clearCover">
-              清除
+              {{ t('common.clear') }}
             </UButton>
           </div>
           <UFileUpload
             v-else
             :model-value="coverFile"
             accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
-            :label="uploading ? '上传中…' : '点击或拖拽上传封面'"
-            description="选填，建议 1280×720，jpg / png / webp / gif，不超过 8MB；留空时前台使用视频首帧"
+            :label="uploading ? t('common.uploading') : t('common.uploadCover')"
+            :description="t('work.coverHint')"
             class="w-full min-h-40"
             :disabled="uploading"
             @update:model-value="onCoverFile"
@@ -389,20 +383,20 @@ async function confirm() {
         </UFormField>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="saving || uploading" @click="() => { formOpen = false }">取消</UButton>
-        <UButton type="button" :loading="saving" :disabled="saving || uploading" @click="submit">{{ saving ? '保存中…' : '保存' }}</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="saving || uploading" @click="() => { formOpen = false }">{{ t('common.cancel') }}</UButton>
+        <UButton type="button" :loading="saving" :disabled="saving || uploading" @click="submit">{{ saving ? t('common.saving') : t('common.save') }}</UButton>
       </template>
     </UModal>
 
     <ManageConfirmModal
       v-model:open="confirmOpen"
-      :title="confirmAction === 'delete' ? '确认删除作品' : `确认${confirmItem?.status === 1 ? '下架' : '上架'}作品`"
+      :title="confirmAction === 'delete' ? t('work.confirmDelete') : t('work.confirmStatus', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn') })"
       :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
       :loading="confirming"
       @confirm="confirm"
     >
-      <template v-if="confirmAction === 'delete'">删除作品“{{ confirmItem?.title }}”后无法恢复，确定继续吗？</template>
-      <template v-else>确定要{{ confirmItem?.status === 1 ? '下架' : '上架' }}作品“{{ confirmItem?.title }}”吗？</template>
+      <template v-if="confirmAction === 'delete'">{{ t('work.confirmDeleteBody', { name: confirmItem?.title }) }}</template>
+      <template v-else>{{ t('common.confirmNamed', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn'), name: confirmItem?.title }) }}</template>
     </ManageConfirmModal>
   </div>
 </template>

@@ -27,11 +27,11 @@ const confirmAction = ref<'status' | 'delete'>('status')
 const confirmItem = ref<AdminBanner | null>(null)
 const confirming = ref(false)
 
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '已上架', value: '1' },
-  { label: '已下架', value: '2' },
-]
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.onShelf'), value: '1' },
+  { label: t('common.offShelf'), value: '2' },
+])
 
 const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
@@ -64,7 +64,7 @@ const fetchList = useClientListFetch(async () => {
     if (!parsed) {
       rows.value = []
       total.value = 0
-      notify(raw?.message ?? 'Banner 加载失败', 'error')
+      notify(raw?.message ?? t('banner.loadFail'), 'error')
       return
     }
     rows.value = parsed.items.map(toRow)
@@ -94,7 +94,7 @@ function reset() {
 }
 function openCreate() {
   editing.value = null
-  Object.assign(form, { title: '', subtitle: '', tag: '', cover: '', videoUrl: '', linkUrl: '', cta: '立即观看', sortOrder: rows.value.length })
+  Object.assign(form, { title: '', subtitle: '', tag: '', cover: '', videoUrl: '', linkUrl: '', cta: t('banner.buttonPh'), sortOrder: rows.value.length })
   Object.assign(errors, { title: '', linkUrl: '' })
   formOpen.value = true
 }
@@ -115,9 +115,9 @@ function openEdit(item: AdminBanner) {
   formOpen.value = true
 }
 function validate() {
-  errors.title = form.title.trim() ? '' : '请输入 Banner 标题'
+  errors.title = form.title.trim() ? '' : t('banner.titleRequired')
   const link = form.linkUrl.trim()
-  errors.linkUrl = !link || /^https?:\/\/.+/i.test(link) || link.startsWith('/') ? '' : '请输入 http(s) 链接或以 / 开头的站内路径'
+  errors.linkUrl = !link || /^https?:\/\/.+/i.test(link) || link.startsWith('/') ? '' : t('banner.linkInvalid')
   return !errors.title && !errors.linkUrl
 }
 async function submit() {
@@ -139,10 +139,10 @@ async function submit() {
       ? await adminBannerApi.update(editing.value.id, payload)
       : await adminBannerApi.create({ ...payload, status: 1 })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '保存失败', 'error')
+      notify(raw?.message ?? t('common.saveFail'), 'error')
       return
     }
-    notify(editing.value ? 'Banner 更新成功' : 'Banner 创建成功')
+    notify(editing.value ? t('banner.updated') : t('banner.created'))
     formOpen.value = false
     await fetchList(`f-${Date.now()}`)
   }
@@ -165,10 +165,10 @@ async function confirm() {
       ? await adminBannerApi.remove(item.id)
       : await adminBannerApi.update(item.id, { status: item.status === 1 ? 2 : 1 })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '操作失败', 'error')
+      notify(raw?.message ?? t('common.opFail'), 'error')
       return
     }
-    notify(confirmAction.value === 'delete' ? 'Banner 已删除' : (item.status === 1 ? 'Banner 已下架' : 'Banner 已上架'))
+    notify(confirmAction.value === 'delete' ? t('banner.deleted') : (item.status === 1 ? t('banner.offShelf') : t('banner.onShelf')))
     confirmOpen.value = false
     await fetchList(`c-${Date.now()}`)
   }
@@ -186,20 +186,14 @@ async function confirm() {
       </template>
     </ManagePageHeader>
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-2">
-        <UFormField label="Banner 标题">
-          <UInput v-model="draft.title" placeholder="请输入 Banner 标题" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField label="状态">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('common.title')">
+          <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('banner.titleRequired')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
@@ -212,10 +206,10 @@ async function confirm() {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="min-w-0 w-full px-4 py-3 text-left">Banner 标题</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">跳转链接</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.title') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.jumpLink') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -242,15 +236,15 @@ async function confirm() {
                   <span v-else class="text-xs text-zinc-400">—</span>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '已上架' : '已下架' }}</UBadge>
+                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? t('common.onShelf') : t('common.offShelf') }}</UBadge>
                 </td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div class="flex w-max flex-nowrap gap-1">
-                    <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
+                    <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">{{ t('common.edit') }}</UButton>
                     <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="requestConfirm(item, 'status')">
-                      {{ item.status === 1 ? '下架' : '上架' }}
+                      {{ item.status === 1 ? t('common.takeDown') : t('common.putOn') }}
                     </UButton>
-                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">删除</UButton>
+                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">{{ t('common.delete') }}</UButton>
                   </div>
                 </td>
               </tr>
@@ -261,54 +255,54 @@ async function confirm() {
       </template>
     </div>
 
-    <UModal v-model:open="formOpen" :title="editing ? '编辑 Banner' : '新建 Banner'" :ui="{ content: 'w-[min(96vw,34rem)]', footer: 'justify-end gap-2' }">
+    <UModal v-model:open="formOpen" :title="editing ? t('banner.editTitle') : t('banner.createTitle')" :ui="{ content: 'w-[min(96vw,34rem)]', footer: 'justify-end gap-2' }">
       <template #body>
         <div class="space-y-5">
-          <UFormField label="Banner 标题" required :error="errors.title || undefined">
-            <UInput v-model="form.title" maxlength="40" placeholder="例如：Skill 商店活动" class="w-full" />
+          <UFormField :label="t('common.title')" required :error="errors.title || undefined">
+            <UInput v-model="form.title" maxlength="40" :placeholder="t('banner.titlePh')" class="w-full" />
           </UFormField>
-          <UFormField label="跳转链接" hint="选填，填写后将在新窗口打开" :error="errors.linkUrl || undefined">
+          <UFormField :label="t('common.jumpLink')" :hint="t('banner.linkHint')" :error="errors.linkUrl || undefined">
             <UInput v-model="form.linkUrl" placeholder="https://studio.example.com" class="w-full" />
           </UFormField>
-          <UFormField label="副标题" hint="显示在标题下方，例如「Pixel · 154 喜欢」">
-            <UInput v-model="form.subtitle" maxlength="80" placeholder="例如：Pixel · 154 喜欢" class="w-full" />
+          <UFormField :label="t('common.subtitle')" :hint="t('banner.subtitleHint')">
+            <UInput v-model="form.subtitle" maxlength="80" :placeholder="t('banner.subtitlePh')" class="w-full" />
           </UFormField>
           <div class="grid gap-4 sm:grid-cols-2">
-            <UFormField label="标签">
-              <UInput v-model="form.tag" maxlength="20" placeholder="例如：动画游戏" class="w-full" />
+            <UFormField :label="t('common.tag')">
+              <UInput v-model="form.tag" maxlength="20" :placeholder="t('banner.tagPh')" class="w-full" />
             </UFormField>
-            <UFormField label="按钮文案">
-              <UInput v-model="form.cta" maxlength="20" placeholder="立即观看" class="w-full" />
+            <UFormField :label="t('common.button')">
+              <UInput v-model="form.cta" maxlength="20" :placeholder="t('banner.buttonPh')" class="w-full" />
             </UFormField>
           </div>
-          <UFormField label="封面地址" hint="可填创作台静态路径（/images/...）或 /upload/ 资产地址">
+          <UFormField :label="t('common.coverUrl')" :hint="t('banner.coverHint')">
             <UInput v-model="form.cover" placeholder="/images/showcase/mountain.jpg" class="w-full" />
           </UFormField>
-          <UFormField label="背景视频地址" hint="选填，悬停自动播放">
+          <UFormField :label="t('common.videoUrl')" :hint="t('banner.videoHint')">
             <UInput v-model="form.videoUrl" placeholder="/videos/showcase/scenic.mp4" class="w-full" />
           </UFormField>
-          <UFormField label="排序" hint="数字越大越靠前">
+          <UFormField :label="t('common.sort')" :hint="t('banner.weightHint')">
             <UInput v-model="form.sortOrder" type="number" class="w-full" />
           </UFormField>
-          <UFormField label="预览">
+          <UFormField :label="t('common.preview')">
             <img :src="resolveMediaUrl(form.cover) || DEFAULT_WORK_COVER" alt="" class="h-20 w-48 rounded object-cover">
           </UFormField>
         </div>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="saving" @click="() => { formOpen = false }">取消</UButton>
-        <UButton type="button" :loading="saving" :disabled="saving" @click="submit">{{ saving ? '保存中…' : '保存' }}</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="saving" @click="() => { formOpen = false }">{{ t('common.cancel') }}</UButton>
+        <UButton type="button" :loading="saving" :disabled="saving" @click="submit">{{ saving ? t('common.saving') : t('common.save') }}</UButton>
       </template>
     </UModal>
 
     <ManageConfirmModal
       v-model:open="confirmOpen"
-      :title="confirmAction === 'delete' ? '确认删除 Banner' : `确认${confirmItem?.status === 1 ? '下架' : '上架'} Banner`"
+      :title="confirmAction === 'delete' ? t('banner.confirmDelete') : t('common.confirmStatusNamed', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn'), kind: t('common.kindBanner') })"
       :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
       :loading="confirming"
       @confirm="confirm"
     >
-      确定要{{ confirmAction === 'delete' ? '删除' : (confirmItem?.status === 1 ? '下架' : '上架') }}“{{ confirmItem?.title }}”吗？
+      {{ t('common.confirmNamed', { action: confirmAction === 'delete' ? t('common.delete') : (confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn')), name: confirmItem?.title }) }}
     </ManageConfirmModal>
   </div>
 </template>

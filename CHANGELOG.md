@@ -16,11 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   GitHub Actions CI.
 - `pnpm test` alias for the type check so CI and hooks share one command.
 - Dual licensing: AGPL-3.0 remains the public license; [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) (and [zh-CN](COMMERCIAL-LICENSE.zh-CN.md)) is the commercial template for closed-source / SaaS use.
+- Creation metrics: a “reroll” block (first-pass keep rate, wasted points, per-model keep rate, dissatisfaction reasons).
+- Partners page: “open partner console” with a one-time ticket for approved channel partners.
 
 ### Changed
 
 - "Official site" links, review → player jumps and studio asset URLs read `NUXT_PUBLIC_STUDIO_URL` instead of a hard-coded easytv.ai domain.
 - Single package manager (pnpm, `pnpm-lock.yaml`); removed `yarn.lock` and IDE project files from git. Node 22.5+ required, matching the other EasyTV front ends.
 - README rewritten for operators and contributors (English + 简体中文).
+- Default API / studio / partner URLs are localhost again so images are not baked with production hosts.
+- Cloudflare prerender list includes every console page (team, subject, recharge, withdraw, bill, prompt, creation-metrics).
+- Remaining hardcoded Chinese in list pages, filters, toasts and confirm dialogs now goes through i18n (`zh` / `en` / `zh-TW`).
 
 [Unreleased]: https://github.com/easytv-ai/easytv-manage/commits/master

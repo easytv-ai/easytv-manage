@@ -114,25 +114,34 @@ type GatewayModel = {
 const GATEWAY_TYPES = new Set<PriceRow['type']>(['text', 'image', 'video', 'audio'])
 const GATEWAY_UNITS = new Set<PriceRow['unit']>(['second', 'image', 'call'])
 
-const TYPE_LABEL: Record<string, string> = { text: '文本', image: '图片', video: '视频', audio: '语音' }
-const UNIT_LABEL: Record<string, string> = { second: '每秒', image: '每张', call: '每次' }
-const typeItems = [
-  { label: '文本', value: 'text' },
-  { label: '图片', value: 'image' },
-  { label: '视频', value: 'video' },
-  { label: '语音', value: 'audio' },
-]
-const unitItems = [
-  { label: '每秒（视频）', value: 'second' },
-  { label: '每张（图片）', value: 'image' },
-  { label: '每次（文本 / 语音）', value: 'call' },
-]
-const filterTypeItems = [{ label: '全部类型', value: '__all__' }, ...typeItems]
-const statusItems = [
-  { label: '全部状态', value: '__all__' },
-  { label: '生效', value: '1' },
-  { label: '停用', value: '2' },
-]
+const TYPE_LABEL = computed<Record<string, string>>(() => ({
+  text: t('common.text'),
+  image: t('common.image'),
+  video: t('common.video'),
+  audio: t('common.voice'),
+}))
+const UNIT_LABEL = computed<Record<string, string>>(() => ({
+  second: t('common.unitSecondShort'),
+  image: t('common.unitImageShort'),
+  call: t('common.unitCallShort'),
+}))
+const typeItems = computed(() => [
+  { label: t('common.text'), value: 'text' },
+  { label: t('common.image'), value: 'image' },
+  { label: t('common.video'), value: 'video' },
+  { label: t('common.voice'), value: 'audio' },
+])
+const unitItems = computed(() => [
+  { label: t('common.unitSecond'), value: 'second' },
+  { label: t('common.unitImage'), value: 'image' },
+  { label: t('common.unitCall'), value: 'call' },
+])
+const filterTypeItems = computed(() => [{ label: t('common.allTypes'), value: '__all__' }, ...typeItems.value])
+const statusItems = computed(() => [
+  { label: t('common.allStatus'), value: '__all__' },
+  { label: t('common.active'), value: '1' },
+  { label: t('common.inactive'), value: '2' },
+])
 
 const { loading, listReady, beginListLoad, markListReady } = useListReadyState()
 const fetching = ref(false)
@@ -270,7 +279,7 @@ const unpricedStats = computed(() => {
   const counts: Record<string, number> = { text: 0, image: 0, video: 0, audio: 0 }
   for (const item of unpriced.value)
     counts[item.type] = (counts[item.type] || 0) + 1
-  return typeItems.map(item => ({ ...item, count: counts[item.value] || 0 })).filter(item => item.count > 0)
+  return typeItems.value.map(item => ({ ...item, count: counts[item.value] || 0 })).filter(item => item.count > 0)
 })
 
 const abilityBoard = ref<AdminMediaAction[]>([])
@@ -352,7 +361,7 @@ function requestImport() {
 /** 新建时的模型下拉：未定价的网关模型优先。空模型名不能进 USelect。 */
 const modelOptions = computed(() => unpriced.value
   .filter(m => !!m.model)
-  .map(m => ({ label: `${m.label || m.model}（${TYPE_LABEL[m.type] ?? m.type}）`, value: m.model })))
+  .map(m => ({ label: `${m.label || m.model}（${TYPE_LABEL.value[m.type] ?? m.type}）`, value: m.model })))
 
 function modelPickTip(label?: string) {
   const text = String(label || '')
@@ -492,7 +501,7 @@ const fetchAll = useClientListFetch(async () => {
       if (!parsed) {
         if (!items.length) {
           rows.value = []
-          notify(lastRaw?.message ?? '定价列表加载失败', 'error')
+          notify(lastRaw?.message ?? t('modelPrice.loadFail'), 'error')
           return
         }
         break
@@ -657,9 +666,9 @@ function openEdit(item: PriceRow) {
 }
 
 function validate() {
-  errors.model = form.model.trim() ? '' : '请填写模型标识'
+  errors.model = form.model.trim() ? '' : t('modelPrice.modelRequired')
   const p = Number(form.pointsPerUnit)
-  errors.pointsPerUnit = Number.isInteger(p) && p >= 0 ? '' : '请输入非负整数'
+  errors.pointsPerUnit = Number.isInteger(p) && p >= 0 ? '' : t('modelPrice.promoInvalid')
   // type=number 的输入框可能回传数字而不是字符串，统一转成字符串再判断
   const promoRaw = String(form.promoPointsPerUnit ?? '').trim()
   const promo = promoRaw === '' ? 0 : Number(promoRaw)
@@ -696,10 +705,10 @@ async function submit() {
       ? await adminModelPriceApi.update(editing.value.id, payload)
       : await adminModelPriceApi.create({ ...payload, status: 1 })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '保存失败', 'error')
+      notify(raw?.message ?? t('common.saveFail'), 'error')
       return
     }
-    notify(editing.value ? '定价已更新' : '定价已创建')
+    notify(editing.value ? t('modelPrice.updated') : t('modelPrice.created'))
     formOpen.value = false
     if (!editing.value)
       markGatewayExisting([payload.model!], true)
@@ -726,10 +735,10 @@ async function confirm() {
       ? await adminModelPriceApi.remove(item.id)
       : await adminModelPriceApi.update(item.id, { status: item.status === 1 ? 2 : 1 })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '操作失败', 'error')
+      notify(raw?.message ?? t('common.opFail'), 'error')
       return
     }
-    notify(confirmAction.value === 'delete' ? '定价已删除' : (item.status === 1 ? '定价已停用，该模型暂不可下任务' : '定价已生效'))
+    notify(confirmAction.value === 'delete' ? t('modelPrice.deleted') : (item.status === 1 ? t('modelPrice.disabled') : t('modelPrice.enabled')))
     confirmOpen.value = false
     if (confirmAction.value === 'delete')
       markGatewayExisting([item.model], false)
@@ -929,23 +938,17 @@ async function confirmImport() {
       </div>
     </div>
 
-    <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
-      <div class="grid gap-3 sm:grid-cols-3">
-        <UFormField :label="t('modelPrice.filterKeyword')">
-          <UInput v-model="draft.keyword" :placeholder="t('modelPrice.filterKeywordPh')" class="w-full" @keyup.enter="search" />
-        </UFormField>
-        <UFormField :label="t('modelPrice.filterType')">
+    <ManageFilterBar @search="search" @reset="reset">
+        <ManageFilterField :label="t('modelPrice.filterKeyword')">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('modelPrice.filterKeywordPh')" class="w-full" @keyup.enter="search" />
+        </ManageFilterField>
+        <ManageFilterField :label="t('modelPrice.filterType')">
           <USelect v-model="draft.type" :items="filterTypeItems" value-key="value" class="w-full" />
-        </UFormField>
-        <UFormField :label="t('modelPrice.filterStatus')">
+        </ManageFilterField>
+        <ManageFilterField :label="t('modelPrice.filterStatus')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
-        </UFormField>
-      </div>
-      <div class="mt-4 flex gap-2">
-        <UButton type="button" @click="search">{{ t('common.search') }}</UButton>
-        <UButton type="button" variant="outline" @click="reset">{{ t('common.reset') }}</UButton>
-      </div>
-    </UCard>
+        </ManageFilterField>
+    </ManageFilterBar>
 
     <div class="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div v-if="loading && !listReady" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
