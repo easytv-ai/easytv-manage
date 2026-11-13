@@ -205,8 +205,8 @@ watch(pickSentinel, (el) => {
   pickObserver = new IntersectionObserver((entries) => {
     if (entries[0]?.isIntersecting)
       void loadMorePick()
-  }, { root: pickScrollEl.value, rootMargin: '160px' })
-  pickObserver.observe(el)
+  }, { root: pickScrollEl.value as any, rootMargin: '160px' })
+  pickObserver.observe(el as any)
 })
 onBeforeUnmount(() => pickObserver?.disconnect())
 
