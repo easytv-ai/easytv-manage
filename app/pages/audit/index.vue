@@ -118,7 +118,7 @@ function roleLabel(role: number) {
   return ROLE_LABEL.value[role] || `${t('audit.role')} ${role}`
 }
 
-function paramLabel(key: string) {
+function labelParam(key: string) {
   return paramLabel.value[key] || key
 }
 
@@ -435,7 +435,7 @@ function gotoUser(userId: number) {
                 :key="key"
                 class="flex justify-between gap-4 py-1"
               >
-                <span class="shrink-0 text-zinc-500">{{ paramLabel(key) }}</span>
+                <span class="shrink-0 text-zinc-500">{{ labelParam(key) }}</span>
                 <span class="break-all text-right font-mono text-xs">{{ formatParamValue(value) }}</span>
               </div>
             </dd>
