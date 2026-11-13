@@ -45,7 +45,7 @@ function toRow(item: any): AdminNotice {
   extra.set(item.id, { type: item.type === 'activity' ? 'activity' : 'system', pinned: Boolean(item.pinned) })
   return {
     id: item.id,
-    title: (item.pinned ? '【置顶】' : '') + item.title,
+    title: (item.pinned ? t('notice.pinPrefix') : '') + item.title,
     content: item.content,
     status: item.status === 2 ? 2 : 1,
     createdAt: formatUnix(item.published_at || item.created_at),
@@ -99,10 +99,17 @@ function openCreate() {
   Object.assign(errors, { title: '', content: '' })
   formOpen.value = true
 }
+function stripPinPrefix(title: string) {
+  for (const prefix of [t('notice.pinPrefix'), '【置顶】', '【置頂】', '[Pinned] ']) {
+    if (prefix && title.startsWith(prefix))
+      return title.slice(prefix.length)
+  }
+  return title
+}
 function openEdit(item: AdminNotice) {
   editing.value = item
   const meta = extra.get(item.id)
-  Object.assign(form, { title: item.title.replace(/^【置顶】/, ''), content: item.content, type: meta?.type ?? 'system', pinned: meta?.pinned ?? false })
+  Object.assign(form, { title: stripPinPrefix(item.title), content: item.content, type: meta?.type ?? 'system', pinned: meta?.pinned ?? false })
   Object.assign(errors, { title: '', content: '' })
   formOpen.value = true
 }

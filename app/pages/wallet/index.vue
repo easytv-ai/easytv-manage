@@ -47,13 +47,16 @@ function toRow(item: any): AdminWallet {
   }
 }
 
-const LOG_LABEL: Record<string, string> = {
-  grant: '入账',
-  freeze: '任务预扣',
-  settle: '结算',
-  unfreeze: '任务退回',
-  expire: '到期作废',
-  adjust: '后台调整',
+function logLabel(type: string) {
+  const map: Record<string, string> = {
+    grant: t('wallet.logGrant'),
+    freeze: t('wallet.logFreeze'),
+    settle: t('wallet.logSettle'),
+    unfreeze: t('wallet.logUnfreeze'),
+    expire: t('wallet.logExpire'),
+    adjust: t('wallet.adminOp'),
+  }
+  return map[type] ?? type
 }
 
 function toLog(item: any): AdminPointLog {
@@ -63,9 +66,9 @@ function toLog(item: any): AdminPointLog {
     userId: item.user_id,
     type: amount >= 0 ? 'add' : 'deduct',
     amount: Math.abs(amount),
-    reason: `${LOG_LABEL[item.type] ?? item.type}：${item.reason || ''}`,
+    reason: `${logLabel(item.type)}：${item.reason || ''}`,
     createdAt: formatUnix(item.created_at),
-    operator: item.operator_id ? `管理员 #${item.operator_id}` : '系统',
+    operator: item.operator_id ? t('wallet.operatorAdmin', { id: item.operator_id }) : t('wallet.system'),
   }
 }
 
@@ -143,9 +146,9 @@ async function openLog(item: AdminWallet) {
 }
 
 function validateAdjust() {
-  adjustErrors.amount = toPositiveInt(adjustForm.amount) ? '' : '请输入大于 0 的整数'
+  adjustErrors.amount = toPositiveInt(adjustForm.amount) ? '' : t('wallet.amountRequired')
   if (adjustForm.type === 'deduct' && current.value && toPositiveInt(adjustForm.amount) > current.value.points)
-    adjustErrors.amount = '扣减数量不能大于当前积分'
+    adjustErrors.amount = t('wallet.deductOver')
   return !adjustErrors.amount
 }
 
@@ -163,7 +166,7 @@ async function confirmAdjust() {
     const amount = toPositiveInt(adjustForm.amount)
     const raw = await adminWalletApi.adjust(current.value.userId, adjustForm.type === 'add' ? amount : -amount, adjustForm.reason.trim())
     if (!isOk(raw)) {
-      notify(raw?.message ?? '调整失败', 'error')
+      notify(raw?.message ?? t('wallet.adjustFail'), 'error')
       return
     }
     notify(adjustForm.type === 'add' ? t('wallet.granted') : t('wallet.deducted'))
@@ -182,8 +185,8 @@ async function confirmAdjust() {
     <ManagePageHeader :page-title="t('wallet.title')" :page-description="t('wallet.description')" />
 
     <ManageFilterBar @search="search" @reset="reset">
-        <ManageFilterField label="账号 / 用户名">
-          <UInput icon="i-lucide-search" v-model="draft.keyword" placeholder="请输入账号或用户名" class="w-full" @keyup.enter="search" />
+        <ManageFilterField :label="t('wallet.keywordLabel')">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('wallet.keywordPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -198,13 +201,13 @@ async function confirmAdjust() {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="min-w-0 w-full px-4 py-3 text-left">用户</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">用户 ID</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">手机号</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">会员套餐</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">到期时间</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">积分余额</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.user') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.userId') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('wallet.mobile') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('wallet.plan') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('wallet.expire') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('wallet.balance') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -214,14 +217,14 @@ async function confirmAdjust() {
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs">{{ item.userId }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.mobile || '—' }}</td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.planName || '未开通' }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.planName || t('wallet.noMember') }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 text-zinc-500">{{ item.expireAt || '—' }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 font-medium">{{ item.points }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div class="flex w-max flex-nowrap gap-1">
-                    <UButton type="button" size="sm" variant="soft" @click="openAdjust(item)">调整积分</UButton>
-                    <UButton type="button" size="sm" variant="soft" @click="openLog(item)">流水</UButton>
-                    <UButton type="button" size="sm" variant="soft" @click="() => { void gotoOrder(item.userId) }">订单</UButton>
+                    <UButton type="button" size="sm" variant="soft" @click="openAdjust(item)">{{ t('wallet.adjust') }}</UButton>
+                    <UButton type="button" size="sm" variant="soft" @click="openLog(item)">{{ t('wallet.log') }}</UButton>
+                    <UButton type="button" size="sm" variant="soft" @click="() => { void gotoOrder(item.userId) }">{{ t('wallet.orders') }}</UButton>
                   </div>
                 </td>
               </tr>
@@ -232,60 +235,60 @@ async function confirmAdjust() {
       </template>
     </div>
 
-    <UModal v-model:open="adjustOpen" title="调整积分" :ui="{ content: 'w-[min(96vw,32rem)]', footer: 'justify-end gap-2' }">
+    <UModal v-model:open="adjustOpen" :title="t('wallet.adjust')" :ui="{ content: 'w-[min(96vw,32rem)]', footer: 'justify-end gap-2' }">
       <template #body>
         <p class="mb-4 text-sm text-zinc-500">
-          用户 {{ current?.userName }}，当前积分 {{ current?.points ?? 0 }}
+          {{ t('wallet.adjustHint', { name: current?.userName, n: current?.points ?? 0 }) }}
         </p>
         <div class="space-y-4">
-          <UFormField label="调整类型" required>
+          <UFormField :label="t('wallet.adjustType')" required>
             <USelect v-model="adjustForm.type" :items="typeItems" value-key="value" class="w-full" />
           </UFormField>
-          <UFormField label="积分数量" required :error="adjustErrors.amount || undefined">
-            <UInput v-model="adjustForm.amount" type="number" min="1" placeholder="请输入整数" class="w-full" />
+          <UFormField :label="t('wallet.amount')" required :error="adjustErrors.amount || undefined">
+            <UInput v-model="adjustForm.amount" type="number" min="1" :placeholder="t('wallet.amountPh')" class="w-full" />
           </UFormField>
-          <UFormField label="调整原因" hint="选填，不填则记为后台调整">
-            <UTextarea v-model="adjustForm.reason" :rows="3" maxlength="120" placeholder="例如：活动补发、生成失败补偿" class="w-full" />
+          <UFormField :label="t('wallet.reason')" :hint="t('wallet.reasonHintAlt')">
+            <UTextarea v-model="adjustForm.reason" :rows="3" maxlength="120" :placeholder="t('wallet.reasonPh')" class="w-full" />
           </UFormField>
         </div>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="adjustSaving" @click="() => { adjustOpen = false }">取消</UButton>
-        <UButton type="button" :disabled="adjustSaving" @click="requestAdjust">下一步</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="adjustSaving" @click="() => { adjustOpen = false }">{{ t('common.cancel') }}</UButton>
+        <UButton type="button" :disabled="adjustSaving" @click="requestAdjust">{{ t('common.next') }}</UButton>
       </template>
     </UModal>
 
     <ManageConfirmModal
       v-model:open="confirmOpen"
-      title="确认调整积分"
+      :title="t('wallet.confirmAdjust')"
       :tone="adjustForm.type === 'deduct' ? 'error' : 'primary'"
       :icon="adjustForm.type === 'deduct' ? 'i-lucide-circle-minus' : 'i-lucide-circle-plus'"
       :loading="adjustSaving"
       @confirm="confirmAdjust"
     >
-      确定要为“{{ current?.userName }}”{{ adjustForm.type === 'add' ? '补发' : '扣减' }}
-      <span class="font-semibold tabular-nums text-highlighted">{{ adjustForm.amount }}</span>
-      积分吗？该操作会写入流水。
+      {{ adjustForm.type === 'add'
+        ? t('wallet.confirmGrantBody', { name: current?.userName, n: adjustForm.amount })
+        : t('wallet.confirmDeductBody', { name: current?.userName, n: adjustForm.amount }) }}
     </ManageConfirmModal>
 
-    <UModal v-model:open="logOpen" title="积分流水" :ui="{ content: 'w-[min(96vw,40rem)]' }">
+    <UModal v-model:open="logOpen" :title="t('wallet.logTitle')" :ui="{ content: 'w-[min(96vw,40rem)]' }">
       <template #body>
-        <UEmpty v-if="!currentLogs.length" icon="i-lucide-list" title="暂无流水" description="该用户还没有积分变动记录。" />
+        <UEmpty v-if="!currentLogs.length" icon="i-lucide-list" :title="t('wallet.logEmptyTitle')" :description="t('wallet.logEmpty')" />
         <div v-else class="overflow-x-auto">
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="text-left text-xs text-zinc-500">
               <tr>
-                <th class="w-[1%] whitespace-nowrap py-2">时间</th>
-                <th class="w-[1%] whitespace-nowrap py-2">类型</th>
-                <th class="w-[1%] whitespace-nowrap py-2">数量</th>
-                <th class="min-w-0 w-full py-2 text-left">原因</th>
-                <th class="w-[1%] whitespace-nowrap py-2">操作人</th>
+                <th class="w-[1%] whitespace-nowrap py-2">{{ t('common.time') }}</th>
+                <th class="w-[1%] whitespace-nowrap py-2">{{ t('common.type') }}</th>
+                <th class="w-[1%] whitespace-nowrap py-2">{{ t('wallet.qty') }}</th>
+                <th class="min-w-0 w-full py-2 text-left">{{ t('wallet.reasonCol') }}</th>
+                <th class="w-[1%] whitespace-nowrap py-2">{{ t('wallet.operatorCol') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in currentLogs" :key="item.id">
                 <td class="w-[1%] whitespace-nowrap py-2 text-zinc-500">{{ item.createdAt }}</td>
-                <td class="w-[1%] whitespace-nowrap py-2">{{ item.type === 'add' ? '补发' : '扣减' }}</td>
+                <td class="w-[1%] whitespace-nowrap py-2">{{ item.type === 'add' ? t('wallet.grant') : t('wallet.deduct') }}</td>
                 <td class="w-[1%] whitespace-nowrap py-2">{{ item.type === 'add' ? '+' : '-' }}{{ item.amount }}</td>
                 <td class="max-w-0 w-full py-2">
                   <div class="truncate" :title="item.reason">{{ item.reason }}</div>

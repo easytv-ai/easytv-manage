@@ -45,24 +45,24 @@ const ROLE_LABEL = computed<Record<number, string>>(() => ({
   10: t('common.admin'),
   100: t('common.superAdmin'),
 }))
-const PARAM_LABEL: Record<string, string> = {
-  email: '注册邮箱',
-  mobile: '手机号',
-  points_earned: '签到积分',
-  amount: '金额',
-  trade_no: '订单号',
-  payment_method: '支付方式',
-  task_id: '任务 ID',
-  model: '模型',
-  type: '任务类型',
-  provider: '供应商',
-  task_no: '任务编号',
-  cost_points: '消耗积分',
-  id: '目标 ID',
-  key: '设置项',
-  method: 'HTTP 方法',
-  route: '路由',
-}
+const paramLabel = computed<Record<string, string>>(() => ({
+  email: t('audit.paramEmail'),
+  mobile: t('audit.actSms'),
+  points_earned: t('audit.paramPoints'),
+  amount: t('common.amount'),
+  trade_no: t('audit.paramTrade'),
+  payment_method: t('audit.actPayMethod'),
+  task_id: t('audit.paramTask'),
+  model: t('common.model'),
+  type: t('audit.paramType'),
+  provider: t('audit.paramProvider'),
+  task_no: t('audit.paramTaskNo'),
+  cost_points: t('audit.paramCost'),
+  id: t('audit.paramTarget'),
+  key: t('audit.paramSetting'),
+  method: t('audit.paramMethod'),
+  route: t('audit.paramRoute'),
+}))
 
 const DRAFT_DEFAULT = {
   username: '',
@@ -119,7 +119,7 @@ function roleLabel(role: number) {
 }
 
 function paramLabel(key: string) {
-  return PARAM_LABEL[key] || key
+  return paramLabel.value[key] || key
 }
 
 function formatParamValue(value: unknown) {
@@ -277,25 +277,25 @@ function gotoUser(userId: number) {
     <ManagePageHeader :page-title="t('audit.title')" :page-description="t('audit.description')" />
 
     <ManageFilterBar @search="search" @reset="reset">
-        <ManageFilterField label="用户名">
-          <UInput icon="i-lucide-search" v-model="draft.username" placeholder="请输入用户名" class="w-full" @keyup.enter="search" />
+        <ManageFilterField :label="t('common.username')">
+          <UInput icon="i-lucide-search" v-model="draft.username" :placeholder="t('audit.usernameEnter')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField label="用户 ID">
-          <UInput v-model="draft.userId" placeholder="请输入用户 ID" class="w-full" @keyup.enter="search" />
+        <ManageFilterField :label="t('common.userId')">
+          <UInput v-model="draft.userId" :placeholder="t('audit.userEnter')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField label="日志分类">
+        <ManageFilterField :label="t('audit.logCategory')">
           <USelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField label="操作标识">
-          <UInput v-model="draft.action" placeholder="如 user.login" class="w-full font-mono" @keyup.enter="search" />
+        <ManageFilterField :label="t('audit.actionId')">
+          <UInput v-model="draft.action" :placeholder="t('audit.actionIdPh')" class="w-full font-mono" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField label="开始时间">
+        <ManageFilterField :label="t('common.startTime')">
           <UInput v-model="draft.startAt" type="datetime-local" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField label="结束时间">
+        <ManageFilterField :label="t('common.endTime')">
           <UInput v-model="draft.endAt" type="datetime-local" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField label="结果">
+        <ManageFilterField :label="t('common.result')">
           <USelect v-model="draft.success" :items="successItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
@@ -311,14 +311,14 @@ function gotoUser(userId: number) {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">操作时间</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">用户名</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">日志分类</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">操作标识</th>
-                <th class="min-w-0 w-full px-4 py-3 text-left">操作描述</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">结果</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('audit.colTime') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.username') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('audit.logCategory') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('audit.actionId') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('audit.colDesc') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.result') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">IP</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -344,7 +344,7 @@ function gotoUser(userId: number) {
                   <div class="truncate" :title="item.content">{{ item.content || '—' }}</div>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <UBadge :color="item.success ? 'success' : 'error'" variant="subtle">{{ item.success ? '成功' : '失败' }}</UBadge>
+                  <UBadge :color="item.success ? 'success' : 'error'" variant="subtle">{{ item.success ? t('common.success') : t('common.fail') }}</UBadge>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 font-mono text-xs text-zinc-500">{{ item.ip || '—' }}</td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
@@ -360,15 +360,15 @@ function gotoUser(userId: number) {
       </template>
     </div>
 
-    <UModal v-model:open="detailOpen" title="使用日志详情" :ui="{ content: 'w-[min(96vw,40rem)]', footer: 'justify-end gap-2' }">
+    <UModal v-model:open="detailOpen" :title="t('audit.detailTitle')" :ui="{ content: 'w-[min(96vw,40rem)]', footer: 'justify-end gap-2' }">
       <template #body>
         <dl v-if="detailItem" class="grid gap-3 text-sm">
           <div class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">操作时间</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('audit.colTime') }}</dt>
             <dd>{{ detailItem.createdAt || '—' }}</dd>
           </div>
           <div class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">用户名</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('common.username') }}</dt>
             <dd class="text-right">
               <UButton
                 v-if="detailItem.userId"
@@ -384,27 +384,27 @@ function gotoUser(userId: number) {
             </dd>
           </div>
           <div class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">角色</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('audit.role') }}</dt>
             <dd>{{ roleLabel(detailItem.actorRole) }}</dd>
           </div>
           <div class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">日志分类</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('audit.logCategory') }}</dt>
             <dd>{{ categoryLabel(detailItem.category) }}</dd>
           </div>
           <div class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">操作标识</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('audit.actionId') }}</dt>
             <dd class="font-mono text-xs">{{ detailItem.action || '—' }}</dd>
           </div>
           <div class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">操作描述</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('audit.colDesc') }}</dt>
             <dd class="text-right">{{ detailItem.content || '—' }}</dd>
           </div>
           <div class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">结果</dt>
-            <dd>{{ detailItem.success ? '成功' : '失败' }}{{ detailItem.status ? `（${detailItem.status}）` : '' }}</dd>
+            <dt class="shrink-0 text-zinc-500">{{ t('common.result') }}</dt>
+            <dd>{{ detailItem.success ? t('common.success') : t('common.fail') }}{{ detailItem.status ? `（${detailItem.status}）` : '' }}</dd>
           </div>
           <div class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">请求</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('audit.request') }}</dt>
             <dd class="text-right font-mono text-xs">{{ [detailItem.method, detailItem.route].filter(Boolean).join(' ') || '—' }}</dd>
           </div>
           <div class="flex justify-between gap-4">
@@ -416,19 +416,19 @@ function gotoUser(userId: number) {
             <dd class="break-all rounded-lg bg-zinc-50 p-3 font-mono text-xs dark:bg-zinc-900">{{ detailItem.userAgent }}</dd>
           </div>
           <div v-if="detailItem.eventId" class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">事件 ID</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('audit.eventId') }}</dt>
             <dd class="break-all text-right font-mono text-xs">{{ detailItem.eventId }}</dd>
           </div>
           <div v-if="detailItem.requestId" class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">请求 ID</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('audit.requestId') }}</dt>
             <dd class="break-all text-right font-mono text-xs">{{ detailItem.requestId }}</dd>
           </div>
           <div v-if="detailItem.device" class="flex justify-between gap-4">
-            <dt class="shrink-0 text-zinc-500">设备</dt>
+            <dt class="shrink-0 text-zinc-500">{{ t('common.device') }}</dt>
             <dd>{{ detailItem.device }}</dd>
           </div>
           <div>
-            <dt class="mb-1 text-zinc-500">操作参数</dt>
+            <dt class="mb-1 text-zinc-500">{{ t('audit.params') }}</dt>
             <dd v-if="paramEntries(detailItem.params).length" class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
               <div
                 v-for="[key, value] in paramEntries(detailItem.params)"
@@ -439,16 +439,16 @@ function gotoUser(userId: number) {
                 <span class="break-all text-right font-mono text-xs">{{ formatParamValue(value) }}</span>
               </div>
             </dd>
-            <dd v-else class="text-zinc-400">无参数</dd>
+            <dd v-else class="text-zinc-400">{{ t('audit.noParams') }}</dd>
           </div>
           <div v-if="detailItem.payload != null">
-            <dt class="mb-1 text-zinc-500">附加数据</dt>
+            <dt class="mb-1 text-zinc-500">{{ t('audit.extraData') }}</dt>
             <dd class="whitespace-pre-wrap break-all rounded-lg bg-zinc-50 p-3 font-mono text-xs dark:bg-zinc-900">{{ formatParamValue(detailItem.payload) }}</dd>
           </div>
         </dl>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" @click="() => { detailOpen = false }">关闭</UButton>
+        <UButton type="button" color="neutral" variant="outline" @click="() => { detailOpen = false }">{{ t('common.close') }}</UButton>
       </template>
     </UModal>
   </div>

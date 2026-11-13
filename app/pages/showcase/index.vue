@@ -233,10 +233,10 @@ async function pick(item: AdminShowcase) {
   try {
     const raw = await adminWorkApi.update(item.id, { featured: 1, sort_order: total.value + 1 })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '操作失败', 'error')
+      notify(raw?.message ?? t('common.opFail'), 'error')
       return
     }
-    notify(`「${item.title}」已加入精选`, 'success')
+    notify(t('showcase.addedNamed', { name: item.title }), 'success')
     pickedIds.value.push(item.id)
     pickTotal.value = Math.max(0, pickTotal.value - 1)
     await fetchList(`p-${Date.now()}`)
@@ -255,7 +255,7 @@ function openEdit(item: AdminShowcase) {
 }
 
 function validate() {
-  errors.title = form.title.trim() ? '' : '请输入成片标题'
+  errors.title = form.title.trim() ? '' : t('showcase.filterTitlePh')
   return !errors.title
 }
 
@@ -271,7 +271,7 @@ async function submit() {
       sort_order: Number(form.sortOrder) || 0,
     })
     if (!isOk(raw)) {
-      notify(raw?.message ?? '保存失败', 'error')
+      notify(raw?.message ?? t('common.saveFail'), 'error')
       return
     }
     notify(t('showcase.updated'))
@@ -299,7 +299,7 @@ async function confirm() {
       ? await adminWorkApi.update(item.id, { featured: 0 })
       : await adminWorkApi.setStatus(item.id, item.status === 1 ? 2 : 1)
     if (!isOk(raw)) {
-      notify(raw?.message ?? '操作失败', 'error')
+      notify(raw?.message ?? t('common.opFail'), 'error')
       return
     }
     notify(confirmAction.value === 'delete' ? t('showcase.removed') : (item.status === 1 ? t('showcase.offShelf') : t('showcase.onShelf')))
@@ -321,13 +321,13 @@ async function confirm() {
     </ManagePageHeader>
 
     <ManageFilterBar @search="search" @reset="reset">
-        <ManageFilterField label="成片标题">
-          <UInput icon="i-lucide-search" v-model="draft.title" placeholder="请输入成片标题" class="w-full" @keyup.enter="search" />
+        <ManageFilterField :label="t('showcase.colTitle')">
+          <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('showcase.filterTitlePh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField label="分类">
+        <ManageFilterField :label="t('common.category')">
           <USelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField label="状态">
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
@@ -343,13 +343,13 @@ async function confirm() {
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">排序</th>
-                <th class="min-w-0 w-full px-4 py-3 text-left">成片标题</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">作者名称</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">分类</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">点赞数</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.sort') }}</th>
+                <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('showcase.colTitle') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('showcase.authorName') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.category') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('showcase.colLikes') }}</th>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+                <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -367,15 +367,15 @@ async function confirm() {
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.category || '—' }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.likes.toLocaleString() }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '已上架' : '已下架' }}</UBadge>
+                  <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? t('common.onShelf') : t('common.offShelf') }}</UBadge>
                 </td>
                 <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                   <div class="flex w-max flex-nowrap gap-1">
-                    <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
+                    <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">{{ t('common.edit') }}</UButton>
                     <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="requestConfirm(item, 'status')">
-                      {{ item.status === 1 ? '下架' : '上架' }}
+                      {{ item.status === 1 ? t('common.takeDown') : t('common.putOn') }}
                     </UButton>
-                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">移出精选</UButton>
+                    <UButton type="button" size="sm" variant="soft" color="error" @click="requestConfirm(item, 'delete')">{{ t('showcase.removeFeatured') }}</UButton>
                   </div>
                 </td>
               </tr>
@@ -388,8 +388,8 @@ async function confirm() {
 
     <UModal
       v-model:open="pickOpen"
-      title="加入精选"
-      description="从已发布的作品中挑选，点击卡片即可加入首页精选成片"
+      :title="t('showcase.pickTitle')"
+      :description="t('showcase.pickClickHint')"
       :ui="{ content: 'w-[min(96vw,58rem)]', body: 'flex min-h-0 flex-col p-0 sm:p-0', footer: 'justify-between gap-2' }"
     >
       <template #body>
@@ -397,17 +397,17 @@ async function confirm() {
           <UInput
             v-model="pickKeyword"
             icon="i-lucide-search"
-            placeholder="按标题搜索已发布作品，回车搜索"
+            :placeholder="t('showcase.searchEnter')"
             class="min-w-0 flex-1"
             :ui="{ trailing: 'pe-1' }"
             @keyup.enter="loadPick"
           >
             <template v-if="pickKeyword" #trailing>
-              <UButton type="button" color="neutral" variant="link" size="sm" icon="i-lucide-x" aria-label="清除关键词" @click="clearPickKeyword" />
+              <UButton type="button" color="neutral" variant="link" size="sm" icon="i-lucide-x" :aria-label="t('showcase.clearKeyword')" @click="clearPickKeyword" />
             </template>
           </UInput>
           <USelect v-model="pickCategory" :items="categoryItems" value-key="value" class="w-36" @update:model-value="loadPick" />
-          <UButton type="button" icon="i-lucide-search" :loading="pickLoading" @click="loadPick">搜索</UButton>
+          <UButton type="button" icon="i-lucide-search" :loading="pickLoading" @click="loadPick">{{ t('common.search') }}</UButton>
         </div>
 
         <div ref="pickScrollEl" class="h-[min(62vh,38rem)] overflow-y-auto px-5 py-4 sm:px-6">
@@ -424,8 +424,8 @@ async function confirm() {
           <UEmpty
             v-else-if="pickRows.length === 0"
             icon="i-lucide-film"
-            :title="pickKeyword || pickCategory !== '__all__' ? '没有符合条件的作品' : '没有可加入的作品'"
-            :description="pickKeyword || pickCategory !== '__all__' ? '换个关键词或分类试试。' : '已发布且未精选的作品会显示在这里。'"
+            :title="pickKeyword || pickCategory !== '__all__' ? t('showcase.noMatchWork') : t('showcase.noPickWork')"
+            :description="pickKeyword || pickCategory !== '__all__' ? t('showcase.tryFilter') : t('showcase.emptyPublished')"
             class="h-full"
           />
 
@@ -448,14 +448,14 @@ async function confirm() {
                   </span>
 
                   <div v-if="picking === item.id" class="absolute inset-0 flex items-center justify-center bg-zinc-950/50 text-sm text-white">
-                    <UIcon name="i-lucide-loader-circle" class="mr-1.5 size-4 animate-spin" />加入中…
+                    <UIcon name="i-lucide-loader-circle" class="mr-1.5 size-4 animate-spin" />{{ t('showcase.adding') }}
                   </div>
                   <div v-else-if="isPicked(item)" class="absolute inset-0 flex items-center justify-center bg-success/75 text-sm font-medium text-white">
-                    <UIcon name="i-lucide-circle-check" class="mr-1.5 size-5" />已加入精选
+                    <UIcon name="i-lucide-circle-check" class="mr-1.5 size-5" />{{ t('showcase.addedBadge') }}
                   </div>
                   <div v-else class="absolute inset-0 flex items-center justify-center bg-zinc-950/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                     <span class="flex items-center gap-1 rounded-full bg-primary px-3.5 py-1.5 text-sm font-medium text-white shadow-lg">
-                      <UIcon name="i-lucide-plus" class="size-4" />加入精选
+                      <UIcon name="i-lucide-plus" class="size-4" />{{ t('showcase.joinFeatured') }}
                     </span>
                   </div>
                 </div>
@@ -468,61 +468,61 @@ async function confirm() {
 
             <div ref="pickSentinel" class="flex h-12 items-center justify-center text-xs text-muted">
               <template v-if="pickLoadingMore">
-                <UIcon name="i-lucide-loader-circle" class="mr-1.5 size-4 animate-spin" />加载中…
+                <UIcon name="i-lucide-loader-circle" class="mr-1.5 size-4 animate-spin" />{{ t('common.loading') }}
               </template>
-              <template v-else-if="!pickHasMore">没有更多数据了</template>
+              <template v-else-if="!pickHasMore">{{ t('showcase.noMore') }}</template>
             </div>
           </template>
         </div>
       </template>
       <template #footer>
         <p class="text-sm text-muted">
-          <template v-if="pickedIds.length">本次已加入 <span class="font-semibold text-success">{{ pickedIds.length }}</span> 个作品</template>
-          <template v-else>还可加入 <span class="font-medium tabular-nums text-highlighted">{{ pickTotal }}</span> 个作品</template>
+          <template v-if="pickedIds.length">{{ t('showcase.pickedNow', { n: pickedIds.length }) }}</template>
+          <template v-else>{{ t('showcase.remainPick', { n: pickTotal }) }}</template>
         </p>
         <UButton type="button" :color="pickedIds.length ? 'primary' : 'neutral'" :variant="pickedIds.length ? 'solid' : 'outline'" @click="() => { pickOpen = false }">
-          {{ pickedIds.length ? '完成' : '关闭' }}
+          {{ pickedIds.length ? t('showcase.done') : t('common.close') }}
         </UButton>
       </template>
     </UModal>
 
-    <UModal v-model:open="formOpen" title="编辑成片" :ui="{ content: 'w-[min(96vw,34rem)]', footer: 'justify-end gap-2' }">
+    <UModal v-model:open="formOpen" :title="t('showcase.editTitle')" :ui="{ content: 'w-[min(96vw,34rem)]', footer: 'justify-end gap-2' }">
       <template #body>
         <div class="space-y-5">
-          <UFormField label="成片标题" required :error="errors.title || undefined">
-            <UInput v-model="form.title" maxlength="40" placeholder="例如：星空山巅" class="w-full" />
+          <UFormField :label="t('showcase.colTitle')" required :error="errors.title || undefined">
+            <UInput v-model="form.title" maxlength="40" :placeholder="t('showcase.titlePh')" class="w-full" />
           </UFormField>
-          <UFormField label="作者名称">
+          <UFormField :label="t('showcase.authorName')">
             <UInput :model-value="editing?.authorName ?? ''" disabled class="w-full" />
           </UFormField>
-          <UFormField label="分类">
-            <USelect v-model="form.category" :items="formCategoryItems" value-key="value" placeholder="请选择分类" class="w-full" />
+          <UFormField :label="t('common.category')">
+            <USelect v-model="form.category" :items="formCategoryItems" value-key="value" :placeholder="t('showcase.categoryPick')" class="w-full" />
           </UFormField>
-          <UFormField label="封面地址" hint="选填，参考尺寸 1280×720；留空时前台使用视频首帧">
-            <UInput v-model="form.cover" placeholder="https://… 或 /upload/…" class="w-full" />
+          <UFormField :label="t('showcase.coverAddress')" :hint="t('showcase.coverHintEmpty')">
+            <UInput v-model="form.cover" placeholder="https://… /upload/…" class="w-full" />
             <img :src="resolveMediaUrl(form.cover) || DEFAULT_WORK_COVER" alt="" class="mt-2 h-24 w-40 rounded object-cover">
           </UFormField>
-          <UFormField label="排序权重" hint="数值越小越靠前">
+          <UFormField :label="t('showcase.colWeight')" :hint="t('showcase.weightHint')">
             <UInputNumber v-model="form.sortOrder" :min="0" class="w-full" />
           </UFormField>
         </div>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="saving" @click="() => { formOpen = false }">取消</UButton>
-        <UButton type="button" :loading="saving" :disabled="saving" @click="submit">{{ saving ? '保存中…' : '保存' }}</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="saving" @click="() => { formOpen = false }">{{ t('common.cancel') }}</UButton>
+        <UButton type="button" :loading="saving" :disabled="saving" @click="submit">{{ saving ? t('common.saving') : t('common.save') }}</UButton>
       </template>
     </UModal>
 
     <ManageConfirmModal
       v-model:open="confirmOpen"
-      :title="confirmAction === 'delete' ? '确认移出精选' : `确认${confirmItem?.status === 1 ? '下架' : '上架'}成片`"
+      :title="confirmAction === 'delete' ? t('showcase.confirmRemove') : t('showcase.confirmStatus', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn') })"
       :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
       :icon="confirmAction === 'delete' ? 'i-lucide-star-off' : ''"
       :loading="confirming"
       @confirm="confirm"
     >
-      <template v-if="confirmAction === 'delete'">确定把“{{ confirmItem?.title }}”移出精选吗？作品本身不会被删除或下架。</template>
-      <template v-else>确定要{{ confirmItem?.status === 1 ? '下架' : '上架' }}“{{ confirmItem?.title }}”吗？{{ confirmItem?.status === 1 ? '下架后前台不再展示。' : '' }}</template>
+      <template v-if="confirmAction === 'delete'">{{ t('showcase.removeAsk', { name: confirmItem?.title }) }}</template>
+      <template v-else>{{ t('showcase.statusAsk', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn'), name: confirmItem?.title, extra: confirmItem?.status === 1 ? t('showcase.confirmWarn') : '' }) }}</template>
     </ManageConfirmModal>
   </div>
 </template>

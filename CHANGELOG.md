@@ -26,6 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README rewritten for operators and contributors (English + 简体中文).
 - Default API / studio / partner URLs are localhost again so images are not baked with production hosts.
 - Cloudflare prerender list includes every console page (team, subject, recharge, withdraw, bill, prompt, creation-metrics).
-- Remaining hardcoded Chinese in list pages, filters, toasts and confirm dialogs now goes through i18n (`zh` / `en` / `zh-TW`).
+- List filters, toasts and confirm dialogs go through i18n (`zh` / `en` / `zh-TW`), including plan, wallet, showcase, audit, prompt and notice.
 
 [Unreleased]: https://github.com/easytv-ai/easytv-manage/commits/master

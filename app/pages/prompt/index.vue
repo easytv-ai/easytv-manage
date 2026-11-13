@@ -209,10 +209,10 @@ function listCover(item: PromptRow) {
 
 const TAG_DELIMITER = /[、,，]/
 
-const imageFields: { field: ImageField, label: string, uploadLabel: string, description: string }[] = [
-  { field: 'coverUrl', label: '封面图', uploadLabel: '点击或拖拽上传封面', description: '列表卡片展示，缺省用默认图' },
-  { field: 'resultUrl', label: '效果图', uploadLabel: '点击或拖拽上传效果图', description: '详情页优先展示，缺省用封面' },
-]
+const imageFields = computed(() => [
+  { field: 'coverUrl' as ImageField, label: t('prompt.coverField'), uploadLabel: t('prompt.coverUpload'), description: t('prompt.coverDescAlt') },
+  { field: 'resultUrl' as ImageField, label: t('prompt.effectField'), uploadLabel: t('prompt.effectUpload'), description: t('prompt.effectDescAlt') },
+])
 
 const previewCover = computed(() => resolveMediaUrl(form.coverUrl.trim() || form.resultUrl.trim()) || DEFAULT_WORK_COVER)
 
@@ -288,7 +288,7 @@ async function save() {
       ? await adminPromptApi.update(editing.value.id, payload)
       : await adminPromptApi.create(payload)
     if (!isOk(raw)) {
-      notify(raw?.message ?? '保存失败', 'error')
+      notify(raw?.message ?? t('common.saveFail'), 'error')
       return
     }
     notify(editing.value ? t('prompt.updated') : t('prompt.created'), 'success')
@@ -304,7 +304,7 @@ async function toggleStatus(item: PromptRow) {
   const next = item.status === 1 ? 2 : 1
   const raw = await adminPromptApi.update(item.id, { status: next })
   if (!isOk(raw)) {
-    notify(raw?.message ?? '操作失败', 'error')
+    notify(raw?.message ?? t('common.opFail'), 'error')
     return
   }
   item.status = next
@@ -327,7 +327,7 @@ async function doDelete() {
   try {
     const raw = await adminPromptApi.remove(item.id)
     if (!isOk(raw)) {
-      notify(raw?.message ?? '删除失败', 'error')
+      notify(raw?.message ?? t('common.deleteFail'), 'error')
       return
     }
     notify(t('common.deletedOk'), 'success')
@@ -348,10 +348,10 @@ const sourceErrors = reactive({ name: '', url: '' })
 const sourceSaving = ref(false)
 const syncingId = ref(0)
 
-const formatItems = [
-  { label: 'Markdown（按标题切段）', value: 'markdown' },
-  { label: 'JSON（对象数组）', value: 'json' },
-]
+const formatItems = computed(() => [
+  { label: t('prompt.formatMarkdown'), value: 'markdown' as const },
+  { label: t('prompt.formatJson'), value: 'json' as const },
+])
 
 function openSourceCreate() {
   editingSource.value = null
@@ -372,7 +372,7 @@ async function saveSource() {
     return
   sourceErrors.name = sourceForm.name.trim() ? '' : t('prompt.sourceNameRequired')
   const url = sourceForm.url.trim()
-  sourceErrors.url = /^https?:\/\//.test(url) ? '' : '请输入 http(s) 开头的抓取地址'
+  sourceErrors.url = /^https?:\/\//.test(url) ? '' : t('prompt.urlInvalid')
   if (sourceErrors.name || sourceErrors.url)
     return
   sourceSaving.value = true
@@ -388,7 +388,7 @@ async function saveSource() {
       ? await adminPromptSourceApi.update(editingSource.value.id, payload)
       : await adminPromptSourceApi.create(payload)
     if (!isOk(raw)) {
-      notify(raw?.message ?? '保存失败', 'error')
+      notify(raw?.message ?? t('common.saveFail'), 'error')
       return
     }
     notify(editingSource.value ? t('prompt.sourceUpdated') : t('prompt.sourceCreated'), 'success')
@@ -412,7 +412,7 @@ async function syncSource(item: SourceRow) {
       return
     }
     const data = raw.data ?? {}
-    notify(`同步完成：解析 ${data.total ?? 0} 条，新增 ${data.created ?? 0} 条`, 'success')
+    notify(t('prompt.syncDetail', { total: data.total ?? 0, created: data.created ?? 0 }), 'success')
     void fetchSources()
     void fetchList()
   }
@@ -424,7 +424,7 @@ async function syncSource(item: SourceRow) {
 async function removeSource(item: SourceRow) {
   const raw = await adminPromptSourceApi.remove(item.id)
   if (!isOk(raw)) {
-    notify(raw?.message ?? '删除失败', 'error')
+    notify(raw?.message ?? t('common.deleteFail'), 'error')
     return
   }
   notify(t('prompt.sourceDeleted'), 'success')
@@ -444,30 +444,30 @@ async function removeSource(item: SourceRow) {
     <UCard variant="outline" class="mb-4 dark:bg-zinc-950">
       <div class="flex items-center justify-between gap-3">
         <div class="min-w-0">
-          <p class="text-sm font-medium">远程源</p>
+          <p class="text-sm font-medium">{{ t('prompt.remote') }}</p>
           <p class="mt-0.5 text-xs text-zinc-500">
-            每 12 小时自动同步一轮。老条目只更新正文，后台改过的标题、封面、标签不会被冲掉。
+            {{ t('prompt.remoteHintAlt') }}
           </p>
         </div>
         <div class="flex shrink-0 gap-2">
           <UButton type="button" size="sm" variant="outline" @click="() => { sourcePanelOpen = !sourcePanelOpen }">
-            {{ sourcePanelOpen ? '收起' : `管理来源（${sources.length}）` }}
+            {{ sourcePanelOpen ? t('common.collapseFilters') : t('prompt.manageSources', { n: sources.length }) }}
           </UButton>
-          <UButton v-if="sourcePanelOpen" type="button" size="sm" icon="i-lucide-plus" @click="openSourceCreate">新增来源</UButton>
+          <UButton v-if="sourcePanelOpen" type="button" size="sm" icon="i-lucide-plus" @click="openSourceCreate">{{ t('prompt.addSourceBtn') }}</UButton>
         </div>
       </div>
 
       <div v-if="sourcePanelOpen" class="mt-4 overflow-x-auto">
-        <UEmpty v-if="!sources.length" icon="i-lucide-rss" title="还没有远程源" description="填一个 GitHub raw 地址即可开始同步。" class="min-h-40" />
+        <UEmpty v-if="!sources.length" icon="i-lucide-rss" :title="t('prompt.noSource')" :description="t('prompt.noSourceAlt')" class="min-h-40" />
         <table v-else class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
           <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
             <tr>
-              <th class="min-w-0 w-full px-4 py-3 text-left">名称</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">地址</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">格式</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">上次同步</th>
-              <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+              <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.name') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('prompt.url') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('prompt.format') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('prompt.lastSync') }}</th>
+              <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -481,18 +481,18 @@ async function removeSource(item: SourceRow) {
               <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500" :title="item.url">{{ item.url }}</td>
               <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ item.format }}</td>
               <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                <UBadge :color="item.enabled ? 'success' : 'neutral'" variant="subtle">{{ item.enabled ? '启用' : '停用' }}</UBadge>
+                <UBadge :color="item.enabled ? 'success' : 'neutral'" variant="subtle">{{ item.enabled ? t('common.enabled') : t('common.disabled') }}</UBadge>
               </td>
               <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs">
                 <span v-if="item.lastError" class="text-red-500">{{ item.lastError }}</span>
-                <span v-else-if="item.lastSyncedAt" class="text-zinc-500">{{ item.lastSyncedAt }} · {{ item.count }} 条</span>
-                <span v-else class="text-zinc-400">未同步</span>
+                <span v-else-if="item.lastSyncedAt" class="text-zinc-500">{{ item.lastSyncedAt }} · {{ t('prompt.rowCount', { n: item.count }) }}</span>
+                <span v-else class="text-zinc-400">{{ t('prompt.neverSync') }}</span>
               </td>
               <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                 <div class="flex w-max flex-nowrap gap-1">
-                  <UButton type="button" size="sm" variant="soft" :loading="syncingId === item.id" @click="syncSource(item)">同步</UButton>
-                  <UButton type="button" size="sm" variant="soft" @click="openSourceEdit(item)">编辑</UButton>
-                  <UButton type="button" size="sm" variant="soft" color="error" @click="removeSource(item)">删除</UButton>
+                  <UButton type="button" size="sm" variant="soft" :loading="syncingId === item.id" @click="syncSource(item)">{{ t('prompt.sync') }}</UButton>
+                  <UButton type="button" size="sm" variant="soft" @click="openSourceEdit(item)">{{ t('common.edit') }}</UButton>
+                  <UButton type="button" size="sm" variant="soft" color="error" @click="removeSource(item)">{{ t('common.delete') }}</UButton>
                 </div>
               </td>
             </tr>
@@ -502,16 +502,16 @@ async function removeSource(item: SourceRow) {
     </UCard>
 
     <ManageFilterBar @search="search" @reset="reset">
-        <ManageFilterField label="关键词">
-          <UInput icon="i-lucide-search" v-model="draft.keyword" placeholder="标题或正文" class="w-full" @keyup.enter="search" />
+        <ManageFilterField :label="t('common.keyword')">
+          <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('prompt.keywordPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField label="标签">
-          <UInput v-model="draft.tag" placeholder="按单个标签筛选" class="w-full" @keyup.enter="search" />
+        <ManageFilterField :label="t('common.tag')">
+          <UInput v-model="draft.tag" :placeholder="t('prompt.tagPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField label="来源">
+        <ManageFilterField :label="t('prompt.source')">
           <USelect v-model="draft.sourceId" :items="sourceItems" value-key="value" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField label="状态">
+        <ManageFilterField :label="t('common.status')">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
@@ -526,13 +526,13 @@ async function removeSource(item: SourceRow) {
         <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
           <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
             <tr>
-              <th class="min-w-0 w-full px-4 py-3 text-left">标题</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">标签</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">来源</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">复制</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">排序</th>
-              <th class="w-[1%] whitespace-nowrap px-4 py-3">状态</th>
-              <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">操作</th>
+              <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.title') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.tag') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('prompt.source') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('prompt.colCopy') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.sort') }}</th>
+              <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
+              <th class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-zinc-50 px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] dark:bg-zinc-900">{{ t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -553,19 +553,19 @@ async function removeSource(item: SourceRow) {
                   <UBadge v-for="tag in item.tags" :key="tag" color="neutral" variant="subtle">{{ tag }}</UBadge>
                 </div>
               </td>
-              <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ item.sourceName || '后台录入' }}</td>
+              <td class="w-[1%] whitespace-nowrap px-4 py-3 text-xs text-zinc-500">{{ item.sourceName || t('prompt.backend') }}</td>
               <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.uses }}</td>
               <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.sortOrder }}</td>
               <td class="w-[1%] whitespace-nowrap px-4 py-3">
-                <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? '已上架' : '已下架' }}</UBadge>
+                <UBadge :color="item.status === 1 ? 'success' : 'neutral'" variant="subtle">{{ item.status === 1 ? t('common.onShelf') : t('common.offShelf') }}</UBadge>
               </td>
               <td class="sticky right-0 z-10 w-[1%] whitespace-nowrap bg-white px-4 py-3 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.16)] group-hover:bg-zinc-50 dark:bg-zinc-950 dark:group-hover:bg-zinc-900/60">
                 <div class="flex w-max flex-nowrap gap-1">
-                  <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">编辑</UButton>
+                  <UButton type="button" size="sm" variant="soft" @click="openEdit(item)">{{ t('common.edit') }}</UButton>
                   <UButton type="button" size="sm" variant="soft" :color="item.status === 1 ? 'warning' : 'success'" @click="toggleStatus(item)">
-                    {{ item.status === 1 ? '下架' : '上架' }}
+                    {{ item.status === 1 ? t('common.takeDown') : t('common.putOn') }}
                   </UButton>
-                  <UButton type="button" size="sm" variant="soft" color="error" @click="requestDelete(item)">删除</UButton>
+                  <UButton type="button" size="sm" variant="soft" color="error" @click="requestDelete(item)">{{ t('common.delete') }}</UButton>
                 </div>
               </td>
             </tr>
@@ -574,12 +574,12 @@ async function removeSource(item: SourceRow) {
       </div>
     </div>
 
-    <p v-if="total" class="mt-3 text-xs text-zinc-500">共 {{ total }} 条</p>
+    <p v-if="total" class="mt-3 text-xs text-zinc-500">{{ t('common.totalItems', { total }) }}</p>
 
     <UModal
       v-model:open="formOpen"
-      :title="editing ? '编辑提示词' : '新增提示词'"
-      description="上架后展示在前台提示词库，用户可一键复制正文"
+      :title="editing ? t('prompt.editTitle') : t('prompt.createTitle')"
+      :description="t('prompt.formHintAlt')"
       :ui="{ content: 'w-[min(96vw,64rem)] max-w-[min(96vw,64rem)] sm:max-w-[64rem]', body: 'p-0 sm:p-0', footer: 'justify-between gap-2' }"
     >
       <template #body>
@@ -588,25 +588,25 @@ async function removeSource(item: SourceRow) {
             <section class="space-y-4">
               <h3 class="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 <UIcon name="i-lucide-file-text" class="size-4 text-primary" />
-                基本信息
+                {{ t('plan.basic') }}
               </h3>
-              <UFormField label="标题" required :hint="`${form.title.length}/200`" :error="errors.title || undefined">
-                <UInput v-model="form.title" maxlength="200" placeholder="例如：电影感人像" class="w-full" @update:model-value="() => { errors.title = '' }" />
+              <UFormField :label="t('common.title')" required :hint="`${form.title.length}/200`" :error="errors.title || undefined">
+                <UInput v-model="form.title" maxlength="200" :placeholder="t('prompt.titlePh')" class="w-full" @update:model-value="() => { errors.title = '' }" />
               </UFormField>
-              <UFormField label="提示词正文" required :hint="`${form.content.length}/8000`" :error="errors.content || undefined">
+              <UFormField :label="t('prompt.contentLabel')" required :hint="`${form.content.length}/8000`" :error="errors.content || undefined">
                 <UTextarea
                   v-model="form.content"
                   :rows="9"
                   autoresize
                   :maxrows="16"
                   maxlength="8000"
-                  placeholder="用户会原样复制这段文字，建议写清主体、风格、光线、镜头等关键描述"
+                  :placeholder="t('prompt.contentHelp')"
                   class="w-full"
                   :ui="{ base: 'leading-relaxed' }"
                   @update:model-value="() => { errors.content = '' }"
                 />
               </UFormField>
-              <UFormField label="标签" help="输入后按回车、逗号或顿号添加，最多 10 个">
+              <UFormField :label="t('common.tag')" :help="t('prompt.tagsHelpAlt')">
                 <UInputTags
                   v-model="form.tags"
                   :delimiter="TAG_DELIMITER"
@@ -614,15 +614,15 @@ async function removeSource(item: SourceRow) {
                   :max-length="20"
                   add-on-paste
                   add-on-blur
-                  placeholder="例如：人像"
+                  :placeholder="t('prompt.tagExample')"
                   class="w-full"
                 />
               </UFormField>
               <div class="grid gap-4 sm:grid-cols-2">
-                <UFormField label="分类">
-                  <UInput v-model="form.category" maxlength="50" placeholder="选填，例如：摄影" class="w-full" />
+                <UFormField :label="t('common.category')">
+                  <UInput v-model="form.category" maxlength="50" :placeholder="t('prompt.categoryPh')" class="w-full" />
                 </UFormField>
-                <UFormField label="排序" hint="越大越靠前">
+                <UFormField :label="t('common.sort')" :hint="t('prompt.sortHint')">
                   <UInputNumber v-model="form.sortOrder" :min="0" class="w-full" />
                 </UFormField>
               </div>
@@ -632,9 +632,9 @@ async function removeSource(item: SourceRow) {
               <div class="flex items-center justify-between gap-2">
                 <h3 class="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   <UIcon name="i-lucide-image" class="size-4 text-primary" />
-                  图片素材
+                  {{ t('prompt.assets') }}
                 </h3>
-                <span class="text-xs text-zinc-500">建议 800×450（16:9），jpg / png / webp / gif，≤ 8MB</span>
+                <span class="text-xs text-zinc-500">{{ t('prompt.imageSpec') }}</span>
               </div>
               <div class="grid gap-4 sm:grid-cols-2">
                 <UFormField v-for="item in imageFields" :key="item.field" :label="item.label">
@@ -650,7 +650,7 @@ async function removeSource(item: SourceRow) {
                           variant="solid"
                           icon="i-lucide-external-link"
                         >
-                          新窗口查看
+                          {{ t('prompt.newWindow') }}
                         </UButton>
                         <UButton
                           type="button"
@@ -661,7 +661,7 @@ async function removeSource(item: SourceRow) {
                           :disabled="imageUploadingRef(item.field).value"
                           @click="clearImage(item.field)"
                         >
-                          移除
+                          {{ t('common.remove') }}
                         </UButton>
                       </div>
                     </div>
@@ -670,14 +670,14 @@ async function removeSource(item: SourceRow) {
                       :model-value="imageFileRef(item.field).value"
                       :accept="IMAGE_ACCEPT"
                       icon="i-lucide-image-plus"
-                      :label="imageUploadingRef(item.field).value ? '上传中…' : item.uploadLabel"
+                      :label="imageUploadingRef(item.field).value ? t('common.uploading') : item.uploadLabel"
                       :description="item.description"
                       :disabled="imageUploadingRef(item.field).value"
                       class="w-full"
                       :ui="{ base: 'aspect-video min-h-0' }"
                       @update:model-value="value => onImageFile(item.field, value)"
                     />
-                    <UInput v-model="form[item.field]" icon="i-lucide-link" size="sm" placeholder="或粘贴图片地址" class="w-full" />
+                    <UInput v-model="form[item.field]" icon="i-lucide-link" size="sm" :placeholder="t('common.pasteUrl')" class="w-full" />
                   </div>
                 </UFormField>
               </div>
@@ -688,7 +688,7 @@ async function removeSource(item: SourceRow) {
             <div class="lg:sticky lg:top-0">
               <p class="mb-3 flex items-center gap-2 text-xs font-medium text-zinc-500">
                 <UIcon name="i-lucide-eye" class="size-3.5" />
-                前台卡片预览
+                {{ t('prompt.cardPreview') }}
               </p>
               <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-zinc-800">
                 <div class="aspect-video bg-zinc-100 dark:bg-zinc-800">
@@ -696,10 +696,10 @@ async function removeSource(item: SourceRow) {
                 </div>
                 <div class="space-y-2 p-3">
                   <p class="truncate text-sm font-semibold" :class="form.title.trim() ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'">
-                    {{ form.title.trim() || '提示词标题' }}
+                    {{ form.title.trim() || t('prompt.previewTitlePh') }}
                   </p>
                   <p class="line-clamp-4 whitespace-pre-line text-xs leading-relaxed" :class="form.content.trim() ? 'text-zinc-600 dark:text-zinc-300' : 'text-zinc-400'">
-                    {{ form.content.trim() || '这里展示提示词正文摘要，用户点击卡片后可复制完整内容。' }}
+                    {{ form.content.trim() || t('prompt.previewBodyPh') }}
                   </p>
                   <div v-if="form.tags.length || form.category.trim()" class="flex flex-wrap gap-1">
                     <UBadge v-if="form.category.trim()" color="primary" variant="subtle" size="sm">{{ form.category.trim() }}</UBadge>
@@ -708,60 +708,60 @@ async function removeSource(item: SourceRow) {
                   <div class="flex items-center justify-between border-t border-zinc-100 pt-2 text-xs text-zinc-400 dark:border-zinc-800">
                     <span class="flex items-center gap-1">
                       <UIcon name="i-lucide-copy" class="size-3.5" />
-                      {{ editing?.uses ?? 0 }} 次复制
+                      {{ t('prompt.copyTimes', { n: editing?.uses ?? 0 }) }}
                     </span>
-                    <span>{{ editing?.sourceName || '后台录入' }}</span>
+                    <span>{{ editing?.sourceName || t('prompt.backend') }}</span>
                   </div>
                 </div>
               </div>
-              <p class="mt-3 text-xs leading-relaxed text-zinc-500">远程源同步的条目，后台改过的标题、封面、标签不会被下次同步覆盖。</p>
+              <p class="mt-3 text-xs leading-relaxed text-zinc-500">{{ t('prompt.syncKeep') }}</p>
             </div>
           </aside>
         </div>
       </template>
       <template #footer>
-        <p class="text-xs text-zinc-500"><span class="text-red-500">*</span> 为必填项</p>
+        <p class="text-xs text-zinc-500"><span class="text-red-500">*</span> {{ t('prompt.requiredMark') }}</p>
         <div class="flex gap-2">
-          <UButton type="button" color="neutral" variant="outline" :disabled="saving || uploading" @click="() => { formOpen = false }">取消</UButton>
+          <UButton type="button" color="neutral" variant="outline" :disabled="saving || uploading" @click="() => { formOpen = false }">{{ t('common.cancel') }}</UButton>
           <UButton type="button" :loading="saving" :disabled="saving || uploading" @click="save">
-            {{ saving ? '保存中…' : uploading ? '图片上传中…' : editing ? '保存修改' : '创建提示词' }}
+            {{ saving ? t('common.saving') : uploading ? t('prompt.uploadingImages') : editing ? t('prompt.saveEdit') : t('prompt.createBtn') }}
           </UButton>
         </div>
       </template>
     </UModal>
 
-    <UModal v-model:open="sourceFormOpen" :title="editingSource ? '编辑来源' : '新增来源'" :ui="{ content: 'w-[min(96vw,36rem)]', footer: 'justify-end gap-2' }">
+    <UModal v-model:open="sourceFormOpen" :title="editingSource ? t('prompt.editSource') : t('prompt.addSource')" :ui="{ content: 'w-[min(96vw,36rem)]', footer: 'justify-end gap-2' }">
       <template #body>
         <div class="space-y-5">
-          <UFormField label="名称" required :error="sourceErrors.name || undefined">
-            <UInput v-model="sourceForm.name" maxlength="100" placeholder="例如：某开源提示词仓库" class="w-full" />
+          <UFormField :label="t('common.name')" required :error="sourceErrors.name || undefined">
+            <UInput v-model="sourceForm.name" maxlength="100" :placeholder="t('prompt.sourceNamePh')" class="w-full" />
           </UFormField>
           <UFormField
-            label="抓取地址"
+            :label="t('prompt.fetchUrl')"
             required
             :error="sourceErrors.url || undefined"
-            help="GitHub 用 raw.githubusercontent.com 的直链，不要用网页地址。单次最多读 4MB，超时 20 秒。"
+            :help="t('prompt.fetchHelpAlt')"
           >
             <UInput v-model="sourceForm.url" placeholder="https://raw.githubusercontent.com/owner/repo/main/README.md" class="w-full" />
           </UFormField>
-          <UFormField label="解析格式" help="Markdown 取每个二级/三级标题下的第一个代码块；JSON 认 title/content 等常见字段名。">
+          <UFormField :label="t('prompt.parseFormat')" :help="t('prompt.parseHelpAlt')">
             <USelect v-model="sourceForm.format" :items="formatItems" value-key="value" class="w-full" />
           </UFormField>
-          <UFormField label="统一标签" help="这个源同步进来的条目都会带上，方便前台按来源筛。">
-            <UInput v-model="sourceForm.tag" maxlength="50" placeholder="选填" class="w-full" />
+          <UFormField :label="t('prompt.unifyTag')" :help="t('prompt.unifyHelpAlt')">
+            <UInput v-model="sourceForm.tag" maxlength="50" :placeholder="t('prompt.optionalShort')" class="w-full" />
           </UFormField>
-          <UCheckbox v-model="sourceForm.enabled" label="参与定时同步" />
+          <UCheckbox v-model="sourceForm.enabled" :label="t('prompt.joinSync')" />
         </div>
       </template>
       <template #footer>
-        <UButton type="button" color="neutral" variant="outline" :disabled="sourceSaving" @click="() => { sourceFormOpen = false }">取消</UButton>
-        <UButton type="button" :loading="sourceSaving" @click="saveSource">保存</UButton>
+        <UButton type="button" color="neutral" variant="outline" :disabled="sourceSaving" @click="() => { sourceFormOpen = false }">{{ t('common.cancel') }}</UButton>
+        <UButton type="button" :loading="sourceSaving" @click="saveSource">{{ t('common.save') }}</UButton>
       </template>
     </UModal>
 
-    <ManageConfirmModal v-model:open="confirmOpen" title="删除提示词" confirm-text="删除" :loading="confirming" @confirm="doDelete">
-      确定删除「{{ confirmItem?.title }}」吗？删除后前台立即不可见。
-      <p v-if="confirmItem?.sourceId" class="mt-2 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning">该条来自远程源，下次同步会重新拉回来，如果不想要它，请先停用来源。</p>
+    <ManageConfirmModal v-model:open="confirmOpen" :title="t('prompt.deleteTitle')" :confirm-text="t('common.delete')" :loading="confirming" @confirm="doDelete">
+      {{ t('prompt.deleteAsk', { name: confirmItem?.title }) }}
+      <p v-if="confirmItem?.sourceId" class="mt-2 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning">{{ t('prompt.resyncWarn') }}</p>
     </ManageConfirmModal>
   </div>
 </template>
