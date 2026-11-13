@@ -71,20 +71,19 @@ function isApiFailure(res: any): boolean {
   return false
 }
 
-const DEMO_ADMIN_USERNAME = 'admin'
-
-function demoAdminUser(): AuthUser {
+/** 本地开发兜底。正式构建里 import.meta.dev 为 false，后面的账号不会打进包。 */
+function demoAdminUser(username: string, password: string): AuthUser | null {
+  if (!import.meta.dev)
+    return null
+  if (username !== 'admin' || password !== '123456')
+    return null
   return {
     id: 1,
-    username: DEMO_ADMIN_USERNAME,
+    username: 'admin',
     role: ROLE_SUPER_ADMIN,
     token: 'demo-admin-token',
     access_token: 'demo-admin-token',
   }
-}
-
-function isDemoAdmin(username: string, password: string) {
-  return username === DEMO_ADMIN_USERNAME && password === '123456'
 }
 
 export function useAuth() {
@@ -107,7 +106,7 @@ export function useAuth() {
       }
       else {
         const parsed = parseStoredAuthUser(raw)
-        if (parsed) {
+        if (parsed && (import.meta.dev || parsed.token !== 'demo-admin-token')) {
           user.value = parsed
         }
         else {
@@ -136,7 +135,7 @@ export function useAuth() {
   }
 
   async function logout(): Promise<LogoutResult> {
-    if (user.value?.token === 'demo-admin-token') {
+    if (import.meta.dev && user.value?.token === 'demo-admin-token') {
       setUser(null)
       return { ok: true }
     }
@@ -175,8 +174,9 @@ export function useAuth() {
     try {
       const res = await userAuth.login({ username: id, password })
       if (res?.error || res?.statusCode >= 400) {
-        if (isDemoAdmin(id, password)) {
-          setUser(demoAdminUser())
+        const demo = demoAdminUser(id, password)
+        if (demo) {
+          setUser(demo)
           return { ok: true }
         }
         return {
@@ -185,8 +185,9 @@ export function useAuth() {
         }
       }
       if (!isLoginApiSuccess(res)) {
-        if (isDemoAdmin(id, password)) {
-          setUser(demoAdminUser())
+        const demo = demoAdminUser(id, password)
+        if (demo) {
+          setUser(demo)
           return { ok: true }
         }
         return { ok: false, message: res?.message }
@@ -200,8 +201,9 @@ export function useAuth() {
       return { ok: true }
     }
     catch {
-      if (isDemoAdmin(id, password)) {
-        setUser(demoAdminUser())
+      const demo = demoAdminUser(id, password)
+      if (demo) {
+        setUser(demo)
         return { ok: true }
       }
       return { ok: false, message: '网络错误，请稍后重试' }
