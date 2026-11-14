@@ -10,7 +10,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 COPY . .
-# Build-time defaults only; every NUXT_PUBLIC_* value can be overridden at run time.
+# Build-time defaults only. Pages are prerendered, so these values are baked into
+# the HTML; at run time the server answers /config.js from the container's
+# NUXT_PUBLIC_* environment and the app applies it before any request is made.
 RUN cp -n .env.example .env.production || true
 ENV NITRO_PRESET=node-server
 RUN pnpm build

@@ -116,14 +116,28 @@ For a Node host build with `NITRO_PRESET=node-server pnpm build` and start
 ### Docker
 
 A multi-arch image is published to GHCR on every push to `master` and every
-release tag. All `NUXT_PUBLIC_*` variables can be set at run time:
+release tag. One image serves any deployment: `NUXT_PUBLIC_API_BASE_URL`,
+`NUXT_PUBLIC_STUDIO_URL`, `NUXT_PUBLIC_PARTNER_URL` and `NUXT_PUBLIC_SITE_NAME`
+are read when the container starts.
 
 ```bash
 docker run -d -p 3006:3006 \
   -e NUXT_PUBLIC_API_BASE_URL=https://api.example.com \
   -e NUXT_PUBLIC_STUDIO_URL=https://studio.example.com \
+  -e NUXT_PUBLIC_PARTNER_URL=https://partner.example.com \
   ghcr.io/easytv-ai/easytv-manage:latest
 ```
+
+These are addresses the **browser** uses, so they must be reachable from the
+operator's machine (not a Docker-internal service name). URL values must start
+with `http://` or `https://`; anything else is ignored and the build-time
+default stays in effect.
+
+How it works: pages are prerendered, so the HTML carries build-time values.
+The Node server answers `/config.js` from its environment, every page loads
+that script before the app starts, and a plugin applies it to the public
+runtime config. On a plain static host (`pnpm generate`) there is no
+`/config.js`, and the values from the build are used.
 
 The `docker-compose.yml` in [`easytv-api`](https://github.com/easytv-ai/easytv-api)
 starts the whole stack with `docker compose --profile full up -d`.

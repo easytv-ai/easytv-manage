@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Creation metrics: a “reroll” block (first-pass keep rate, wasted points, per-model keep rate, dissatisfaction reasons).
 - Partners page: “open partner console” with a one-time ticket for approved channel partners.
 
+### Fixed
+
+- Docker image: `NUXT_PUBLIC_API_BASE_URL`, `NUXT_PUBLIC_STUDIO_URL`, `NUXT_PUBLIC_PARTNER_URL` and `NUXT_PUBLIC_SITE_NAME` set on the container now take effect. Prerendered pages used to keep the build-time values; they now load `/config.js`, which the server answers from its environment.
+
 ### Changed
 
 - "Official site" links, review → player jumps and studio asset URLs read `NUXT_PUBLIC_STUDIO_URL` instead of a hard-coded easytv.ai domain.

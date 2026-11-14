@@ -222,6 +222,8 @@ const dailyBars = computed(() => {
       </template>
     </ManagePageHeader>
 
+    <ConsoleSetupWizard />
+
     <div v-if="loading && !data" class="flex min-h-72 flex-col items-center justify-center gap-3 text-zinc-500">
       <UIcon name="i-lucide-loader-circle" class="size-8 animate-spin" />
       <span class="text-sm">{{ t('common.loading') }}</span>

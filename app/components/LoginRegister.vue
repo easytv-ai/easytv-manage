@@ -2,6 +2,7 @@
 /**
  * 管理后台登录卡片：POST /user/login，用户名 + 密码。
  */
+import { adminGatewayApi } from '~/api/gateway'
 import { PASSWORD_MAX, PASSWORD_MIN } from '~/utils/password'
 
 const route = useRoute()
@@ -48,6 +49,12 @@ onMounted(() => {
     notify(t('auth.sessionExpired'), 'error')
 })
 
+/** 登录后的落地页：系统还没配好（网关或模型缺）时先到数据看板，那里有开始使用向导 */
+async function landingPath() {
+  const raw = await adminGatewayApi.setupStatus()
+  return raw?.success === true && raw.data?.ready === false ? '/dashboard' : '/user'
+}
+
 async function onLoginSubmit() {
   if (!validateLogin())
     return
@@ -56,7 +63,7 @@ async function onLoginSubmit() {
     const res = await tryLogin(loginForm.username.trim(), loginForm.password)
     if (res.ok) {
       toast.add({ title: t('auth.loginSuccess'), color: 'success' })
-      await navigateTo(localePath('/user'))
+      await navigateTo(localePath(await landingPath()))
     }
     else {
       notify(res.message ?? t('auth.loginFail'), 'error')

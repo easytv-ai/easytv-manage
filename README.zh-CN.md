@@ -97,14 +97,19 @@ pnpm deploy
 
 ### Docker
 
-每次推送 `master` 与每个版本标签都会向 GHCR 发布多架构镜像，所有 `NUXT_PUBLIC_*` 变量都可以在运行时设置：
+每次推送 `master` 与每个版本标签都会向 GHCR 发布多架构镜像。同一个镜像适用于任何部署：`NUXT_PUBLIC_API_BASE_URL`、`NUXT_PUBLIC_STUDIO_URL`、`NUXT_PUBLIC_PARTNER_URL`、`NUXT_PUBLIC_SITE_NAME` 在容器启动时读取。
 
 ```bash
 docker run -d -p 3006:3006 \
   -e NUXT_PUBLIC_API_BASE_URL=https://api.example.com \
   -e NUXT_PUBLIC_STUDIO_URL=https://studio.example.com \
+  -e NUXT_PUBLIC_PARTNER_URL=https://partner.example.com \
   ghcr.io/easytv-ai/easytv-manage:latest
 ```
+
+这些地址是给**浏览器**用的，要填运营人员电脑能访问到的地址，不能填 Docker 内部的服务名。地址必须以 `http://` 或 `https://` 开头，否则会被忽略并沿用构建期的默认值。
+
+原理：页面是预渲染的，HTML 里带的是构建期的值。Node 服务按自己的环境变量应答 `/config.js`，每个页面在应用启动前先加载这段脚本，再由插件写进公开运行时配置。纯静态托管（`pnpm generate`）没有 `/config.js`，用的就是构建时的值。
 
 [`easytv-api`](https://github.com/easytv-ai/easytv-api) 里的 `docker-compose.yml` 用 `docker compose --profile full up -d` 可以一次拉起整套服务。
 

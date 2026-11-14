@@ -16,6 +16,10 @@ export const adminGatewayApi = {
   balance(refresh = false) {
     return http.get('/admin/gateway/balance', refresh ? { refresh: 1 } : undefined)
   },
+  /** 部署就绪状态（GET /admin/setup/status，API.md 40）：只读，普通管理员可读，不含任何密钥 */
+  setupStatus() {
+    return http.get('/admin/setup/status')
+  },
   /** 把网关模型导入 model_price；已存在只补 label/type/unit，不改价格 */
   importModels(models: Record<string, unknown>[]) {
     return http.post('/admin/gateway/models/import', { models })

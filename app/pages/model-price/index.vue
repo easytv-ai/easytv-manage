@@ -5,6 +5,7 @@ import mediaApi, { type AdminMediaAction } from '~/api/media'
 import { formatUnix, isOk, parsePaged } from '~/api/creative'
 import { CONSOLE_DEFAULT_PAGE_SIZE } from '~/utils/consoleSelectItems'
 import { modelEngineCoverage } from '~/utils/media-actions'
+import type { GatewayModel } from '~/utils/gateway-models'
 
 const { t } = useI18n()
 useHead({ title: () => t('modelPrice.pageTitle') })
@@ -96,24 +97,6 @@ type PriceRow = {
   abilities: string
 }
 
-type GatewayModel = {
-  model: string
-  type: PriceRow['type']
-  label: string
-  unit: PriceRow['unit']
-  suggestPoints: number
-  /** 每计价单位的网关成本（元） */
-  priceYuan: number
-  /** 折算依据说明 */
-  estimate: string
-  /** 视频模型支持的分辨率（逗号分隔），后端从网关分辨率倍率表推出 */
-  resolutions: string
-  existing: boolean
-}
-
-const GATEWAY_TYPES = new Set<PriceRow['type']>(['text', 'image', 'video', 'audio'])
-const GATEWAY_UNITS = new Set<PriceRow['unit']>(['second', 'image', 'call'])
-
 const TYPE_LABEL = computed<Record<string, string>>(() => ({
   text: t('common.text'),
   image: t('common.image'),
@@ -144,13 +127,10 @@ const statusItems = computed(() => [
 ])
 
 const { loading, listReady, beginListLoad, markListReady } = useListReadyState()
-const fetching = ref(false)
-const importing = ref(false)
 const page = ref(1)
 const pageSize = ref(CONSOLE_DEFAULT_PAGE_SIZE)
 const rows = ref<PriceRow[]>([])
-const gatewayModels = ref<GatewayModel[]>([])
-const gatewayKnown = ref(false)
+const { gatewayModels, gatewayKnown, fetching, importing, markGatewayExisting, pullGatewayModels, importGatewayModels } = useGatewayModels()
 const draft = reactive({ keyword: '', type: '__all__', status: '__all__' })
 const applied = ref({ ...draft })
 
@@ -368,45 +348,6 @@ function modelPickTip(label?: string) {
   return text.length > 32 ? text : undefined
 }
 
-function mapGatewayType(item: any): PriceRow['type'] {
-  const eps = Array.isArray(item?.supported_endpoint_types)
-    ? item.supported_endpoint_types.map((x: any) => String(x).toLowerCase())
-    : []
-  const cat = String(item?.category || '').toLowerCase()
-  if (eps.some((e: string) => e.includes('video')) || cat === 'video')
-    return 'video'
-  if (eps.some((e: string) => e.includes('image')) || cat === 'image')
-    return 'image'
-  if (eps.some((e: string) => e.includes('tts') || e.includes('audio') || e.includes('speech')) || cat === 'audio')
-    return 'audio'
-  return 'text'
-}
-
-function mapGatewayUnit(item: any, type: PriceRow['type']): PriceRow['unit'] {
-  if (Number(item?.quota_type) === 2 || type === 'video')
-    return 'second'
-  if (type === 'image')
-    return 'image'
-  return 'call'
-}
-
-function toGatewayModel(item: any): GatewayModel {
-  // 后端已推断 type / unit（含按次计费的视频 = call），前端映射只作兜底
-  const type: PriceRow['type'] = GATEWAY_TYPES.has(item?.type) ? item.type : mapGatewayType(item)
-  const unit: PriceRow['unit'] = GATEWAY_UNITS.has(item?.unit) ? item.unit : mapGatewayUnit(item, type)
-  return {
-    model: String(item?.model || '').trim(),
-    type,
-    label: String(item?.label || item?.model || '').trim(),
-    unit,
-    suggestPoints: Number(item?.suggest_points) || 0,
-    priceYuan: Number(item?.price_yuan) || 0,
-    estimate: String(item?.estimate || ''),
-    resolutions: String(item?.resolutions || ''),
-    existing: Boolean(item?.existing),
-  }
-}
-
 function fmtCost(yuan: number) {
   if (!yuan)
     return '—'
@@ -437,29 +378,10 @@ function toRow(item: any, availableSet: Set<string>): PriceRow {
   }
 }
 
-function applyGatewayRaw(raw: any) {
-  if (!isOk(raw)) {
-    gatewayModels.value = []
-    gatewayKnown.value = false
-    return false
-  }
-  const list = Array.isArray(raw?.data?.models) ? raw.data.models : []
-  gatewayModels.value = list.map((item: any) => toGatewayModel(item)).filter((m: GatewayModel) => m.model)
-  gatewayKnown.value = true
-  return true
-}
-
 /** 用已手动拉取的网关清单回填当前页「是否开通」，不改 existing */
 function syncGatewayFlags() {
   const available = new Set(gatewayModels.value.map(m => m.model))
   rows.value = rows.value.map(item => ({ ...item, available: gatewayKnown.value && available.has(item.model) }))
-}
-
-function markGatewayExisting(models: string[], existing: boolean) {
-  if (!models.length)
-    return
-  const set = new Set(models)
-  gatewayModels.value = gatewayModels.value.map(m => set.has(m.model) ? { ...m, existing } : m)
 }
 
 const LIST_PAGE_SIZE = 100
@@ -750,69 +672,39 @@ async function confirm() {
 }
 
 async function pullGateway(manual = false) {
-  if (fetching.value)
+  const result = await pullGatewayModels()
+  if (!result)
     return
-  fetching.value = true
-  try {
-    const raw = await adminGatewayApi.fetchModels()
-    if (!applyGatewayRaw(raw)) {
-      if (manual)
-        notify(raw?.message ?? t('modelPrice.fetchFail'), 'error')
-      return
-    }
-    const availableSet = new Set(gatewayModels.value.map(m => m.model))
-    rows.value = rows.value.map(item => ({ ...item, available: availableSet.has(item.model) }))
+  if (!result.ok) {
     if (manual)
-      notify(t('modelPrice.fetchOk', { count: gatewayModels.value.length }))
+      notify(result.message || t('modelPrice.fetchFail'), 'error')
+    return
   }
-  finally {
-    fetching.value = false
-  }
-}
-
-function toImportItem(m: GatewayModel) {
-  return {
-    model: m.model,
-    label: m.label,
-    type: m.type,
-    unit: m.unit,
-    points_per_unit: m.suggestPoints,
-    member_points_per_unit: 0,
-    resolutions: m.resolutions,
-  }
+  const availableSet = new Set(gatewayModels.value.map(m => m.model))
+  rows.value = rows.value.map(item => ({ ...item, available: availableSet.has(item.model) }))
+  if (manual)
+    notify(t('modelPrice.fetchOk', { count: result.count }))
 }
 
 async function confirmImport() {
   const items = selectedUnpriced.value
-  if (!items.length || importing.value) {
-    if (!items.length)
-      notify(t('modelPrice.importNeedSelect'), 'error')
+  if (!items.length) {
+    notify(t('modelPrice.importNeedSelect'), 'error')
     return
   }
-  importing.value = true
-  try {
-    const raw = await adminGatewayApi.importModels(items.map(toImportItem))
-    if (!isOk(raw)) {
-      notify(raw?.message ?? t('modelPrice.importFail'), 'error')
-      return
-    }
-    const data = raw?.data ?? {}
-    notify(t('modelPrice.importOk', {
-      created: Number(data.created) || 0,
-      updated: Number(data.updated) || 0,
-    }))
-    const skippedModels: string[] = Array.isArray(data.skipped_models) ? data.skipped_models.map(String) : []
-    if (skippedModels.length)
-      notify(t('modelPrice.importSkipped', { count: skippedModels.length, models: skippedModels.join('、') }), 'error')
-    const skipped = new Set(skippedModels)
-    markGatewayExisting(items.map(item => item.model).filter(model => !skipped.has(model)), true)
-    importOpen.value = false
-    browseOpen.value = false
-    await fetchAll(`i-${Date.now()}`)
+  const result = await importGatewayModels(items)
+  if (!result)
+    return
+  if (!result.ok) {
+    notify(result.message || t('modelPrice.importFail'), 'error')
+    return
   }
-  finally {
-    importing.value = false
-  }
+  notify(t('modelPrice.importOk', { created: result.created, updated: result.updated }))
+  if (result.skippedModels.length)
+    notify(t('modelPrice.importSkipped', { count: result.skippedModels.length, models: result.skippedModels.join('、') }), 'error')
+  importOpen.value = false
+  browseOpen.value = false
+  await fetchAll(`i-${Date.now()}`)
 }
 </script>
 
