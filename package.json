@@ -25,6 +25,7 @@
     "start": "cross-env NODE_ENV=production nuxt start",
     "deploy": "pnpm run build && wrangler deploy",
     "cf-typegen": "wrangler types",
+    "lint": "nuxt prepare && eslint .",
     "typecheck": "nuxt typecheck",
     "prepare": "simple-git-hooks",
     "test": "nuxt typecheck"
@@ -38,9 +39,11 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.149",
+    "@nuxt/eslint": "^1.17.0",
     "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^26.1.0",
     "cross-env": "^10.1.0",
+    "eslint": "^10.14.0",
     "nitro-cloudflare-dev": "^0.2.2",
     "simple-git-hooks": "^2.14.0",
     "typescript": "^6.0.3",

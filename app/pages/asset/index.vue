@@ -27,7 +27,6 @@ const previewMediaRef = ref<HTMLVideoElement | HTMLAudioElement | null>(null)
 const downloadingId = ref<number | null>(null)
 
 /** 与旧模板兼容：filtered/pageRows 直接指向服务端当前页 */
-const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
 const DRAFT_DEFAULT = { title: '', type: '__all__', status: '__all__' }
 const API = adminAssetApi

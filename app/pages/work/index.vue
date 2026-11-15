@@ -34,7 +34,6 @@ const confirmItem = ref<AdminWork | null>(null)
 const confirming = ref(false)
 
 /** 与旧模板兼容：filtered/pageRows 直接指向服务端当前页 */
-const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
 const DRAFT_DEFAULT = { title: '', status: '__all__', lang: SELECT_ITEM_ALL }
 const API = adminWorkApi
@@ -55,7 +54,6 @@ const formCategoryItems = computed(() => {
     list.unshift({ label: form.category, value: form.category })
   return list
 })
-const filteredWorks = filtered
 const raws = new Map<number, any>()
 function langOf(item: AdminWork) {
   const code = String(raws.get(item.id)?.lang || 'zh')

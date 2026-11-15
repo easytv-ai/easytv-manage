@@ -6,6 +6,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const expanded = ref(false)
+// 被折叠的字段里有生效的筛选值时，由字段回调展开（见 ManageFilterField 的 value）。
+provide('manageFilterExpand', () => {
+  expanded.value = true
+})
 
 function onSearch() {
   emit('search')

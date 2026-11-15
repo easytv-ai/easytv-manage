@@ -37,7 +37,7 @@ const reviewStatusItems = computed(() => [
   { label: t('common.allStatus'), value: '__all__' },
   { label: t('common.pendingReview'), value: '0' },
   { label: t('communityAudit.passed'), value: '1' },
-  { label: t('common.reject'), value: '2' },
+  { label: t('communityAudit.statusRejected'), value: '2' },
 ])
 const commentStatusItems = computed(() => [
   { label: t('common.allStatus'), value: '__all__' },
@@ -80,7 +80,7 @@ function reportToRow(item: any): AdminAudit {
   return {
     id: item.id,
     type: 'report',
-    content: item.content || t('communityAudit.noReason'),
+    content: item.content || t('communityAudit.noReportNote'),
     authorName: item.reporter_name || `#${item.user_id}`,
     targetTitle: isCommentReport
       ? `${t('communityAudit.tabComment')}：${String(item.comment_content || '').slice(0, 40) || `#${item.comment_id}`}`
@@ -99,7 +99,7 @@ function workToRow(item: any): AdminAudit {
   return {
     id: item.id,
     type: 'work',
-    content: item.description || t('communityAudit.noReason'),
+    content: item.description || t('communityAudit.noDescription'),
     authorName: item.author?.nickname || `#${item.user_id}`,
     targetTitle: item.title,
     reason: item.category || '—',
@@ -173,7 +173,9 @@ function confirmTitle() {
   if (confirmAction.value === 'delete')
     return t('communityAudit.confirmDelete')
   if (confirmAction.value === 'pass')
-    return t('communityAudit.confirmPass')
+    return confirmAudit.value?.type !== 'report'
+      ? t('communityAudit.confirmPass')
+      : confirmAudit.value.targetType === 'comment' ? t('communityAudit.confirmUpholdComment') : t('communityAudit.confirmUpholdWork')
   return t('communityAudit.confirmReject')
 }
 
@@ -189,10 +191,10 @@ function confirmColor() {
 
 function remarkHint() {
   if (confirmAction.value === 'hide')
-    return t('communityAudit.remarkPhPass')
+    return t('communityAudit.remarkHintHide')
   if (confirmAction.value === 'restore')
-    return t('communityAudit.remarkPhOptional')
-  return t('communityAudit.remarkPhReject')
+    return t('communityAudit.remarkHintOptional')
+  return t('communityAudit.remarkHintReview')
 }
 
 async function confirm() {
@@ -237,16 +239,16 @@ async function confirm() {
 function passLabel(audit: AdminAudit | null) {
   if (audit?.type !== 'report')
     return t('common.pass')
-  return audit.targetType === 'comment' ? t('common.hide') : t('common.takeDown')
+  return audit.targetType === 'comment' ? t('communityAudit.upholdComment') : t('communityAudit.upholdWork')
 }
 
 function statusLabel(audit: AdminAudit) {
   if (audit.type === 'comment')
     return audit.status === 2 ? t('communityAudit.hidden') : t('common.normal')
   if (audit.status === 1)
-    return audit.type === 'report' ? t('communityAudit.handled') : t('communityAudit.passed')
+    return audit.type === 'report' ? t('communityAudit.statusUpheld') : t('communityAudit.passed')
   if (audit.status === 2)
-    return t('common.reject')
+    return t('communityAudit.statusRejected')
   return t('common.pendingReview')
 }
 
@@ -316,7 +318,7 @@ function watchUrl(audit: AdminAudit) {
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <a :href="watchUrl(audit)" target="_blank" rel="noopener" class="text-primary hover:underline">{{ audit.targetTitle }}</a>
                 </td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.type === 'report' && audit.targetType === 'comment' ? t('communityAudit.tabComment') : typeLabels[audit.type] }}</td>
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.type === 'report' && audit.targetType === 'comment' ? t('communityAudit.typeCommentReport') : typeLabels[audit.type] }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ audit.reason }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <UBadge :color="statusColor(audit.status)" variant="subtle">
@@ -378,7 +380,7 @@ function watchUrl(audit: AdminAudit) {
             </p>
             <p v-if="isCommentAction && confirmAudit?.content" class="mt-2 line-clamp-3 rounded-md bg-zinc-50 px-3 py-2 text-xs text-zinc-500 dark:bg-zinc-900">{{ confirmAudit.content }}</p>
           </div>
-          <UFormField v-if="showRemark" :label="t('communityAudit.rejectRemark')" :hint="remarkHint()">
+          <UFormField v-if="showRemark" :label="t('communityAudit.remarkLabel')" :hint="remarkHint()">
             <UInput v-model="confirmRemark" maxlength="255" :placeholder="t('communityAudit.rejectRemarkPh')" class="w-full" />
           </UFormField>
         </div>

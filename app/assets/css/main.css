@@ -164,13 +164,18 @@ body {
   min-width: 0;
 }
 
+/* 标签至少 5em（短标签右对齐成一列），长标签（「账号 / 用户名」、英文）按内容撑开，
+   最多占半格后省略，不再溢出盖到输入框上。 */
 .manage-filter-field__label {
-  flex: 0 0 5em;
-  width: 5em;
+  flex: 0 0 auto;
+  min-width: 5em;
+  max-width: 50%;
+  overflow: hidden;
   font-size: 14px;
   line-height: 32px;
   color: var(--ea-text-muted);
   text-align: right;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -179,8 +184,9 @@ body {
   min-width: 0;
 }
 
-.manage-filter-field__control :deep(input),
-.manage-filter-field__control :deep(button) {
+/* 全局样式表里没有 :deep()（那是 scoped 样式的写法，写了整条规则会被丢弃）。
+   控件根元素（UInput 的外层、USelect 的按钮）撑满这一格。 */
+.manage-filter-field__control > * {
   width: 100%;
 }
 

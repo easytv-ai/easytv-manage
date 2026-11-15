@@ -21,7 +21,6 @@ const confirmItem = ref<AdminCanvas | null>(null)
 const confirming = ref(false)
 
 /** 与旧模板兼容：filtered/pageRows 直接指向服务端当前页 */
-const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
 const DRAFT_DEFAULT = { title: '', status: '__all__' }
 const API = adminCanvasApi

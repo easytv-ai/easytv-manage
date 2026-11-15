@@ -340,16 +340,16 @@ async function confirm() {
     </UCard>
 
     <ManageFilterBar @search="search" @reset="reset">
-        <ManageFilterField :label="t('common.keyword')">
+        <ManageFilterField :label="t('common.keyword')" :value="applied.keyword">
           <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('notification.keywordPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.userId')">
+        <ManageFilterField :label="t('common.userId')" :value="applied.userId">
           <UInput v-model="draft.userId" :placeholder="t('notification.userIdPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.type')">
+        <ManageFilterField :label="t('common.type')" :value="applied.type">
           <USelect v-model="draft.type" :items="filterTypeItems" value-key="value" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.status')">
+        <ManageFilterField :label="t('common.status')" :value="applied.unread">
           <USelect v-model="draft.unread" :items="unreadItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>

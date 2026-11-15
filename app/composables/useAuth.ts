@@ -59,18 +59,6 @@ export type TryLoginResult = { ok: true } | { ok: false, message?: string }
 export type TryRegisterResult = { ok: true } | { ok: false, message?: string }
 export type LogoutResult = { ok: true } | { ok: false, message?: string }
 
-function isApiFailure(res: any): boolean {
-  if (res == null)
-    return false
-  if (res.error === true)
-    return true
-  if (typeof res.statusCode === 'number' && res.statusCode >= 400)
-    return true
-  if (res.success === false)
-    return true
-  return false
-}
-
 /** 本地开发兜底。正式构建里 import.meta.dev 为 false，后面的账号不会打进包。 */
 function demoAdminUser(username: string, password: string): AuthUser | null {
   if (!import.meta.dev)

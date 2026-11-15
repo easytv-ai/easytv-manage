@@ -36,7 +36,6 @@ const typeItems = computed(() => [
   { label: t('common.activityNotice'), value: 'activity' },
 ])
 
-const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
 /** 原始类型 / 置顶回填编辑表单 */
 const extra = new Map<number, { type: 'system' | 'activity', pinned: boolean }>()

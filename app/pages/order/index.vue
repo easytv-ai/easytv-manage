@@ -11,6 +11,8 @@ import { adminOrderApi } from '~/api/billing'
 import { formatUnix, isOk, parsePaged } from '~/api/creative'
 
 const { t } = useI18n()
+// 提交给后端并入库的退款原因：固定值，不随界面语言变（译文只用于显示）。
+const REFUND_REASON = '后台退款'
 useHead({ title: () => t('order.pageTitle') })
 definePageMeta({ layout: 'console' })
 
@@ -39,7 +41,6 @@ const confirming = ref(false)
 const kindItems = computed(() => orderKindItems(t))
 const statusSelectItems = computed(() => orderStatusItems(t))
 
-const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
 
 function toRow(item: any): AdminOrder {
@@ -134,7 +135,7 @@ async function confirmChange() {
   confirming.value = true
   try {
     const raw = confirmAction.value === 'refund'
-      ? await adminOrderApi.refund(confirmItem.value.id, t('order.refund'))
+      ? await adminOrderApi.refund(confirmItem.value.id, REFUND_REASON)
       : await adminOrderApi.close(confirmItem.value.id)
     if (!isOk(raw)) {
       notify(raw?.message ?? t('common.opFail'), 'error')
@@ -155,16 +156,16 @@ async function confirmChange() {
     <ManagePageHeader :page-title="t('order.title')" :page-description="t('order.description')" />
 
     <ManageFilterBar @search="search" @reset="reset">
-        <ManageFilterField :label="t('order.keywordLabel')">
+        <ManageFilterField :label="t('order.keywordLabel')" :value="applied.keyword">
           <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('order.keywordPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.userId')">
+        <ManageFilterField :label="t('common.userId')" :value="applied.userId">
           <UInput v-model="draft.userId" :placeholder="t('order.userPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField :label="t('order.kind')">
+        <ManageFilterField :label="t('order.kind')" :value="applied.kind">
           <USelect v-model="draft.kind" :items="kindItems" value-key="value" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField :label="t('order.status')">
+        <ManageFilterField :label="t('order.status')" :value="applied.status">
           <USelect v-model="draft.status" :items="statusSelectItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>

@@ -79,7 +79,7 @@ export default defineNuxtConfig({
       nodeCompat: true,
     },
   },
-  modules: ['@nuxt/ui', '@nuxtjs/i18n', 'nitro-cloudflare-dev'],
+  modules: ['@nuxt/ui', '@nuxtjs/i18n', 'nitro-cloudflare-dev', '@nuxt/eslint'],
   ui: {
     colorMode: false,
     fonts: false,

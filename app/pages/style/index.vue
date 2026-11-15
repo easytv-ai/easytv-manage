@@ -297,7 +297,7 @@ function toggleStatus(item: StyleRow) {
 
 /** 用户已收录的行：撤回收录，回到作者私有（status=1），公开列表不再显示 */
 function unlistUserStyle(item: StyleRow) {
-  return setStatus(item, 1, t('common.takeDown'))
+  return setStatus(item, 1, t('style.unlisted'))
 }
 
 // ===== 投稿审核 =====

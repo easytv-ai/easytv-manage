@@ -44,7 +44,6 @@ const statusItems = computed(() => [
   { label: t('common.offShelf'), value: '2' },
 ])
 
-const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
 /** 接口原始字段，编辑回填用 */
 const raws = new Map<number, any>()
@@ -255,7 +254,7 @@ function openEdit(item: AdminShowcase) {
 }
 
 function validate() {
-  errors.title = form.title.trim() ? '' : t('showcase.filterTitlePh')
+  errors.title = form.title.trim() ? '' : t('showcase.titleRequired')
   return !errors.title
 }
 

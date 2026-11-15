@@ -5,6 +5,8 @@ import { adminBannerApi } from '~/api/content'
 import { formatUnix, isOk, parsePaged } from '~/api/creative'
 
 const { t } = useI18n()
+// 新建 Banner 时按钮文案的缺省值：这是要入库的数据，固定值，不随界面语言变。
+const DEFAULT_CTA = '立即观看'
 useHead({ title: () => t('banner.pageTitle') })
 definePageMeta({ layout: 'console' })
 
@@ -33,7 +35,6 @@ const statusItems = computed(() => [
   { label: t('common.offShelf'), value: '2' },
 ])
 
-const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
 /** 接口原始字段，编辑回填用 */
 const raws = new Map<number, any>()
@@ -94,7 +95,7 @@ function reset() {
 }
 function openCreate() {
   editing.value = null
-  Object.assign(form, { title: '', subtitle: '', tag: '', cover: '', videoUrl: '', linkUrl: '', cta: t('banner.buttonPh'), sortOrder: rows.value.length })
+  Object.assign(form, { title: '', subtitle: '', tag: '', cover: '', videoUrl: '', linkUrl: '', cta: DEFAULT_CTA, sortOrder: rows.value.length })
   Object.assign(errors, { title: '', linkUrl: '' })
   formOpen.value = true
 }

@@ -74,7 +74,6 @@ const sourceItems = computed(() => [
   { label: t('common.userPrivate'), value: 'user' },
 ])
 
-const filtered = computed(() => rows.value)
 const pageRows = computed(() => rows.value)
 
 /** 原始 cover_url 保留，编辑回填用 */

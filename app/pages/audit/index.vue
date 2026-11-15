@@ -47,7 +47,7 @@ const ROLE_LABEL = computed<Record<number, string>>(() => ({
 }))
 const paramLabel = computed<Record<string, string>>(() => ({
   email: t('audit.paramEmail'),
-  mobile: t('audit.actSms'),
+  mobile: t('audit.paramMobile'),
   points_earned: t('audit.paramPoints'),
   amount: t('common.amount'),
   trade_no: t('audit.paramTrade'),
@@ -277,25 +277,25 @@ function gotoUser(userId: number) {
     <ManagePageHeader :page-title="t('audit.title')" :page-description="t('audit.description')" />
 
     <ManageFilterBar @search="search" @reset="reset">
-        <ManageFilterField :label="t('common.username')">
+        <ManageFilterField :label="t('common.username')" :value="applied.username">
           <UInput icon="i-lucide-search" v-model="draft.username" :placeholder="t('audit.usernameEnter')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.userId')">
+        <ManageFilterField :label="t('common.userId')" :value="applied.userId">
           <UInput v-model="draft.userId" :placeholder="t('audit.userEnter')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField :label="t('audit.logCategory')">
+        <ManageFilterField :label="t('audit.logCategory')" :value="applied.category">
           <USelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField :label="t('audit.actionId')">
+        <ManageFilterField :label="t('audit.actionId')" :value="applied.action">
           <UInput v-model="draft.action" :placeholder="t('audit.actionIdPh')" class="w-full font-mono" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.startTime')">
+        <ManageFilterField :label="t('common.startTime')" :value="applied.startAt">
           <UInput v-model="draft.startAt" type="datetime-local" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.endTime')">
+        <ManageFilterField :label="t('common.endTime')" :value="applied.endAt">
           <UInput v-model="draft.endAt" type="datetime-local" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.result')">
+        <ManageFilterField :label="t('common.result')" :value="applied.success">
           <USelect v-model="draft.success" :items="successItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>

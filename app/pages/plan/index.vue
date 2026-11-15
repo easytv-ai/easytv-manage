@@ -4,7 +4,10 @@ import { formatValidity, pointsDayItems, toPositiveInt, toPositiveNumber } from 
 import { adminPackApi, adminPlanApi, adminPromoApi, type PromoPayload } from '~/api/billing'
 import { isOk } from '~/api/creative'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+// 折扣角标的缺省值：要入库并展示给创作台用户的数据，固定值，不随后台界面语言变。
+const DEFAULT_YEAR_OFF_LABEL = '6.2 折'
+const DEFAULT_QUARTER_OFF_LABEL = '8.5 折'
 useHead({ title: () => t('plan.pageTitle') })
 definePageMeta({ layout: 'console' })
 
@@ -62,8 +65,8 @@ const promoForm = reactive<AdminPromoConfig>({
   yearRate: 0.62,
   quarterRate: 0.85,
   monthRate: 1,
-  yearOffLabel: t('plan.defaultYearOff'),
-  quarterOffLabel: t('plan.defaultQuarterOff'),
+  yearOffLabel: DEFAULT_YEAR_OFF_LABEL,
+  quarterOffLabel: DEFAULT_QUARTER_OFF_LABEL,
   teamSeatMin: 2,
   teamSeatMax: 10,
   teamSeatRate: 0.9,
@@ -93,8 +96,12 @@ const dayItems = computed(() => pointsDayItems(t))
 function formatDiscount(price: number, origin: number) {
   if (!origin || price >= origin)
     return ''
-  const off = Math.round((price / origin) * 100) / 10
-  return t('plan.offSuffix', { n: String(off).replace(/\.0$/, '') })
+  // 中文说「几折」（付原价的十分之几），其它语言说「减百分之几」：6.2 折 = 38% off。
+  if (String(locale.value).startsWith('zh')) {
+    const off = Math.round((price / origin) * 100) / 10
+    return t('plan.offSuffix', { n: String(off).replace(/\.0$/, '') })
+  }
+  return t('plan.offSuffix', { n: Math.round((1 - price / origin) * 100) })
 }
 
 function toPlanRow(item: any): AdminMembershipPlan {

@@ -774,6 +774,8 @@ async function confirmImport() {
           <strong class="block text-sm">{{ t(`system.mediaAction.${item.action}`) }}</strong>
           <span v-if="item.available">{{ t('modelPrice.abilityReady', { models: (item.models ?? []).join('、') }) }}</span>
           <span v-else-if="item.gap === 'not_on_gateway'">{{ t('modelPrice.abilityNotOnGateway', { models: (item.priced_models ?? []).join('、') }) }}</span>
+          <span v-else-if="item.gap === 'disabled'">{{ t('system.mediaGap.disabled') }}</span>
+          <span v-else-if="item.gap === 'no_ffmpeg'">{{ t('system.mediaGap.no_ffmpeg') }}</span>
           <span v-else>{{ t('modelPrice.abilityMissing') }}</span>
         </li>
       </ul>

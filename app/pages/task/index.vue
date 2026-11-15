@@ -184,13 +184,13 @@ async function copyPrompt(text: string) {
     <ManagePageHeader :page-title="t('task.title')" :page-description="t('task.description')" />
 
     <ManageFilterBar @search="search" @reset="reset">
-        <ManageFilterField :label="t('common.user')">
+        <ManageFilterField :label="t('common.user')" :value="applied.userId">
           <UInput v-model="draft.userId" :placeholder="t('task.userPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.type')">
+        <ManageFilterField :label="t('common.type')" :value="applied.type">
           <USelect v-model="draft.type" :items="typeItems" value-key="value" class="w-full" />
         </ManageFilterField>
-        <ManageFilterField :label="t('common.status')">
+        <ManageFilterField :label="t('common.status')" :value="applied.status">
           <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
