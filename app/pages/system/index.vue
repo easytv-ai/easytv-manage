@@ -1134,7 +1134,7 @@ function toggleLogin(key: keyof LoginSettings) {
           :label="t('system.smsSignType')"
           :help="t('system.smsSignTypeHelp')"
         >
-          <USelect
+          <ManageSelect
             v-model="smsForm.signType"
             :items="smsSignTypeItems"
             value-key="value"

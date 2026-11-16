@@ -386,10 +386,10 @@ const money = (v: number) => `¥${(Number(v) || 0).toLocaleString('zh-CN', { min
           <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('bonusCode.keywordPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.type')">
-          <USelect v-model="draft.kind" :items="kindItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.kind" :items="kindItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('bonusCode.partner')">
           <UInput v-model="draft.partner" :placeholder="t('bonusCode.partnerFilterPh')" class="w-full" @keyup.enter="search" />
@@ -490,7 +490,7 @@ const money = (v: number) => `¥${(Number(v) || 0).toLocaleString('zh-CN', { min
               <UInput v-model="form.count" type="number" min="1" max="500" class="w-full" />
             </UFormField>
             <UFormField :label="t('bonusCode.kindLabel')" required :help="t('bonusCode.kindHelp')">
-              <USelect v-model="form.kind" :items="formKindItems" value-key="value" class="w-full" />
+              <ManageSelect v-model="form.kind" :items="formKindItems" value-key="value" class="w-full" />
             </UFormField>
             <UFormField :label="t('bonusCode.partner')" :help="t('bonusCode.partnerHelp')">
               <UInput v-model="form.partnerName" maxlength="64" class="w-full" />

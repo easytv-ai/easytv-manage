@@ -380,10 +380,10 @@ async function doDelete() {
           <UInput v-model="draft.category" :placeholder="t('style.categoryPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.source')">
-          <USelect v-model="draft.source" :items="sourceItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.source" :items="sourceItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -484,7 +484,7 @@ async function doDelete() {
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField :label="t('style.kindsLabel')">
-              <USelect v-model="form.kinds" :items="kindsItems" value-key="value" class="w-full" :disabled="editingUserStyle" />
+              <ManageSelect v-model="form.kinds" :items="kindsItems" value-key="value" class="w-full" :disabled="editingUserStyle" />
             </UFormField>
             <UFormField :label="t('common.sort')" :help="t('common.sortHintDesc')">
               <UInput v-model.number="form.sortOrder" type="number" class="w-full" />

@@ -163,10 +163,10 @@ async function confirmChange() {
           <UInput v-model="draft.userId" :placeholder="t('order.userPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('order.kind')" :value="applied.kind">
-          <USelect v-model="draft.kind" :items="kindItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.kind" :items="kindItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('order.status')" :value="applied.status">
-          <USelect v-model="draft.status" :items="statusSelectItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusSelectItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 

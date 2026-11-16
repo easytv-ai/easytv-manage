@@ -192,10 +192,10 @@ const num = (v: unknown) => (Number(v) || 0).toLocaleString()
 
     <ManageFilterBar @search="search" @reset="reset">
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('ugc.platformLabel')">
-          <USelect v-model="draft.platform" :items="platformItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.platform" :items="platformItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.keyword')">
           <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('ugc.keywordPh')" class="w-full" @keyup.enter="search" />

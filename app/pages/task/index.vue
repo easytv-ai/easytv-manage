@@ -188,10 +188,10 @@ async function copyPrompt(text: string) {
           <UInput v-model="draft.userId" :placeholder="t('task.userPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.type')" :value="applied.type">
-          <USelect v-model="draft.type" :items="typeItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.type" :items="typeItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')" :value="applied.status">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 

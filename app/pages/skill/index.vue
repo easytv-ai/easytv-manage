@@ -361,16 +361,16 @@ async function confirm() {
           <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('skill.titleRequired')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField v-if="tab === 'all'" :label="t('common.source')">
-          <USelect v-model="draft.source" :items="sourceItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.source" :items="sourceItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.category')">
-          <USelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField v-if="tab === 'all'" :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField v-if="tab === 'all'" :label="t('skill.review.status')">
-          <USelect v-model="draft.reviewStatus" :items="reviewStatusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.reviewStatus" :items="reviewStatusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -474,7 +474,7 @@ async function confirm() {
           </UFormField>
         </div>
         <UFormField :label="t('common.category')" required :error="errors.category || undefined">
-          <USelect v-model="form.category" :items="skillCategories.map(item => ({ label: item.name, value: item.name }))" value-key="value" class="w-full" />
+          <ManageSelect v-model="form.category" :items="skillCategories.map(item => ({ label: item.name, value: item.name }))" value-key="value" class="w-full" />
         </UFormField>
         <UFormField
           :label="t('skill.guide')"

@@ -347,10 +347,10 @@ async function confirm() {
           <UInput v-model="draft.userId" :placeholder="t('notification.userIdPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.type')" :value="applied.type">
-          <USelect v-model="draft.type" :items="filterTypeItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.type" :items="filterTypeItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')" :value="applied.unread">
-          <USelect v-model="draft.unread" :items="unreadItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.unread" :items="unreadItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -409,13 +409,13 @@ async function confirm() {
       <template #body>
         <div class="space-y-4">
           <UFormField :label="t('notification.scope')" required>
-            <USelect v-model="form.scope" :items="scopeItems" value-key="value" class="w-full" />
+            <ManageSelect v-model="form.scope" :items="scopeItems" value-key="value" class="w-full" />
           </UFormField>
           <UFormField v-if="form.scope === 'one'" :label="t('common.userId')" required :error="errors.userId || undefined">
             <UInput v-model="form.userId" :placeholder="t('notification.userIdRequired')" class="w-full" />
           </UFormField>
           <UFormField :label="t('notification.noticeType')" required>
-            <USelect v-model="form.type" :items="sendTypeItems" value-key="value" class="w-full" />
+            <ManageSelect v-model="form.type" :items="sendTypeItems" value-key="value" class="w-full" />
           </UFormField>
           <UFormField :label="t('common.title')" required :error="errors.title || undefined">
             <UInput v-model="form.title" maxlength="100" :placeholder="t('notification.titlePh')" class="w-full" />

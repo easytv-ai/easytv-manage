@@ -172,7 +172,7 @@ const bucketMax = computed(() => Math.max(1, ...(data.value?.retries.buckets ?? 
               {{ t('creationMetrics.lastDays', { n }) }}
             </button>
           </div>
-          <USelect
+          <ManageSelect
             v-model="idleMinutes"
             size="sm"
             class="w-36"

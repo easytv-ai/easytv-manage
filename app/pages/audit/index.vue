@@ -284,7 +284,7 @@ function gotoUser(userId: number) {
           <UInput v-model="draft.userId" :placeholder="t('audit.userEnter')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('audit.logCategory')" :value="applied.category">
-          <USelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('audit.actionId')" :value="applied.action">
           <UInput v-model="draft.action" :placeholder="t('audit.actionIdPh')" class="w-full font-mono" @keyup.enter="search" />
@@ -296,7 +296,7 @@ function gotoUser(userId: number) {
           <UInput v-model="draft.endAt" type="datetime-local" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.result')" :value="applied.success">
-          <USelect v-model="draft.success" :items="successItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.success" :items="successItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 

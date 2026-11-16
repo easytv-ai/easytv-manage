@@ -242,7 +242,7 @@ async function confirmAdjust() {
         </p>
         <div class="space-y-4">
           <UFormField :label="t('wallet.adjustType')" required>
-            <USelect v-model="adjustForm.type" :items="typeItems" value-key="value" class="w-full" />
+            <ManageSelect v-model="adjustForm.type" :items="typeItems" value-key="value" class="w-full" />
           </UFormField>
           <UFormField :label="t('wallet.amount')" required :error="adjustErrors.amount || undefined">
             <UInput v-model="adjustForm.amount" type="number" min="1" :placeholder="t('wallet.amountPh')" class="w-full" />

@@ -347,10 +347,10 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
           <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('user.keywordPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('user.accountFilter')">
-          <USelect v-model="draft.deleted" :items="deletedItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.deleted" :items="deletedItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('user.inviterId')">
           <UInput v-model="draft.inviterId" type="number" min="1" :placeholder="t('user.inviterIdPh')" class="w-full" @keyup.enter="search" />

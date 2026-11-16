@@ -1942,6 +1942,10 @@
       "VisionTextModel": "看圖文字模型"
     },
     "growthPlanModelHint": "留空取模型定價裡第一個生效的文字模型",
+    "growthModelAuto": "自動（留空）",
+    "growthModelSearch": "搜尋模型名",
+    "growthModelOff": "{name}（已停用）",
+    "growthModelMissing": "{name}（不在已啟用列表）",
     "growthPlanPromptHint": "留空使用內建企劃案提示詞。改這裡會立刻影響新的成片企劃，不必發版。",
     "growthPlanPromptPh": "留空使用內建提示詞",
     "growthTranscribeHint": "畫布「語音轉字幕」優先用它，須是已定價且勾了「語音轉寫」的模型；留空按能力位自動挑",

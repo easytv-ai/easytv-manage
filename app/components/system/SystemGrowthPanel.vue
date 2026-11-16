@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { adminModelPriceApi } from '~/api/billing'
+import { parsePaged } from '~/api/creative'
 import settingApi from '~/api/setting'
 import { diffSettingEntries, parseSettingMap, toSettingValue } from '~/utils/admin-setting'
 import { isApiSuccess } from '~/utils/admin-user'
@@ -8,7 +10,8 @@ import { isApiSuccess } from '~/utils/admin-user'
  * 键名与默认值与后端增长配置一致；留空表示使用后端默认值。
  */
 
-type FieldKind = 'int' | 'rate' | 'bool' | 'text' | 'long'
+type FieldKind = 'int' | 'rate' | 'bool' | 'text' | 'long' | 'model'
+type ModelType = 'text' | 'image' | 'video' | 'audio'
 type SectionId = 'signup' | 'checkin' | 'invite' | 'bonus' | 'promo' | 'points' | 'creator' | 'lifecycle'
 
 interface GrowthField {
@@ -16,6 +19,18 @@ interface GrowthField {
   kind: FieldKind
   def: string
   placeholder?: string
+  /** kind=model：按定价表的类型过滤；留空表示不限类型 */
+  modelType?: ModelType
+  /** kind=model：再按能力位过滤（如语音转写） */
+  ability?: string
+}
+
+interface PricedModel {
+  model: string
+  label: string
+  type: string
+  status: number
+  abilities: string
 }
 
 interface GrowthSection {
@@ -103,13 +118,13 @@ const SECTIONS: GrowthSection[] = [
       { key: 'GrowthUgcValidDays', kind: 'int', def: '30' },
       { key: 'ComposeWatermarkEnabled', kind: 'bool', def: 'true' },
       { key: 'ComposePlanPrompt', kind: 'long', def: '' },
-      { key: 'ComposePlanModel', kind: 'text', def: '', placeholder: 'gpt-4o-mini' },
-      { key: 'VisionTextModel', kind: 'text', def: '', placeholder: 'gpt-4o-mini' },
-      { key: 'TranscribeModel', kind: 'text', def: '', placeholder: 'whisper-1' },
-      { key: 'MediaStoryboardModel', kind: 'text', def: '', placeholder: 'gpt-4o-mini' },
-      { key: 'ComposeImageModel', kind: 'text', def: '', placeholder: 'gpt-image-2' },
-      { key: 'ComposeVideoModel', kind: 'text', def: '', placeholder: 'hailuo-02' },
-      { key: 'ComposeAudioModel', kind: 'text', def: '', placeholder: 'gpt-4o-mini-tts' },
+      { key: 'ComposePlanModel', kind: 'model', def: '', modelType: 'text' },
+      { key: 'VisionTextModel', kind: 'model', def: '', modelType: 'text' },
+      { key: 'TranscribeModel', kind: 'model', def: '', ability: 'transcribe' },
+      { key: 'MediaStoryboardModel', kind: 'model', def: '', modelType: 'text' },
+      { key: 'ComposeImageModel', kind: 'model', def: '', modelType: 'image' },
+      { key: 'ComposeVideoModel', kind: 'model', def: '', modelType: 'video' },
+      { key: 'ComposeAudioModel', kind: 'model', def: '', modelType: 'audio' },
     ],
   },
   {
@@ -134,6 +149,7 @@ const { t } = useI18n()
 const { notify } = useNotifyToast()
 
 const loading = ref(true)
+const prices = ref<PricedModel[]>([])
 const form = reactive<Record<string, string | boolean>>({})
 const errors = reactive<Record<string, string>>({})
 const saveLoading = reactive<Record<SectionId, boolean>>({
@@ -177,11 +193,81 @@ function applySettings(map: Record<string, any>) {
   }
 }
 
+function hasAbility(row: PricedModel, ability: string) {
+  const declared = row.abilities.split(',').map(part => part.trim().toLowerCase()).filter(Boolean)
+  if (declared.includes(ability))
+    return true
+  if (ability !== 'transcribe')
+    return false
+  const name = row.model.toLowerCase()
+  return name.includes('transcribe') || name.includes('whisper')
+}
+
+const MODEL_AUTO = '__auto__'
+
+function modelSelectValue(key: string) {
+  const current = String(form[key] ?? '')
+  return current || MODEL_AUTO
+}
+
+function setModel(key: string, value: unknown) {
+  const next = String(value ?? '')
+  form[key] = next === MODEL_AUTO ? '' : next
+}
+
+function modelItems(field: GrowthField) {
+  const current = String(form[field.key] ?? '')
+  const matched = prices.value.filter((row) => {
+    if (field.ability)
+      return hasAbility(row, field.ability)
+    return row.type === field.modelType
+  })
+  const items = [{ label: t('system.growthModelAuto'), value: MODEL_AUTO }]
+  for (const row of matched.filter(row => row.status === 1)) {
+    const label = row.label && row.label !== row.model ? `${row.label}（${row.model}）` : row.model
+    items.push({ label, value: row.model })
+  }
+  if (current && !items.some(item => item.value === current)) {
+    const known = matched.some(row => row.model === current)
+    items.push({
+      label: known ? t('system.growthModelOff', { name: current }) : t('system.growthModelMissing', { name: current }),
+      value: current,
+    })
+  }
+  return items
+}
+
+async function loadPrices() {
+  const items: any[] = []
+  try {
+    for (let page = 1; page <= 10; page++) {
+      const raw = await adminModelPriceApi.list({ page, page_size: 100, sort_by: 'model', order: 'asc' })
+      const parsed = parsePaged(raw)
+      if (!parsed)
+        break
+      items.push(...parsed.items)
+      if (!parsed.items.length || items.length >= parsed.total)
+        break
+    }
+  }
+  catch {
+    prices.value = []
+    return
+  }
+  prices.value = items.map(item => ({
+    model: String(item?.model || ''),
+    label: String(item?.label || ''),
+    type: String(item?.type || ''),
+    status: Number(item?.status) === 2 ? 2 : 1,
+    abilities: String(item?.abilities || ''),
+  })).filter(item => item.model)
+}
+
 async function refresh(opts?: { silent?: boolean }) {
   if (!opts?.silent)
     loading.value = true
   try {
-    const raw = await settingApi.list()
+    const [, raw] = await Promise.all([loadPrices(), settingApi.list()])
     const map = parseSettingMap(raw)
     if (!map) {
       notify((raw as any)?.message ?? t('system.loadFail'), 'error')
@@ -336,6 +422,15 @@ function toggleBool(key: string) {
               class="w-full"
               :placeholder="field.placeholder ?? t('system.growthPlanPromptPh')"
               @update:model-value="form[field.key] = String($event ?? '')"
+            />
+            <USelectMenu
+              v-else-if="field.kind === 'model'"
+              :model-value="modelSelectValue(field.key)"
+              :items="modelItems(field)"
+              value-key="value"
+              :search-input="{ placeholder: t('system.growthModelSearch'), icon: 'i-lucide-search' }"
+              class="w-full"
+              @update:model-value="setModel(field.key, $event)"
             />
             <UInput
               v-else-if="field.kind === 'text'"

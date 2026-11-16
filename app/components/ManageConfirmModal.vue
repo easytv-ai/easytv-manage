@@ -29,15 +29,6 @@ const confirmLabel = computed(() => props.confirmText || t('common.confirm'))
 const cancelLabel = computed(() => props.cancelText || t('common.cancel'))
 const loadingLabel = computed(() => props.loadingText || t('common.processing'))
 
-const TONE_STYLE: Record<Tone, { icon: string, badge: string }> = {
-  error: { icon: 'i-lucide-trash-2', badge: 'bg-error/10 text-error ring-error/5' },
-  warning: { icon: 'i-lucide-triangle-alert', badge: 'bg-warning/10 text-warning ring-warning/5' },
-  primary: { icon: 'i-lucide-circle-help', badge: 'bg-primary/10 text-primary ring-primary/5' },
-  success: { icon: 'i-lucide-circle-check', badge: 'bg-success/10 text-success ring-success/5' },
-}
-
-const style = computed(() => TONE_STYLE[props.tone])
-
 function close() {
   if (!props.loading)
     open.value = false
@@ -50,25 +41,23 @@ function close() {
     :title="title"
     :description="description || title"
     :dismissible="!loading"
-    :ui="{ content: 'w-[min(calc(100vw-2rem),28rem)] divide-y-0' }"
+    :ui="{ content: 'manage-confirm-modal w-[min(calc(100vw-2rem),26rem)]' }"
   >
     <template #content>
-      <div class="flex gap-4 p-6">
-        <span class="flex size-11 shrink-0 items-center justify-center rounded-full ring-8" :class="style.badge">
-          <UIcon :name="icon || style.icon" class="size-5" />
-        </span>
-        <div class="min-w-0 flex-1 pt-0.5">
-          <h3 class="text-base font-semibold tracking-tight text-highlighted">{{ title }}</h3>
-          <div class="mt-2 text-sm leading-relaxed text-muted">
-            <slot>{{ description }}</slot>
-          </div>
+      <div class="manage-confirm">
+        <h3>
+          <UIcon v-if="icon" :name="icon" class="size-4" />
+          {{ title }}
+        </h3>
+        <div class="manage-confirm__body">
+          <slot>{{ description }}</slot>
         </div>
-      </div>
-      <div class="flex justify-end gap-2 border-t border-default bg-elevated/50 px-6 py-4">
-        <UButton type="button" color="neutral" variant="outline" :disabled="loading" @click="close">{{ cancelLabel }}</UButton>
-        <UButton type="button" :color="tone" :loading="loading" :disabled="loading || disabled" @click="emit('confirm')">
-          {{ loading ? loadingLabel : confirmLabel }}
-        </UButton>
+        <div class="manage-confirm__actions">
+          <UButton type="button" color="neutral" variant="outline" :disabled="loading" @click="close">{{ cancelLabel }}</UButton>
+          <UButton type="button" :color="tone" :loading="loading" :disabled="loading || disabled" @click="emit('confirm')">
+            {{ loading ? loadingLabel : confirmLabel }}
+          </UButton>
+        </div>
       </div>
     </template>
   </UModal>

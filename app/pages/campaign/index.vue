@@ -452,7 +452,7 @@ const num = (v: unknown) => (Number(v) || 0).toLocaleString()
           <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('campaign.keywordPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -537,7 +537,7 @@ const num = (v: unknown) => (Number(v) || 0).toLocaleString()
             <UInput v-model="form.tag" maxlength="30" class="w-full" />
           </UFormField>
           <UFormField :label="t('common.status')">
-            <USelect v-if="form.status !== 3" v-model="form.status" :items="formStatusItems" value-key="value" class="w-full" />
+            <ManageSelect v-if="form.status !== 3" v-model="form.status" :items="formStatusItems" value-key="value" class="w-full" />
             <UInput v-else :model-value="statusText(3)" disabled class="w-full" />
           </UFormField>
           <UFormField :label="t('campaign.startsAt')" required>
@@ -629,7 +629,7 @@ const num = (v: unknown) => (Number(v) || 0).toLocaleString()
       <template #body>
         <div class="space-y-4">
           <UFormField :label="t('common.status')">
-            <USelect v-model="entriesStatus" :items="entryStatusItems" value-key="value" class="w-full sm:w-48" />
+            <ManageSelect v-model="entriesStatus" :items="entryStatusItems" value-key="value" class="w-full sm:w-48" />
           </UFormField>
           <div v-if="entriesLoading && !entries.length" class="flex min-h-40 items-center justify-center text-zinc-500">
             <UIcon name="i-lucide-loader-circle" class="size-6 animate-spin" />

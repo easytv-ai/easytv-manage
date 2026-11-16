@@ -509,10 +509,10 @@ async function removeSource(item: SourceRow) {
           <UInput v-model="draft.tag" :placeholder="t('prompt.tagPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('prompt.source')">
-          <USelect v-model="draft.sourceId" :items="sourceItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.sourceId" :items="sourceItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -745,7 +745,7 @@ async function removeSource(item: SourceRow) {
             <UInput v-model="sourceForm.url" placeholder="https://raw.githubusercontent.com/owner/repo/main/README.md" class="w-full" />
           </UFormField>
           <UFormField :label="t('prompt.parseFormat')" :help="t('prompt.parseHelpAlt')">
-            <USelect v-model="sourceForm.format" :items="formatItems" value-key="value" class="w-full" />
+            <ManageSelect v-model="sourceForm.format" :items="formatItems" value-key="value" class="w-full" />
           </UFormField>
           <UFormField :label="t('prompt.unifyTag')" :help="t('prompt.unifyHelpAlt')">
             <UInput v-model="sourceForm.tag" maxlength="50" :placeholder="t('prompt.optionalShort')" class="w-full" />

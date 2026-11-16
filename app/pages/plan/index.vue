@@ -756,7 +756,7 @@ async function confirmChange() {
               </UInput>
             </UFormField>
             <UFormField :label="t('plan.validDays')" required>
-              <USelect v-model="packForm.days" :items="dayItems" value-key="value" class="w-full" />
+              <ManageSelect v-model="packForm.days" :items="dayItems" value-key="value" class="w-full" />
             </UFormField>
           </div>
           <div class="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800" @click="packForm.featured = !packForm.featured">

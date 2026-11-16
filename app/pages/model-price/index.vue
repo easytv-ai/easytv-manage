@@ -641,6 +641,15 @@ async function submit() {
   }
 }
 
+/** 网关把 description 写进了展示名。句子很长时不当成名字引用，改用模型标识。 */
+function confirmName(item: PriceRow | null) {
+  if (!item)
+    return ''
+  const label = item.label.trim()
+  const shortName = label && label !== item.model && label.length <= 32 && !/[;。]/.test(label) && !label.includes('. ')
+  return shortName ? `${label}（${item.model}）` : item.model
+}
+
 function requestConfirm(item: PriceRow, action: 'status' | 'delete') {
   confirmItem.value = item
   confirmAction.value = action
@@ -837,10 +846,10 @@ async function confirmImport() {
           <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('modelPrice.filterKeywordPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('modelPrice.filterType')">
-          <USelect v-model="draft.type" :items="filterTypeItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.type" :items="filterTypeItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('modelPrice.filterStatus')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -972,14 +981,14 @@ async function confirmImport() {
       v-model:open="confirmOpen"
       :title="confirmAction === 'delete' ? t('modelPrice.confirmDelete') : t('modelPrice.confirmStatus', { action: confirmItem?.status === 1 ? t('modelPrice.disable') : t('modelPrice.enable') })"
       :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
-      :confirm-text="t('common.confirm')"
+      :confirm-text="confirmAction === 'delete' ? t('common.delete') : t('common.confirm')"
       :cancel-text="t('common.cancel')"
       :loading-text="t('common.processing')"
       :loading="confirming"
       @confirm="confirm"
     >
-      {{ t('modelPrice.confirmBody', { action: confirmAction === 'delete' ? t('common.delete') : (confirmItem?.status === 1 ? t('modelPrice.disable') : t('modelPrice.enable')), name: confirmItem?.label || confirmItem?.model }) }}
-      <template v-if="confirmAction === 'delete' || confirmItem?.status === 1">{{ t('modelPrice.confirmWarn') }}</template>
+      <p>{{ t('modelPrice.confirmBody', { action: confirmAction === 'delete' ? t('common.delete') : (confirmItem?.status === 1 ? t('modelPrice.disable') : t('modelPrice.enable')), name: confirmName(confirmItem) }) }}</p>
+      <p v-if="confirmAction === 'delete' || confirmItem?.status === 1">{{ t('modelPrice.confirmWarn') }}</p>
     </ManageConfirmModal>
 
     <USlideover
@@ -999,7 +1008,7 @@ async function confirmImport() {
               icon="i-lucide-search"
               class="w-full"
             />
-            <USelect v-model="browseType" :items="browseTypeItems" value-key="value" class="w-full" />
+            <ManageSelect v-model="browseType" :items="browseTypeItems" value-key="value" class="w-full" />
           </div>
           <div class="min-h-0 flex-1 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
             <div v-if="filteredUnpriced.length === 0" class="px-4 py-10 text-center text-sm text-zinc-500">
@@ -1081,7 +1090,7 @@ async function confirmImport() {
       <template #body>
         <div class="space-y-5">
           <UFormField :label="t('modelPrice.colModel')" required :error="errors.model || undefined" :help="t('modelPrice.modelHint')">
-            <USelect
+            <ManageSelect
               v-if="!editing && modelOptions.length"
               :model-value="form.model"
               :items="modelOptions"
@@ -1104,7 +1113,7 @@ async function confirmImport() {
                   <span class="block truncate">{{ item.label }}</span>
                 </UTooltip>
               </template>
-            </USelect>
+            </ManageSelect>
             <UInput v-model="form.model" :disabled="!!editing" maxlength="100" placeholder="例如 kling-v1" class="w-full font-mono" />
           </UFormField>
           <UFormField :label="t('modelPrice.colLabel')">
@@ -1112,10 +1121,10 @@ async function confirmImport() {
           </UFormField>
           <div class="grid gap-4 sm:grid-cols-2">
             <UFormField :label="t('modelPrice.colType')" required>
-              <USelect v-model="form.type" :items="typeItems" value-key="value" :ui="modalSelectUi" class="w-full" />
+              <ManageSelect v-model="form.type" :items="typeItems" value-key="value" :ui="modalSelectUi" class="w-full" />
             </UFormField>
             <UFormField :label="t('modelPrice.colUnit')" required>
-              <USelect v-model="form.unit" :items="unitItems" value-key="value" :ui="modalSelectUi" class="w-full" />
+              <ManageSelect v-model="form.unit" :items="unitItems" value-key="value" :ui="modalSelectUi" class="w-full" />
             </UFormField>
           </div>
           <div class="grid gap-4 sm:grid-cols-2">
@@ -1173,7 +1182,7 @@ async function confirmImport() {
                 <USwitch v-model="form.frameMatch" :label="t('modelPrice.frameMatchOn')" />
               </UFormField>
               <UFormField v-if="form.type === 'image'" :label="t('modelPrice.imageInput')" :help="t('modelPrice.imageInputHelp')" class="sm:col-span-2">
-                <USelect v-model="form.imageInput" :items="imageInputItems" value-key="value" :ui="modalSelectUi" class="w-full" />
+                <ManageSelect v-model="form.imageInput" :items="imageInputItems" value-key="value" :ui="modalSelectUi" class="w-full" />
               </UFormField>
               <UFormField v-if="form.type === 'video' || form.type === 'audio' || form.type === 'image'" :label="t('modelPrice.abilities')" :help="t('modelPrice.abilitiesHelp')" class="sm:col-span-2">
                 <div class="flex flex-wrap gap-x-5 gap-y-2">

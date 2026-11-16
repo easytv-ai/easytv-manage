@@ -1942,6 +1942,10 @@
       "VisionTextModel": "Vision text model"
     },
     "growthPlanModelHint": "Leave empty to use the first active text model in model pricing",
+    "growthModelAuto": "Automatic (leave empty)",
+    "growthModelSearch": "Search models",
+    "growthModelOff": "{name} (disabled)",
+    "growthModelMissing": "{name} (not in the enabled list)",
     "growthPlanPromptHint": "Leave empty to use the built-in screenplay prompt. Changes apply to new compositions immediately.",
     "growthPlanPromptPh": "Leave empty for the built-in prompt",
     "growthTranscribeHint": "Preferred model for speech-to-subtitle. Must be a priced model tagged Transcribe; leave empty to pick by capability.",

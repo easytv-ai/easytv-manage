@@ -324,10 +324,10 @@ async function confirm() {
           <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('showcase.filterTitlePh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.category')">
-          <USelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.category" :items="categoryItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -405,7 +405,7 @@ async function confirm() {
               <UButton type="button" color="neutral" variant="link" size="sm" icon="i-lucide-x" :aria-label="t('showcase.clearKeyword')" @click="clearPickKeyword" />
             </template>
           </UInput>
-          <USelect v-model="pickCategory" :items="categoryItems" value-key="value" class="w-36" @update:model-value="loadPick" />
+          <ManageSelect v-model="pickCategory" :items="categoryItems" value-key="value" class="w-36" @update:model-value="loadPick" />
           <UButton type="button" icon="i-lucide-search" :loading="pickLoading" @click="loadPick">{{ t('common.search') }}</UButton>
         </div>
 
@@ -495,7 +495,7 @@ async function confirm() {
             <UInput :model-value="editing?.authorName ?? ''" disabled class="w-full" />
           </UFormField>
           <UFormField :label="t('common.category')">
-            <USelect v-model="form.category" :items="formCategoryItems" value-key="value" :placeholder="t('showcase.categoryPick')" class="w-full" />
+            <ManageSelect v-model="form.category" :items="formCategoryItems" value-key="value" :placeholder="t('showcase.categoryPick')" class="w-full" />
           </UFormField>
           <UFormField :label="t('showcase.coverAddress')" :hint="t('showcase.coverHintEmpty')">
             <UInput v-model="form.cover" placeholder="https://… /upload/…" class="w-full" />

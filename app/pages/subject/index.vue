@@ -192,10 +192,10 @@ function refUrl(url: string) {
           <UInput icon="i-lucide-search" v-model="draft.keyword" :placeholder="t('subject.keywordPh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.type')">
-          <USelect v-model="draft.kind" :items="kindItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.kind" :items="kindItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('subject.colShared')">
-          <USelect v-model="draft.shared" :items="sharedItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.shared" :items="sharedItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.userId')" :error="errors.userId || undefined">
           <UInput v-model="draft.userId" :placeholder="t('subject.userIdPh')" class="w-full" @keyup.enter="search" />

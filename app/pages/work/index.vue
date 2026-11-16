@@ -250,10 +250,10 @@ async function confirm() {
           <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('work.titlePh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('work.langLabel')">
-          <USelect v-model="draft.lang" :items="langItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.lang" :items="langItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -356,7 +356,7 @@ async function confirm() {
           <UInput :model-value="editing?.authorName ?? ''" disabled class="w-full" />
         </UFormField>
         <UFormField :label="t('common.category')">
-          <USelect v-model="form.category" :items="formCategoryItems" value-key="value" :placeholder="t('skill.categoryRequired')" class="w-full" />
+          <ManageSelect v-model="form.category" :items="formCategoryItems" value-key="value" :placeholder="t('skill.categoryRequired')" class="w-full" />
         </UFormField>
         <UFormField :label="t('skill.review.descriptionLabel')" :hint="t('common.optional')">
           <UTextarea v-model="form.description" :rows="3" maxlength="1000" :placeholder="t('skill.descRequired')" class="w-full" />

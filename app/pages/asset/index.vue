@@ -203,10 +203,10 @@ async function confirm() {
           <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('asset.namePh')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.type')">
-          <USelect v-model="draft.type" :items="typeItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.type" :items="typeItems" value-key="value" class="w-full" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 

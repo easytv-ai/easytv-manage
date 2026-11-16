@@ -179,7 +179,7 @@ async function confirm() {
           <UInput icon="i-lucide-search" v-model="draft.title" :placeholder="t('notice.titleField')" class="w-full" @keyup.enter="search" />
         </ManageFilterField>
         <ManageFilterField :label="t('common.status')">
-          <USelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
+          <ManageSelect v-model="draft.status" :items="statusItems" value-key="value" class="w-full" />
         </ManageFilterField>
     </ManageFilterBar>
 
@@ -241,7 +241,7 @@ async function confirm() {
           </UFormField>
           <div class="grid items-stretch gap-4 sm:grid-cols-2">
             <UFormField :label="t('common.type')">
-              <USelect v-model="form.type" :items="typeItems" value-key="value" class="w-full" />
+              <ManageSelect v-model="form.type" :items="typeItems" value-key="value" class="w-full" />
             </UFormField>
             <UFormField
               :label="t('common.pin')"

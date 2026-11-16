@@ -331,7 +331,7 @@ function toggleBool(key: 'enabled' | 'free') {
           :help="t('system.chatModelHelp')"
           :error="errors.model || undefined"
         >
-          <USelect
+          <ManageSelect
             v-model="form.model"
             :items="modelItems"
             :title="selectedModel ? modelTipText(selectedModel) : undefined"
@@ -349,7 +349,7 @@ function toggleBool(key: 'enabled' | 'free') {
                 <span class="block truncate">{{ item.label }}</span>
               </UTooltip>
             </template>
-          </USelect>
+          </ManageSelect>
         </UFormField>
         <UFormField
           :label="t('system.chatMaxTokens')"
@@ -371,7 +371,7 @@ function toggleBool(key: 'enabled' | 'free') {
           :help="t('system.chatThinkingModeHelp')"
           :error="errors.thinkingMode || undefined"
         >
-          <USelect
+          <ManageSelect
             v-model="form.thinkingMode"
             :items="thinkingModeItems"
             value-key="value"
@@ -383,7 +383,7 @@ function toggleBool(key: 'enabled' | 'free') {
           :help="t('system.chatThinkingEffortHelp')"
           :error="errors.thinkingEffort || undefined"
         >
-          <USelect
+          <ManageSelect
             v-model="form.thinkingEffort"
             :items="thinkingEffortItems"
             value-key="value"

@@ -41,7 +41,7 @@ const sizeItems = computed(() => props.pageSizeItems ?? consolePageSizeSelectIte
         active-color="primary"
         class="shrink-0"
       />
-      <USelect
+      <ManageSelect
         v-if="showPageSize"
         v-model="pageSize"
         :items="sizeItems"
