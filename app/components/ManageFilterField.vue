@@ -18,7 +18,8 @@ async function revealIfHidden() {
   if (!active.value || !expandBar)
     return
   await nextTick()
-  if (root.value && getComputedStyle(root.value).display === 'none')
+  const el = root.value
+  if (el && getComputedStyle(el as unknown as Element).display === 'none')
     expandBar()
 }
 onMounted(revealIfHidden)
