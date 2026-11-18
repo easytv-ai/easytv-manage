@@ -224,8 +224,8 @@ function modelItems(field: GrowthField) {
   })
   const items = [{ label: t('system.growthModelAuto'), value: MODEL_AUTO }]
   for (const row of matched.filter(row => row.status === 1)) {
-    const label = row.label && row.label !== row.model ? `${row.label}（${row.model}）` : row.model
-    items.push({ label, value: row.model })
+    // 定价表的 label 是网关长描述，下拉里放前面会被截断，选中后看不出模型标识
+    items.push({ label: row.model, value: row.model })
   }
   if (current && !items.some(item => item.value === current)) {
     const known = matched.some(row => row.model === current)
