@@ -29,12 +29,16 @@ const COVER_MAX_BYTES = 8 * 1024 * 1024
 const COVER_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif']
 const coverPreviewUrl = computed(() => form.cover.trim() ? resolveMediaUrl(form.cover) : '')
 const confirmOpen = ref(false)
-const confirmAction = ref<'status' | 'delete'>('status')
+const confirmAction = ref<'status' | 'delete' | 'batch-status' | 'batch-delete'>('status')
 const confirmItem = ref<AdminWork | null>(null)
 const confirming = ref(false)
+const batchIds = ref<number[]>([])
 
 /** 与旧模板兼容：filtered/pageRows 直接指向服务端当前页 */
 const pageRows = computed(() => rows.value)
+const { selected, selectedSet, allSelected, someSelected, toggleAll, toggleOne, clearSelection } = useRowSelection(pageRows)
+const selectedRows = computed(() => pageRows.value.filter(item => selectedSet.value.has(item.id)))
+const selectedOnShelf = computed(() => selectedRows.value.filter(item => item.status === 1))
 const DRAFT_DEFAULT = { title: '', status: '__all__', lang: SELECT_ITEM_ALL }
 const API = adminWorkApi
 const LANGS = ['zh', 'en', 'ja', 'ko', 'es', 'fr'] as const
@@ -218,7 +222,65 @@ function requestConfirm(item: AdminWork, action: 'status' | 'delete') {
   confirmAction.value = action
   confirmOpen.value = true
 }
+function requestBatch(action: 'status' | 'delete') {
+  const targets = action === 'status' ? selectedOnShelf.value : selectedRows.value
+  if (!targets.length || confirming.value)
+    return
+  batchIds.value = targets.map(item => item.id)
+  confirmItem.value = null
+  confirmAction.value = action === 'status' ? 'batch-status' : 'batch-delete'
+  confirmOpen.value = true
+}
+const confirmTitle = computed(() => {
+  if (confirmAction.value === 'batch-delete')
+    return t('work.confirmBatchDelete')
+  if (confirmAction.value === 'batch-status')
+    return t('work.confirmBatchOff')
+  if (confirmAction.value === 'delete')
+    return t('work.confirmDelete')
+  return t('work.confirmStatus', { action: confirmItem.value?.status === 1 ? t('common.takeDown') : t('common.putOn') })
+})
+const confirmTone = computed(() => {
+  if (confirmAction.value === 'delete' || confirmAction.value === 'batch-delete')
+    return 'error' as const
+  if (confirmAction.value === 'batch-status' || confirmItem.value?.status === 1)
+    return 'warning' as const
+  return 'success' as const
+})
+async function confirmBatch() {
+  const ids = [...batchIds.value]
+  const action = confirmAction.value
+  if (!ids.length)
+    return
+  confirming.value = true
+  try {
+    const { ok, fail } = await runLimited(ids, 4, async (id) => {
+      const raw = action === 'batch-delete'
+        ? await API.remove(id)
+        : await API.setStatus(id, 2)
+      return isOk(raw)
+    })
+    if (!ok) {
+      notify(t('common.batchFail'), 'error')
+      return
+    }
+    const done = action === 'batch-delete'
+      ? t('work.batchDeleted', { n: ok })
+      : t('work.batchOffShelf', { n: ok })
+    notify(fail ? t('common.batchPartial', { ok, fail }) : done, fail ? 'warning' : 'success')
+    confirmOpen.value = false
+    clearSelection()
+    await fetchList(`b-${Date.now()}`)
+  }
+  finally {
+    confirming.value = false
+  }
+}
 async function confirm() {
+  if (confirmAction.value === 'batch-delete' || confirmAction.value === 'batch-status') {
+    await confirmBatch()
+    return
+  }
   if (!confirmItem.value)
     return
   confirming.value = true
@@ -270,10 +332,32 @@ async function confirm() {
         class="min-h-72"
       />
       <template v-else>
+        <ManageSelectionBar v-if="selected.length" :count="selected.length" @clear="clearSelection">
+          <UButton
+            type="button"
+            size="sm"
+            variant="soft"
+            color="warning"
+            :disabled="!selectedOnShelf.length || confirming"
+            @click="requestBatch('status')"
+          >
+            {{ t('work.batchTakeDown') }}{{ selectedOnShelf.length ? ` (${selectedOnShelf.length})` : '' }}
+          </UButton>
+          <UButton type="button" size="sm" variant="soft" color="error" :disabled="confirming" @click="requestBatch('delete')">
+            {{ t('work.batchDelete') }} ({{ selected.length }})
+          </UButton>
+        </ManageSelectionBar>
         <div class="overflow-x-auto">
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">
+                  <UCheckbox
+                    :model-value="allSelected ? true : someSelected ? 'indeterminate' : false"
+                    :aria-label="t('common.selectAll')"
+                    @update:model-value="toggleAll"
+                  />
+                </th>
                 <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.title') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.colAuthor') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.langLabel') }}</th>
@@ -287,6 +371,13 @@ async function confirm() {
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="work in pageRows" :key="work.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
+                  <UCheckbox
+                    :model-value="selectedSet.has(work.id)"
+                    :aria-label="t('common.selectRow')"
+                    @update:model-value="toggleOne(work.id, $event === true)"
+                  />
+                </td>
                 <td class="max-w-0 w-full px-4 py-3 text-left">
                   <div class="flex min-w-0 items-center gap-3">
                     <div class="h-16 w-28 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700">
@@ -388,12 +479,14 @@ async function confirm() {
 
     <ManageConfirmModal
       v-model:open="confirmOpen"
-      :title="confirmAction === 'delete' ? t('work.confirmDelete') : t('work.confirmStatus', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn') })"
-      :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
+      :title="confirmTitle"
+      :tone="confirmTone"
       :loading="confirming"
       @confirm="confirm"
     >
-      <template v-if="confirmAction === 'delete'">{{ t('work.confirmDeleteBody', { name: confirmItem?.title }) }}</template>
+      <template v-if="confirmAction === 'batch-delete'">{{ t('work.confirmBatchDeleteBody', { n: batchIds.length }) }}</template>
+      <template v-else-if="confirmAction === 'batch-status'">{{ t('work.confirmBatchOffBody', { n: batchIds.length }) }}</template>
+      <template v-else-if="confirmAction === 'delete'">{{ t('work.confirmDeleteBody', { name: confirmItem?.title }) }}</template>
       <template v-else>{{ t('common.confirmNamed', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn'), name: confirmItem?.title }) }}</template>
     </ManageConfirmModal>
   </div>

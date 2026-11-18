@@ -22,9 +22,10 @@ const form = reactive({ title: '', category: '', cover: '', sortOrder: 0 })
 const errors = reactive({ title: '' })
 const saving = ref(false)
 const confirmOpen = ref(false)
-const confirmAction = ref<'status' | 'delete'>('status')
+const confirmAction = ref<'status' | 'delete' | 'batch-status' | 'batch-remove'>('status')
 const confirmItem = ref<AdminShowcase | null>(null)
 const confirming = ref(false)
+const batchIds = ref<number[]>([])
 
 /** 成片分类（后台「内容分类」维护） */
 const categories = ref<string[]>([])
@@ -45,6 +46,9 @@ const statusItems = computed(() => [
 ])
 
 const pageRows = computed(() => rows.value)
+const { selected, selectedSet, allSelected, someSelected, toggleAll, toggleOne, clearSelection } = useRowSelection(pageRows)
+const selectedRows = computed(() => pageRows.value.filter(item => selectedSet.value.has(item.id)))
+const selectedOnShelf = computed(() => selectedRows.value.filter(item => item.status === 1))
 /** 接口原始字段，编辑回填用 */
 const raws = new Map<number, any>()
 
@@ -287,8 +291,65 @@ function requestConfirm(item: AdminShowcase, action: 'status' | 'delete') {
   confirmAction.value = action
   confirmOpen.value = true
 }
-
+function requestBatch(action: 'status' | 'remove') {
+  const targets = action === 'status' ? selectedOnShelf.value : selectedRows.value
+  if (!targets.length || confirming.value)
+    return
+  batchIds.value = targets.map(item => item.id)
+  confirmItem.value = null
+  confirmAction.value = action === 'status' ? 'batch-status' : 'batch-remove'
+  confirmOpen.value = true
+}
+const confirmTitle = computed(() => {
+  if (confirmAction.value === 'batch-remove')
+    return t('showcase.confirmBatchRemove')
+  if (confirmAction.value === 'batch-status')
+    return t('showcase.confirmBatchOff')
+  if (confirmAction.value === 'delete')
+    return t('showcase.confirmRemove')
+  return t('showcase.confirmStatus', { action: confirmItem.value?.status === 1 ? t('common.takeDown') : t('common.putOn') })
+})
+const confirmTone = computed(() => {
+  if (confirmAction.value === 'delete' || confirmAction.value === 'batch-remove')
+    return 'error' as const
+  if (confirmAction.value === 'batch-status' || confirmItem.value?.status === 1)
+    return 'warning' as const
+  return 'success' as const
+})
+async function confirmBatch() {
+  const ids = [...batchIds.value]
+  const action = confirmAction.value
+  if (!ids.length)
+    return
+  confirming.value = true
+  try {
+    const { ok, fail } = await runLimited(ids, 4, async (id) => {
+      const raw = action === 'batch-remove'
+        ? await adminWorkApi.update(id, { featured: 0 })
+        : await adminWorkApi.setStatus(id, 2)
+      return isOk(raw)
+    })
+    if (!ok) {
+      notify(t('common.batchFail'), 'error')
+      return
+    }
+    const done = action === 'batch-remove'
+      ? t('showcase.batchRemoved', { n: ok })
+      : t('showcase.batchOffShelf', { n: ok })
+    notify(fail ? t('common.batchPartial', { ok, fail }) : done, fail ? 'warning' : 'success')
+    confirmOpen.value = false
+    clearSelection()
+    await fetchList(`b-${Date.now()}`)
+  }
+  finally {
+    confirming.value = false
+  }
+}
 async function confirm() {
+  if (confirmAction.value === 'batch-remove' || confirmAction.value === 'batch-status') {
+    await confirmBatch()
+    return
+  }
   if (!confirmItem.value)
     return
   confirming.value = true
@@ -338,10 +399,32 @@ async function confirm() {
       </div>
       <UEmpty v-else-if="pageRows.length === 0" icon="i-lucide-film" :title="t('showcase.empty')" :description="t('showcase.emptyDesc')" class="min-h-72" />
       <template v-else>
+        <ManageSelectionBar v-if="selected.length" :count="selected.length" @clear="clearSelection">
+          <UButton
+            type="button"
+            size="sm"
+            variant="soft"
+            color="warning"
+            :disabled="!selectedOnShelf.length || confirming"
+            @click="requestBatch('status')"
+          >
+            {{ t('showcase.batchTakeDown') }}{{ selectedOnShelf.length ? ` (${selectedOnShelf.length})` : '' }}
+          </UButton>
+          <UButton type="button" size="sm" variant="soft" color="error" :disabled="confirming" @click="requestBatch('remove')">
+            {{ t('showcase.batchRemove') }} ({{ selected.length }})
+          </UButton>
+        </ManageSelectionBar>
         <div class="overflow-x-auto">
           <table class="w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
             <thead class="bg-zinc-50 text-left text-xs font-medium text-zinc-500 dark:bg-zinc-900">
               <tr>
+                <th class="w-[1%] whitespace-nowrap px-4 py-3">
+                  <UCheckbox
+                    :model-value="allSelected ? true : someSelected ? 'indeterminate' : false"
+                    :aria-label="t('common.selectAll')"
+                    @update:model-value="toggleAll"
+                  />
+                </th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.sort') }}</th>
                 <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('showcase.colTitle') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('showcase.authorName') }}</th>
@@ -353,6 +436,13 @@ async function confirm() {
             </thead>
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in pageRows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+                <td class="w-[1%] whitespace-nowrap px-4 py-3">
+                  <UCheckbox
+                    :model-value="selectedSet.has(item.id)"
+                    :aria-label="t('common.selectRow')"
+                    @update:model-value="toggleOne(item.id, $event === true)"
+                  />
+                </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.sortOrder }}</td>
                 <td class="max-w-0 w-full px-4 py-3 text-left">
                   <div class="flex min-w-0 items-center gap-3">
@@ -514,13 +604,15 @@ async function confirm() {
 
     <ManageConfirmModal
       v-model:open="confirmOpen"
-      :title="confirmAction === 'delete' ? t('showcase.confirmRemove') : t('showcase.confirmStatus', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn') })"
-      :tone="confirmAction === 'delete' ? 'error' : confirmItem?.status === 1 ? 'warning' : 'success'"
-      :icon="confirmAction === 'delete' ? 'i-lucide-star-off' : ''"
+      :title="confirmTitle"
+      :tone="confirmTone"
+      :icon="confirmAction === 'delete' || confirmAction === 'batch-remove' ? 'i-lucide-star-off' : ''"
       :loading="confirming"
       @confirm="confirm"
     >
-      <template v-if="confirmAction === 'delete'">{{ t('showcase.removeAsk', { name: confirmItem?.title }) }}</template>
+      <template v-if="confirmAction === 'batch-remove'">{{ t('showcase.confirmBatchRemoveBody', { n: batchIds.length }) }}</template>
+      <template v-else-if="confirmAction === 'batch-status'">{{ t('showcase.confirmBatchOffBody', { n: batchIds.length }) }}</template>
+      <template v-else-if="confirmAction === 'delete'">{{ t('showcase.removeAsk', { name: confirmItem?.title }) }}</template>
       <template v-else>{{ t('showcase.statusAsk', { action: confirmItem?.status === 1 ? t('common.takeDown') : t('common.putOn'), name: confirmItem?.title, extra: confirmItem?.status === 1 ? t('showcase.confirmWarn') : '' }) }}</template>
     </ManageConfirmModal>
   </div>
