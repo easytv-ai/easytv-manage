@@ -58,7 +58,7 @@ the UI with the demo account shown on the login page.
 
 ### First-run checklist
 
-1. **System → Gateway**: enter the URL and key of your New API-compatible
+1. **System → Gateway**: enter the URL and key of your OpenAI-compatible
    gateway, fetch the model list and import pricing.
 2. **System → Site**: set the public studio URL used in invite links and
    callbacks.
