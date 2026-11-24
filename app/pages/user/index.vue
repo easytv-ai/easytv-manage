@@ -4,10 +4,10 @@ import type { AdminUser } from '~/types/easytv-admin'
 import userApi from '~/api/user'
 import {
   isApiSuccess,
-  isHttpAvatar,
   parseUserListResponse,
 } from '~/utils/admin-user'
 import { CONSOLE_DEFAULT_PAGE_SIZE } from '~/utils/consoleSelectItems'
+import { resolveMediaUrl } from '~/utils/media'
 
 const { t } = useI18n()
 useHead({
@@ -99,6 +99,10 @@ function identityText(user: AdminUser) {
 
 function avatarLetter(user: AdminUser) {
   return (user.nickname || user.username || '?').slice(0, 1)
+}
+
+function avatarSrc(user: AdminUser) {
+  return resolveMediaUrl(user.avatar)
 }
 
 function buildListQuery() {
@@ -393,15 +397,14 @@ function moreItems(user: AdminUser): DropdownMenuItem[] {
               <tr v-for="user in pageRows" :key="user.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <img
-                    v-if="isHttpAvatar(user.avatar)"
-                    :src="user.avatar!"
+                    v-if="avatarSrc(user)"
+                    :src="avatarSrc(user)"
                     :alt="user.nickname"
                     class="size-8 shrink-0 rounded-full object-cover"
                   >
                   <span
                     v-else
-                    class="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-                    :style="{ backgroundColor: user.avatar || '#94a3b8' }"
+                    class="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-zinc-400 text-xs font-semibold text-white"
                   >
                     {{ avatarLetter(user) }}
                   </span>

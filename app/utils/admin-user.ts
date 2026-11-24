@@ -64,10 +64,6 @@ export function userRoleLabel(role: number): string {
   }
 }
 
-export function isHttpAvatar(avatar: string | null | undefined): boolean {
-  return !!avatar && /^https?:\/\//i.test(avatar)
-}
-
 function toMs(ts: number | string | null | undefined): number | null {
   if (ts == null || ts === '')
     return null

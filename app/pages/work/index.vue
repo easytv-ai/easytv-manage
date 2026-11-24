@@ -63,10 +63,6 @@ function langOf(item: AdminWork) {
   const code = String(raws.get(item.id)?.lang || 'zh')
   return (LANGS as readonly string[]).includes(code) ? t(`work.lang.${code}`) : code
 }
-function formatDuration(sec: number) {
-  const total = Math.max(0, Math.round(Number(sec) || 0))
-  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
-}
 function toRow(item: any): AdminWork {
   raws.set(item.id, item)
   return {
@@ -75,7 +71,6 @@ function toRow(item: any): AdminWork {
     title: item.title,
     cover: resolveMediaUrl(item.cover_url) || DEFAULT_WORK_COVER,
     authorName: item.author?.nickname || `#${item.user_id}`,
-    duration: formatDuration(item.duration),
     playCount: Number(item.view_count) || 0,
     likeCount: Number(item.like_count) || 0,
     status: item.status === 1 ? 1 : 2,
@@ -361,7 +356,6 @@ async function confirm() {
                 <th class="min-w-0 w-full px-4 py-3 text-left">{{ t('common.title') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.colAuthor') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.langLabel') }}</th>
-                <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.colDuration') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.colPlayCount') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('work.colLikes') }}</th>
                 <th class="w-[1%] whitespace-nowrap px-4 py-3">{{ t('common.status') }}</th>
@@ -395,7 +389,6 @@ async function confirm() {
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ work.authorName }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">{{ langOf(work) }}</td>
-                <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ work.duration }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ work.playCount.toLocaleString() }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ work.likeCount.toLocaleString() }}</td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">

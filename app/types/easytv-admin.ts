@@ -33,7 +33,6 @@ export interface AdminWork {
   title: string
   cover: string
   authorName: string
-  duration: string
   playCount: number
   likeCount: number
   status: WorkStatus
@@ -227,6 +226,7 @@ export interface AdminAssetItem {
   status: PublishStatus
   createdAt: string
   url: string
+  cover: string
   mime: string
 }
 

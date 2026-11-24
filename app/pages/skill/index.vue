@@ -498,9 +498,17 @@ async function confirm() {
           />
         </UFormField>
         <UFormField :label="t('common.cover')">
-          <div v-if="coverPreviewUrl" class="relative">
-            <img :src="coverPreviewUrl" alt="" class="aspect-video w-full rounded-lg object-cover">
-            <UButton type="button" size="sm" color="neutral" class="absolute right-2 top-2" :disabled="uploading" @click="clearCover">
+          <div v-if="coverPreviewUrl" class="relative aspect-video overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+            <img :src="coverPreviewUrl" alt="" class="absolute inset-0 size-full object-cover">
+            <UButton
+              type="button"
+              size="sm"
+              color="neutral"
+              variant="outline"
+              class="absolute right-2 top-2 z-10 bg-white/95 dark:bg-zinc-950/90"
+              :disabled="uploading"
+              @click="clearCover"
+            >
               {{ t('common.clear') }}
             </UButton>
           </div>

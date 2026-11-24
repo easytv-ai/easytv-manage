@@ -58,8 +58,19 @@ function toRow(item: any): AdminAssetItem {
     status: item.status === 2 ? 2 : 1,
     createdAt: formatUnix(item.created_at),
     url: resolveMediaUrl(item.url),
+    cover: resolveMediaUrl(item.cover_url),
     mime: item.mime || '',
   }
+}
+const thumbBroken = reactive<Record<number, boolean>>({})
+function thumbUrl(item: AdminAssetItem) {
+  if (thumbBroken[item.id])
+    return ''
+  if (item.type === 'image')
+    return item.url
+  if (item.type === 'video')
+    return item.cover
+  return ''
 }
 function objectKey(url: string) {
   const value = String(url || '').trim()
@@ -232,8 +243,31 @@ async function confirm() {
             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
               <tr v-for="item in pageRows" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
                 <td class="max-w-0 w-full px-4 py-3 text-left">
-                  <div class="truncate font-medium" :title="item.title">{{ item.title }}</div>
-                  <div class="truncate font-mono text-xs text-zinc-400" :title="item.url || String(item.id)">{{ objectKey(item.url) || `#${item.id}` }}</div>
+                  <div class="flex min-w-0 items-center gap-3">
+                    <button
+                      type="button"
+                      class="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-zinc-100 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:ring-zinc-700"
+                      :disabled="!item.url"
+                      @click="openPreview(item)"
+                    >
+                      <img
+                        v-if="thumbUrl(item)"
+                        :src="thumbUrl(item)"
+                        alt=""
+                        class="h-full w-full object-cover"
+                        @error="thumbBroken[item.id] = true"
+                      >
+                      <UIcon
+                        v-else
+                        :name="item.type === 'video' ? 'i-lucide-clapperboard' : item.type === 'audio' ? 'i-lucide-audio-lines' : 'i-lucide-image'"
+                        class="size-4 text-zinc-400"
+                      />
+                    </button>
+                    <div class="min-w-0">
+                      <div class="truncate font-medium" :title="item.title">{{ item.title }}</div>
+                      <div class="truncate font-mono text-xs text-zinc-400" :title="item.url || String(item.id)">{{ objectKey(item.url) || `#${item.id}` }}</div>
+                    </div>
+                  </div>
                 </td>
                 <td class="w-[1%] whitespace-nowrap px-4 py-3">
                   <div>{{ item.ownerName }}</div>

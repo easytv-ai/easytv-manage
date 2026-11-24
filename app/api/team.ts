@@ -26,6 +26,7 @@ export interface AdminTeamMember {
   limit_reset_at: number
   nickname?: string
   username?: string
+  avatar?: string
   /** 本月剩余；不限时后端不下发 */
   points_left?: number | null
 }

@@ -37,6 +37,22 @@ const formScopeItems = computed(() => [
   { label: t('common.skillScope'), value: 'skill' },
 ])
 const filtered = computed(() => rows.value)
+const showScopeGroups = computed(() => applied.value.scope === '__all__')
+const groupedRows = computed(() => {
+  const groups: { scope: CategoryScope, items: AdminCategory[] }[] = []
+  for (const item of filtered.value) {
+    const last = groups[groups.length - 1]
+    if (!last || last.scope !== item.scope)
+      groups.push({ scope: item.scope, items: [item] })
+    else
+      last.items.push(item)
+  }
+  return groups
+})
+
+function scopeLabel(scope: CategoryScope) {
+  return scope === 'work' ? t('common.workScope') : t('common.skillScope')
+}
 
 function toRow(item: any): AdminCategory {
   return {
@@ -194,7 +210,16 @@ async function confirm() {
             </tr>
           </thead>
           <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-            <tr v-for="item in filtered" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+            <template v-for="group in groupedRows" :key="`${group.scope}-${group.items[0]?.id}`">
+              <tr v-if="showScopeGroups">
+                <td colspan="5" class="bg-zinc-100/80 px-4 py-2.5 dark:bg-zinc-900">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-medium text-zinc-700 dark:text-zinc-200">{{ scopeLabel(group.scope) }}</span>
+                    <span class="text-xs tabular-nums text-zinc-400">{{ group.items.length }}</span>
+                  </div>
+                </td>
+              </tr>
+              <tr v-for="item in group.items" :key="item.id" class="group hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
               <td class="w-[1%] whitespace-nowrap px-4 py-3 tabular-nums">{{ item.sortOrder }}</td>
               <td class="max-w-0 w-full px-4 py-3 text-left font-medium">
                 <div class="truncate" :title="item.name">{{ item.name }}</div>
@@ -213,6 +238,7 @@ async function confirm() {
                 </div>
               </td>
             </tr>
+            </template>
           </tbody>
         </table>
       </div>

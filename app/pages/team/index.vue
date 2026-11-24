@@ -2,6 +2,7 @@
 import { formatUnix, isOk, parsePaged } from '~/api/creative'
 import { adminTeamApi, type AdminTeam, type AdminTeamMember } from '~/api/team'
 import { CONSOLE_DEFAULT_PAGE_SIZE } from '~/utils/consoleSelectItems'
+import { resolveMediaUrl } from '~/utils/media'
 
 /**
  * 团队额度（API.md 10.9）：管理员查看团队与成员月度额度，超级管理员可代改成员额度。
@@ -130,6 +131,10 @@ function memberName(item: AdminTeamMember) {
 function memberInitial(item: AdminTeamMember) {
   const name = (item.nickname || item.username || '').trim()
   return name ? name.slice(0, 1) : '#'
+}
+
+function memberAvatar(item: AdminTeamMember) {
+  return resolveMediaUrl(item.avatar)
 }
 
 function roleLabel(role: string) {
@@ -290,7 +295,13 @@ async function submitLimit() {
           >
             <div class="flex items-start justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
-                <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                <img
+                  v-if="memberAvatar(m)"
+                  :src="memberAvatar(m)"
+                  :alt="memberName(m)"
+                  class="size-10 shrink-0 rounded-full object-cover"
+                >
+                <span v-else class="flex size-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                   {{ memberInitial(m) }}
                 </span>
                 <div class="min-w-0">
